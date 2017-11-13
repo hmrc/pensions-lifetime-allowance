@@ -21,7 +21,7 @@ import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 
 object Transformers {
-  private val protectionTypes = Vector(
+  val protectionTypes = Vector(
     "Unknown", "FP2016", "IP2014", "IP2016", "Primary", "Enhanced", "Fixed", "FP2014"
   )
 
