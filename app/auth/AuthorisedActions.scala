@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,20 @@
 package auth
 
 import connectors._
-import play.api.Logger
+import play.api.Logging
 import play.api.mvc.Results._
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.{AuthorisationException, _}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.HeaderCarrierConverter
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AuthorisedActions extends AuthProvider with AuthorisedFunctions {
+trait AuthorisedActions extends AuthProvider with AuthorisedFunctions with Logging {
 
   def userAuthorised(nino: String)(body: => Future[Result])(implicit request: Request[_], ec: ExecutionContext): Future[Result] = {
-    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
+    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
+    //implicit val hc: HeaderCarrier =  HeaderCarrierConverter.fromRequest(request.headers)
     authorised(Nino(hasNino = true, nino = Some(nino)) and ConfidenceLevel.L200) {
       citizenDetailsConnector.checkCitizenRecord(nino) flatMap {
         case CitizenRecordOK => body
@@ -47,22 +48,22 @@ trait AuthorisedActions extends AuthProvider with AuthorisedFunctions {
   }
 
   def logErrorAndRespond(err: String, status: Status): Future[Result] = {
-    Logger.warn(err)
+    logger.warn(err)
     Future.successful(status(err))
   }
 
   def logErrorAndRespondFromUpstreamResponse(err: String, status: Status, upstreamError: Throwable): Future[Result] = {
-    Logger.warn("Error from Citizen Details", upstreamError)
+    logger.warn("Error from Citizen Details", upstreamError)
     Future.successful(status(s"$err\nResponse: ${upstreamError.getMessage}"))
   }
 
   def authErrorHandling: PartialFunction[Throwable, Result] = {
     case e: NoActiveSession => {
-      Logger.error("User has no active session", e)
+      logger.error("User has no active session", e)
       Unauthorized("User has no active session")
     }
     case e: AuthorisationException => {
-      Logger.error("User forbidden", e)
+      logger.error("User forbidden", e)
       Forbidden("User forbidden")
     }
   }

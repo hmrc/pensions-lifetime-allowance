@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,25 +17,27 @@
 package connectors
 
 import java.util.Random
-
 import com.kenshoo.play.metrics.PlayModule
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito._
+import org.mockito.Mockito.{reset, when}
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfter
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import org.scalatest.Matchers.convertToAnyShouldWrapper
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.domain.Generator
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
 import play.api.inject.guice.GuiceableModule
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException, Upstream4xxResponse, Upstream5xxResponse}
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
+import util.TestUtils
 
 
-class CitizenDetailsConnectorSpec extends UnitSpec with MockitoSugar with WithFakeApplication with BeforeAndAfter {
+class CitizenDetailsConnectorSpec extends PlaySpec with MockitoSugar with BeforeAndAfter with TestUtils {
 
-  override def bindModules: Seq[GuiceableModule] = Seq(new PlayModule)
+  def bindModules: Seq[GuiceableModule] = Seq(new PlayModule)
 
   val mockHttp: DefaultHttpClient = mock[DefaultHttpClient]
 
@@ -64,13 +66,13 @@ class CitizenDetailsConnectorSpec extends UnitSpec with MockitoSugar with WithFa
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  "The CitizenDetails Connector getCitizenRecordCheckUrl method" should {
+  "The CitizenDetails Connector getCitizenRecordCheckUrl method" when {
     "return a  URL that contains the nino passed to it" in {
       testCitizenDetailsConnector.getCitizenRecordCheckUrl(testNino).contains(testNino) shouldBe true
     }
   }
 
-  "The CitizenDetails Connector checkCitizenRecord method" should {
+  "The CitizenDetails Connector checkCitizenRecord method" when {
     "return a CitizenRecordOK response when no check is needed" in {
       val f = NoCheckRequiredCitizenDetailsConnector.checkCitizenRecord(testNino)
 
@@ -83,7 +85,7 @@ class CitizenDetailsConnectorSpec extends UnitSpec with MockitoSugar with WithFa
     reset(mockHttp)
   }
 
-  "The CitizenDetails Connector checkCitizenRecord method" should {
+  "The CitizenDetails Connector checkCitizenRecord method" when {
     "return a valid HTTPResponse for successful retrieval" in {
 
       when(mockHttp.GET[HttpResponse](ArgumentMatchers.any())
