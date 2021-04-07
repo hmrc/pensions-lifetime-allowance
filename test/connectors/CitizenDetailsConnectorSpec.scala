@@ -17,25 +17,30 @@
 package connectors
 
 import java.util.Random
-
 import com.kenshoo.play.metrics.PlayModule
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito._
+import org.mockito.Mockito.{reset, when}
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfter
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import org.scalatest.Matchers.convertToAnyShouldWrapper
+import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.domain.Generator
-import org.scalatest.mockito.MockitoSugar
-import play.api.inject.guice.GuiceableModule
+import org.scalatestplus.play.PlaySpec
+import play.api.Application
+import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException, Upstream4xxResponse, Upstream5xxResponse}
+import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.http.{CoreGet, HeaderCarrier, HttpReads, HttpResponse, NotFoundException, Upstream4xxResponse, Upstream5xxResponse}
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
+import util.TestUtils
 
 
-class CitizenDetailsConnectorSpec extends UnitSpec with MockitoSugar with WithFakeApplication with BeforeAndAfter {
+class CitizenDetailsConnectorSpec extends PlaySpec with MockitoSugar with BeforeAndAfter with TestUtils {
 
-  override def bindModules: Seq[GuiceableModule] = Seq(new PlayModule)
+  def bindModules: Seq[GuiceableModule] = Seq(new PlayModule)
+
+  //lazy val fakeApplicationd: Application = new GuiceApplicationBuilder().bindings(bindModules:_*).build()
 
   val mockHttp: DefaultHttpClient = mock[DefaultHttpClient]
 
@@ -86,7 +91,8 @@ class CitizenDetailsConnectorSpec extends UnitSpec with MockitoSugar with WithFa
   "The CitizenDetails Connector checkCitizenRecord method" when {
     "return a valid HTTPResponse for successful retrieval" in {
 
-      val mockHttp: CoreGet = mock[CoreGet]
+      //val mockHttp = mock[CoreGet]
+//      val mockHttp: DefaultHttpClient = mock[DefaultHttpClient]
 
       when(mockHttp.GET[HttpResponse](ArgumentMatchers.any())
         (ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(Future.successful(HttpResponse(200)))
