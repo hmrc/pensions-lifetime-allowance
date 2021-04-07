@@ -54,10 +54,8 @@ class NPSConnectorSpec extends PlaySpec with MockitoSugar {
 
   "The NPS connector implicit header carrier  " when {
     "should have the environment and authorisation headers set" in {
-      testNPSConnector.addExtraHeaders.headers(Seq("Environment")) shouldBe true
-      testNPSConnector.addExtraHeaders.headers(Seq("Authorization")) shouldBe true
-      //testNPSConnector.addExtraHeaders.headers.exists(_._1 == "Environment") shouldBe true
-      //testNPSConnector.addExtraHeaders.headers.exists(_._1 == "Authorization") shouldBe true
+      testNPSConnector.addExtraHeaders.extraHeaders.exists(_._1 == "Environment") shouldBe true
+      testNPSConnector.addExtraHeaders.authorization.isDefined shouldBe true
     }
   }
 
@@ -71,7 +69,7 @@ class NPSConnectorSpec extends PlaySpec with MockitoSugar {
   "The NPS Connector response handler" when {
     "handle non-OK responses other than 409 as failures and throw an exception" in {
       try {
-        val handledHttpResponse =  NpsResponseHandler.handleNpsResponse("POST", "", HttpResponse(400))
+        NpsResponseHandler.handleNpsResponse("POST", "", HttpResponse(400))
         fail("Exception not thrown")
       } catch {
         case ex: Throwable =>
