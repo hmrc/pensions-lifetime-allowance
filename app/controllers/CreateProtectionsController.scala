@@ -37,7 +37,6 @@ class CreateProtectionsController @Inject()(val authConnector: AuthClientConnect
                                             cc: ControllerComponents)
                                             extends  BackendController(cc) with AuthorisedActions with NPSResponseHandler {
 
-  implicit lazy val hc: HeaderCarrier = HeaderCarrier()
 
   def applyForProtection(nino: String): Action[JsValue] = Action.async(cc.parsers.json) { implicit request =>
     userAuthorised(nino) {
