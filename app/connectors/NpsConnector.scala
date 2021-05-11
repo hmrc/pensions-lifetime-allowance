@@ -49,10 +49,11 @@ trait NpsConnector extends Logging {
   val serviceEnvironment: String
   val audit: AuditConnector
 
-  def addExtraHeaders(implicit hc: HeaderCarrier): HeaderCarrier = hc.withExtraHeaders(
+  def httpHeaders(): Seq[(String, String)] = Seq(
     "Accept" -> "application/vnd.hmrc.1.0+json",
     "Content-Type" -> "application/json",
-    "Environment" -> serviceEnvironment).copy(authorization = Some(Authorization(s"Bearer $serviceAccessToken")))
+    "Environment" -> serviceEnvironment,
+    "Authorization" -> s"Bearer $serviceAccessToken")
 
   def getApplyUrl(nino: String): String = {
     val (ninoWithoutSuffix, _) = NinoHelper.dropNinoSuffix(nino)
@@ -75,7 +76,7 @@ trait NpsConnector extends Logging {
 
   def applyForProtection(nino: String, body: JsObject)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
     val requestUrl = getApplyUrl(nino)
-    val responseFut = post(requestUrl, body)(hc = addExtraHeaders(hc), ec = ec)
+    val responseFut = post(requestUrl, body)(hc: HeaderCarrier, ec = ec)
 
     responseFut map { response =>
       val responseBody = response.json.as[JsObject]
@@ -86,7 +87,7 @@ trait NpsConnector extends Logging {
 
   def amendProtection(nino: String, id: Long, body: JsObject)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
     val requestUrl = getAmendUrl(nino, id)
-    val responseFut = put(requestUrl, body)(hc = addExtraHeaders(hc), ec = ec)
+    val responseFut = put(requestUrl, body)(hc: HeaderCarrier, ec = ec)
 
     responseFut map { response =>
       val auditEvent = new NPSAmendLTAEvent(nino = nino, id = id, npsRequestBodyJs = body, npsResponseBodyJs = response.json.as[JsObject], statusCode = response.status, path = requestUrl)
@@ -96,7 +97,7 @@ trait NpsConnector extends Logging {
 
   def getPSALookup(psaRef: String, ltaRef: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
     val requestUrl = s"$serviceUrl/pensions-lifetime-allowance/scheme-administrator/certificate-lookup?pensionSchemeAdministratorCheckReference=$psaRef&lifetimeAllowanceReference=$ltaRef"
-    get(requestUrl)(addExtraHeaders, ec).map(r => r)
+    get(requestUrl)(hc, ec).map(r => r)
   }
 
   def handleAuditableResponse(nino: String, response: HttpResponse, auditEvent: Option[NPSBaseLTAEvent])(implicit hc: HeaderCarrier, ec: ExecutionContext): HttpResponseDetails = {
@@ -122,16 +123,16 @@ trait NpsConnector extends Logging {
   }
 
   def post(requestUrl: String, body: JsValue)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
-    http.POST[JsValue, HttpResponse](requestUrl, body)
+    http.POST[JsValue, HttpResponse](requestUrl, body, httpHeaders())(implicitly, HttpReads.apply, hc, ec)
   }
 
   def put(requestUrl: String, body: JsValue)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
-    http.PUT[JsValue, HttpResponse](requestUrl, body)
+    http.PUT[JsValue, HttpResponse](requestUrl, body, httpHeaders())(implicitly, HttpReads.apply, hc, ec)
   }
 
   def readExistingProtections(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
     val requestUrl = getReadUrl(nino)
-    val responseFut = get(requestUrl)(hc = addExtraHeaders(hc), ec = ec)
+    val responseFut = get(requestUrl)(hc: HeaderCarrier, ec = ec)
 
     responseFut map { expectedResponse =>
       handleExpectedReadResponse(nino, expectedResponse)
@@ -139,7 +140,7 @@ trait NpsConnector extends Logging {
   }
 
   def get(requestUrl: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
-    http.GET[HttpResponse](requestUrl)
+    http.GET[HttpResponse](requestUrl, queryParams = Seq.empty, httpHeaders())(implicitly, hc, ec)
   }
 
   def handleExpectedReadResponse(nino: String, response: HttpResponse): HttpResponseDetails = {

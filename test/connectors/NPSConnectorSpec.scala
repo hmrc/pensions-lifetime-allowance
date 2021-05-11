@@ -54,8 +54,8 @@ class NPSConnectorSpec extends PlaySpec with MockitoSugar {
 
   "The NPS connector implicit header carrier  " when {
     "should have the environment and authorisation headers set" in {
-      testNPSConnector.addExtraHeaders.extraHeaders.exists(_._1 == "Environment") shouldBe true
-      testNPSConnector.addExtraHeaders.authorization.isDefined shouldBe true
+      testNPSConnector.httpHeaders().exists(_._1 == "Environment") shouldBe true
+      testNPSConnector.httpHeaders().exists(_._1 == "Authorization") shouldBe true
     }
   }
 
