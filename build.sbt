@@ -1,10 +1,8 @@
-import uk.gov.hmrc.DefaultBuildSettings.{defaultSettings, scalaSettings, targetJvm}
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import sbt.Keys._
 import sbt._
-import uk.gov.hmrc.SbtAutoBuildPlugin
+import uk.gov.hmrc.DefaultBuildSettings.{defaultSettings, scalaSettings, targetJvm}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
-import uk.gov.hmrc.versioning.SbtGitVersioning
+import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "pensions-lifetime-allowance"
@@ -17,14 +15,14 @@ lazy val scoverageSettings = {
   Seq(
     // Semicolon-separated list of regexs matching classes to exclude
     ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;uk.gov.hmrc.BuildInfo;app.*;prod.*;config.*;com.*;.*(AuthService|BuildInfo|Routes).*",
-    ScoverageKeys.coverageMinimum := 90,
+    ScoverageKeys.coverageMinimumStmtTotal := 90,
     ScoverageKeys.coverageFailOnMinimum := false,
     ScoverageKeys.coverageHighlighting := true
   )
 }
 
 lazy val root = Project(appName, file("."))
-  .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin) ++ plugins : _*)
+  .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins : _*)
   .settings(playSettings ++ scoverageSettings : _*)
   .settings(playSettings : _*)
   .settings(scalaSettings: _*)
@@ -50,7 +48,6 @@ lazy val root = Project(appName, file("."))
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
   .settings(
-    resolvers += Resolver.bintrayRepo("hmrc", "releases"),
     resolvers += Resolver.jcenterRepo
   )
   .settings(majorVersion := 1)

@@ -5,7 +5,7 @@ object AppDependencies {
   import play.sbt.PlayImport._
   import play.core.PlayVersion
 
-  private val bootstrapPlayVersion = "4.2.0"
+  private val bootstrapPlayVersion = "5.3.0"
   private val domainVersion = "5.11.0-play-27"
   private val scalaTestVersion = "3.0.8"
   private val mockitoCoreVersion = "3.7.7"
