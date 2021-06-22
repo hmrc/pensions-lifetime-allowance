@@ -16,36 +16,31 @@
 
 package controllers
 
-import util.TestUtils
+import _root_.mock.AuthMock
+import akka.actor.ActorSystem
+import connectors.{CitizenDetailsConnector, CitizenRecordOK, NpsConnector}
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito.when
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.mvc._
+import util.{NinoHelper, TestUtils}
+import play.api.libs.json._
+import play.api.test.Helpers._
+import play.api.test.{FakeHeaders, FakeRequest}
+import services.ProtectionService
+import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 
 import java.util.Random
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
-import play.api.mvc._
-import util.NinoHelper
-import play.api.libs.json._
-import org.mockito.ArgumentMatchers
-import org.scalatestplus.mockito.MockitoSugar
-import org.scalatest.BeforeAndAfterEach
-import play.api.test.{FakeHeaders, FakeRequest}
-import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.domain.Generator
-import connectors.{CitizenDetailsConnector, CitizenRecordOK, NpsConnector}
-import _root_.mock.AuthMock
-import org.mockito.Mockito.when
-import org.scalatest.Matchers.convertToAnyShouldWrapper
-import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.test.Helpers._
-import services.ProtectionService
-
 import scala.concurrent.Future
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 
 class CreateProtectionsControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with AuthMock with GuiceOneServerPerSuite with TestUtils {
 
   private implicit val system: ActorSystem = ActorSystem("test-sys")
-  private implicit val mat: ActorMaterializer = ActorMaterializer()
 
   val rand = new Random()
   val ninoGenerator = new Generator(rand)

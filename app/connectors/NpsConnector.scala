@@ -17,17 +17,16 @@
 package connectors
 
 import events.{NPSAmendLTAEvent, NPSBaseLTAEvent, NPSCreateLTAEvent}
-
-import javax.inject.Inject
 import model.{Error, HttpResponseDetails}
 import play.api.{Configuration, Environment, Logging, Mode}
 import util.NinoHelper
 import play.api.libs.json._
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpErrorFunctions, HttpReads, HttpResponse, NotFoundException, Upstream4xxResponse, Upstream5xxResponse}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DefaultNpsConnector @Inject()(val http: DefaultHttpClient,
@@ -163,10 +162,20 @@ trait NpsConnector extends Logging {
 object NpsResponseHandler extends NpsResponseHandler
 
 trait NpsResponseHandler extends HttpErrorFunctions {
+
+  /**
+    * Response handler for NSP type responses.
+    * Note: Expected to throw exception 409
+    */
   def handleNpsResponse(method: String, url: String, response: HttpResponse): HttpResponse = {
     response.status match {
       case 409 => response // this is an expected response for this API, so don't throw an exception
-      case _ => handleResponse(method, url)(response)
+      case _ => {
+        response.status match {
+          case status if is4xx(status) => throw new NotFoundException(notFoundMessage(method, url, response.body))
+          case _ => response
+        }
+      }
     }
   }
 }

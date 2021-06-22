@@ -16,22 +16,20 @@
 
 package controllers
 
-import util.TestUtils
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import model.HttpResponseDetails
-import org.scalatest.Matchers.convertToAnyShouldWrapper
-import play.api.libs.json._
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status._
-import uk.gov.hmrc.http.{BadRequestException, Upstream4xxResponse, Upstream5xxResponse, UpstreamErrorResponse}
+import util.TestUtils
+import play.api.libs.json._
+import uk.gov.hmrc.http.{BadRequestException, UpstreamErrorResponse}
 
 class NPSResponseHandlerSpec extends PlaySpec with TestUtils {
 
   val testResponseHandler: NPSResponseHandler = new NPSResponseHandler {}
 
   private implicit val system: ActorSystem = ActorSystem("test-sys")
-  private implicit val mat: ActorMaterializer = ActorMaterializer()
 
   "NPSResponseHandler" when {
     "process a NPS response" when {
