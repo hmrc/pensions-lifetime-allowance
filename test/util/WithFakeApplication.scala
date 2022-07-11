@@ -14,24 +14,14 @@
  * limitations under the License.
  */
 
-package events
+package util
 
-import play.api.libs.json.JsObject
-import uk.gov.hmrc.http.HeaderCarrier
+import org.scalatestplus.play.guice.GuiceFakeApplicationFactory
+import play.api.Application
+import play.api.inject.guice.GuiceApplicationBuilder
 
-class NPSAmendLTAEvent(
-    nino: String,
-    id: Long,
-    npsRequestBodyJs: JsObject,
-    npsResponseBodyJs: JsObject,
-    statusCode: Int,
-    path: String)(implicit hc: HeaderCarrier)
-  extends NPSBaseLTAEvent(
-    ltaAuditType = "AmendAllowance",
-    transactionName="amend-pensions-lifetime-allowance",
-    nino = nino,
-    npsRequestBodyJs = npsRequestBodyJs,
-    npsResponseBodyJs = npsResponseBodyJs,
-    statusCode=statusCode,
-    path = path,
-    extraDetail = Map("protectionId" -> id.toString))
+trait WithFakeApplication extends GuiceFakeApplicationFactory {
+  override def fakeApplication(): Application = GuiceApplicationBuilder()
+    .configure("auditing.enabled" -> false)
+    .build()
+}

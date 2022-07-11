@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package controllers
 
 import java.util.Random
+
 import connectors.{CitizenDetailsConnector, CitizenRecordOK, NpsConnector}
 import org.mockito.ArgumentMatchers
 import _root_.mock.AuthMock
@@ -25,6 +26,7 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import org.scalatestplus.play.PlaySpec
 import play.api.mvc.{ControllerComponents, Result}
 import util.NinoHelper
+import util.WithFakeApplication
 import play.api.libs.json._
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
@@ -33,7 +35,7 @@ import uk.gov.hmrc.domain.Generator
 import scala.concurrent.Future
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream5xxResponse, UpstreamErrorResponse}
 
-class AmendProtectionsControllerSpec  extends PlaySpec with GuiceOneServerPerSuite with AuthMock {
+class AmendProtectionsControllerSpec  extends PlaySpec with GuiceOneServerPerSuite with WithFakeApplication with AuthMock {
 
   val rand = new Random()
   val ninoGenerator = new Generator(rand)
