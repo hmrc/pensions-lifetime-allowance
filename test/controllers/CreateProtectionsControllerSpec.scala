@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,17 +28,19 @@ import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc._
 import util.{NinoHelper, TestUtils}
+import util.WithFakeApplication
 import play.api.libs.json._
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import services.ProtectionService
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
-
 import java.util.Random
+
+
 import scala.concurrent.Future
 
-class CreateProtectionsControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with AuthMock with GuiceOneServerPerSuite with TestUtils {
+class CreateProtectionsControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with AuthMock with GuiceOneServerPerSuite with WithFakeApplication with TestUtils {
 
   private implicit val system: ActorSystem = ActorSystem("test-sys")
 

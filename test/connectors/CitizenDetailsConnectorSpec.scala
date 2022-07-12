@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,13 @@ import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, LOCKED, NOT_FOU
 import play.api.inject.guice.GuiceableModule
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
-import util.{TestUtils, WireMockHelper}
+import util.{TestUtils, WireMockHelper, WithFakeApplication}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 
 class CitizenDetailsConnectorSpec extends PlaySpec with MockitoSugar with BeforeAndAfter with TestUtils
-  with GuiceOneAppPerSuite with WireMockHelper {
+  with GuiceOneAppPerSuite with WithFakeApplication with WireMockHelper {
 
   private val DefaultTestNino = "KA191435A"
   private val DesignatoryDetailsUrl = s"/citizen-details/$DefaultTestNino/designatory-details"

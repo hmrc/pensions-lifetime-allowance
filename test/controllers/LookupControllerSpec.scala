@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,9 @@ import play.api.test.Helpers._
 
 import scala.concurrent.Future
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpResponse}
+import util.WithFakeApplication
 
-class LookupControllerSpec extends PlaySpec with GuiceOneServerPerSuite with BeforeAndAfterEach {
+class LookupControllerSpec extends PlaySpec with GuiceOneServerPerSuite with WithFakeApplication with BeforeAndAfterEach {
 
   implicit lazy val hc = HeaderCarrier()
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
