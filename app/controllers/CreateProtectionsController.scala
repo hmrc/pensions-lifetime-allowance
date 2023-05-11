@@ -25,16 +25,15 @@ import play.api.mvc._
 import services.ProtectionService
 import play.api.libs.json._
 import model.Error
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, Future}
 
 class CreateProtectionsController @Inject()(val authConnector: AuthClientConnector,
                                             val citizenDetailsConnector: CitizenDetailsConnector,
                                             val protectionService: ProtectionService,
                                             cc: ControllerComponents)
+                                           (implicit ec: ExecutionContext)
                                             extends  BackendController(cc) with AuthorisedActions with NPSResponseHandler {
 
 

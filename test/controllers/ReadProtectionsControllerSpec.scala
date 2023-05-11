@@ -17,7 +17,6 @@
 package controllers
 
 import java.util.Random
-
 import akka.stream.Materializer
 import connectors.{CitizenDetailsConnector, CitizenRecordOK}
 import org.mockito.ArgumentMatchers
@@ -27,7 +26,6 @@ import com.codahale.metrics.SharedMetricRegistries
 import model.HttpResponseDetails
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfter
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.libs.json.{JsError, JsObject, JsSuccess, Json}
@@ -39,7 +37,7 @@ import util.{NinoHelper, WithFakeApplication}
 import play.api.libs.json.JsNumber
 import services.ProtectionService
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 
 class ReadProtectionsControllerSpec extends PlaySpec with GuiceOneServerPerSuite with WithFakeApplication with MockitoSugar with BeforeAndAfter with AuthMock {
@@ -64,6 +62,7 @@ class ReadProtectionsControllerSpec extends PlaySpec with GuiceOneServerPerSuite
   implicit val hc: HeaderCarrier = HeaderCarrier()
   implicit val cc: ControllerComponents = app.injector.instanceOf[ControllerComponents]
   implicit val materializer: Materializer = app.materializer
+  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   val controller = new ReadProtectionsController(mockAuthConnector, mockCitizenDetailsConnector, mockProtectionService, cc)
 

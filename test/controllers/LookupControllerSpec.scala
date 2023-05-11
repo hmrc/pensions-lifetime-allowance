@@ -28,7 +28,7 @@ import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-import scala.concurrent.Future
+import scala.concurrent.{Future, ExecutionContext}
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpResponse}
 import util.WithFakeApplication
 
@@ -38,6 +38,7 @@ class LookupControllerSpec extends PlaySpec with GuiceOneServerPerSuite with Wit
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
 
   implicit lazy val cc = app.injector.instanceOf[ControllerComponents]
+  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
 
   lazy val validResponse: JsValue = Json.parse(
