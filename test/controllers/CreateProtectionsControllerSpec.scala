@@ -35,12 +35,12 @@ import play.api.test.{FakeHeaders, FakeRequest}
 import services.ProtectionService
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
+
 import java.util.Random
+import scala.concurrent.{ExecutionContext, Future}
 
-
-import scala.concurrent.Future
-
-class CreateProtectionsControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach with AuthMock with GuiceOneServerPerSuite with WithFakeApplication with TestUtils {
+class CreateProtectionsControllerSpec
+  extends PlaySpec with MockitoSugar with BeforeAndAfterEach with AuthMock with GuiceOneServerPerSuite with WithFakeApplication with TestUtils {
 
   private implicit val system: ActorSystem = ActorSystem("test-sys")
 
@@ -58,6 +58,7 @@ class CreateProtectionsControllerSpec extends PlaySpec with MockitoSugar with Be
   implicit lazy val cc = app.injector.instanceOf[ControllerComponents]
   val mockService: ProtectionService = mock[ProtectionService]
   val mockNPSResponseHandler: NPSResponseHandler = mock[NPSResponseHandler]
+  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
    val controller: CreateProtectionsController = new CreateProtectionsController(
      mockAuthConnector,
@@ -156,7 +157,6 @@ class CreateProtectionsControllerSpec extends PlaySpec with MockitoSugar with Be
     }
 
     "handle an invalid Json submission" in {
-      import scala.concurrent.ExecutionContext.Implicits.global
       lazy val fakeRequest = FakeRequest(
         method = "POST",
         uri = "",

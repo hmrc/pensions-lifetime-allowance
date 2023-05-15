@@ -17,7 +17,6 @@
 package controllers
 
 import java.util.Random
-
 import connectors.{CitizenDetailsConnector, CitizenRecordOK, NpsConnector}
 import org.mockito.ArgumentMatchers
 import _root_.mock.AuthMock
@@ -32,7 +31,7 @@ import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.domain.Generator
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream5xxResponse, UpstreamErrorResponse}
 
 class AmendProtectionsControllerSpec  extends PlaySpec with GuiceOneServerPerSuite with WithFakeApplication with AuthMock {
@@ -54,6 +53,7 @@ class AmendProtectionsControllerSpec  extends PlaySpec with GuiceOneServerPerSui
   val testProtectionVersion = 1
   implicit lazy val hc = mock[HeaderCarrier]
   val mockNpsConnector = mock[NpsConnector]
+  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   lazy val cc = app.injector.instanceOf[ControllerComponents]
   lazy val controller = new AmendProtectionsController(mockAuthConnector,

@@ -28,14 +28,14 @@ import model.Error
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class AmendProtectionsController @Inject()(val authConnector: AuthClientConnector,
                                            val citizenDetailsConnector: CitizenDetailsConnector,
                                            val protectionService: ProtectionService,
-                                           cc: ControllerComponents) extends BackendController(cc) with NPSResponseHandler with AuthorisedActions {
+                                           cc: ControllerComponents)
+                                          (implicit ec: ExecutionContext) extends BackendController(cc) with NPSResponseHandler with AuthorisedActions {
 
   implicit lazy val hc: HeaderCarrier = HeaderCarrier()
 

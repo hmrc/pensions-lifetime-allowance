@@ -27,13 +27,13 @@ import services.ProtectionService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 
 class ReadProtectionsController @Inject()(val authConnector: AuthClientConnector,
                                           val citizenDetailsConnector: CitizenDetailsConnector,
                                           val protectionService: ProtectionService,
-                                          val cc: ControllerComponents
-                                          ) extends BackendController(cc) with AuthorisedActions with NPSResponseHandler  {
+                                          val cc: ControllerComponents)
+                                          (implicit ec: ExecutionContext) extends BackendController(cc) with AuthorisedActions with NPSResponseHandler  {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
