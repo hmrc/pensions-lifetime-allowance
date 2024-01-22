@@ -9,7 +9,9 @@ val appName = "pensions-lifetime-allowance"
 
 lazy val plugins : Seq[Plugins] = Seq.empty
 lazy val playSettings : Seq[Setting[_]] = Seq.empty
-val silencerVersion = "1.7.12"
+ThisBuild / majorVersion := 2
+ThisBuild / scalaVersion := "2.13.12"
+
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
@@ -30,15 +32,9 @@ lazy val root = Project(appName, file("."))
   .settings(publishingSettings: _*)
   .settings(defaultSettings(): _*)
   .settings(
-    scalacOptions += "-P:silencer:pathFilters=routes",
-    scalacOptions += "-P:silencer:lineContentFilters=^\\w",
-    libraryDependencies ++= Seq(
-      compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
-      "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
-    )
+    scalacOptions += "-Wconf:cat=unused-imports&src=routes/.*:s"
   )
   .settings(
-    scalaVersion := "2.13.8",
     libraryDependencies ++= AppDependencies(),
     parallelExecution in Test := false,
     fork in Test := false,
@@ -50,5 +46,4 @@ lazy val root = Project(appName, file("."))
   .settings(
     resolvers += Resolver.jcenterRepo
   )
-  .settings(majorVersion := 1)
   .settings(PlayKeys.playDefaultPort := 9011)
