@@ -166,7 +166,7 @@ class CreateProtectionsControllerSpec
       lazy val result = controller.applyForProtection(testNino).apply(fakeRequest)
       status(result) shouldBe BAD_REQUEST
       await(jsonBodyOf(result)) shouldBe Json.obj("message" -> JsString(
-        "body failed validation with errors: List((/protectionType,List(JsonValidationError(List(error.path.missing),ArraySeq()))))"
+        "body failed validation with errors: List((/protectionType,List(JsonValidationError(List(error.path.missing),List()))))"
       ))
     }
   }
