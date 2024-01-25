@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, urlPathMatching}
-import com.kenshoo.play.metrics.PlayModule
 import org.scalatest.BeforeAndAfter
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.mockito.MockitoSugar
@@ -41,7 +40,7 @@ class CitizenDetailsConnectorSpec extends PlaySpec with MockitoSugar with Before
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  def bindModules: Seq[GuiceableModule] = Seq(new PlayModule)
+  def bindModules: Seq[GuiceableModule] = Seq()
 
   object testCitizenDetailsConnector extends CitizenDetailsConnector {
     override val serviceUrl = DefaultLocalUrl

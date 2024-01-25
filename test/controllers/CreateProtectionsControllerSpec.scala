@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package controllers
 
 import _root_.mock.AuthMock
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import connectors.{CitizenDetailsConnector, CitizenRecordOK, NpsConnector}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
@@ -166,7 +166,7 @@ class CreateProtectionsControllerSpec
       lazy val result = controller.applyForProtection(testNino).apply(fakeRequest)
       status(result) shouldBe BAD_REQUEST
       await(jsonBodyOf(result)) shouldBe Json.obj("message" -> JsString(
-        "body failed validation with errors: List((/protectionType,List(JsonValidationError(List(error.path.missing),ArraySeq()))))"
+        "body failed validation with errors: List((/protectionType,List(JsonValidationError(List(error.path.missing),List()))))"
       ))
     }
   }
