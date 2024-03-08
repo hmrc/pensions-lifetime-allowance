@@ -2,7 +2,6 @@ import sbt.Keys._
 import sbt._
 import uk.gov.hmrc.DefaultBuildSettings.{defaultSettings, scalaSettings, targetJvm}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "pensions-lifetime-allowance"
@@ -29,7 +28,6 @@ lazy val root = Project(appName, file("."))
   .settings(playSettings ++ scoverageSettings : _*)
   .settings(playSettings : _*)
   .settings(scalaSettings: _*)
-  .settings(publishingSettings: _*)
   .settings(defaultSettings(): _*)
   .settings(
     scalacOptions += "-Wconf:cat=unused-imports&src=routes/.*:s"
