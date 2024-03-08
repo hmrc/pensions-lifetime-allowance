@@ -23,7 +23,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.http.Status._
 import util.TestUtils
 import play.api.libs.json._
-import uk.gov.hmrc.http.{BadRequestException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{BadRequestException, UpstreamErrorResponse, NotFoundException}
 
 class NPSResponseHandlerSpec extends PlaySpec with TestUtils {
 
@@ -100,6 +100,11 @@ class NPSResponseHandlerSpec extends PlaySpec with TestUtils {
         val npsError = new BadRequestException("bad request")
         val result = testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]")
         status(result) shouldBe BAD_REQUEST
+      }
+      "a Not found response is received" in {
+        val npsError = new NotFoundException("not found")
+        val result = testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]")
+        status(result) shouldBe NOT_FOUND
       }
       "a different error is thrown" in {
         val npsError = new RuntimeException("different error")
