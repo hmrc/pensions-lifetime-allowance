@@ -43,6 +43,9 @@ trait NPSResponseHandler extends Logging {
       case badRequest: BadRequestException =>
         logger.error(s"$errorContext ${badRequest.getMessage}", badRequest)
         BadRequest(badRequest.getMessage)
+      case notFound: NotFoundException =>
+        logger.error(s"$errorContext ${notFound.getMessage}", notFound)
+        NotFound(notFound.getMessage)
       case e => throw e
     }
   }
