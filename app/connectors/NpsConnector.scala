@@ -75,7 +75,7 @@ trait NpsConnector extends Logging {
 
   def applyForProtection(nino: String, body: JsObject)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
     val requestUrl = getApplyUrl(nino)
-    val responseFut = post(requestUrl, body)(hc: HeaderCarrier, ec = ec)
+    val responseFut = post(requestUrl, body)
 
     responseFut map { response =>
       val responseBody = response.json.as[JsObject]
@@ -86,7 +86,7 @@ trait NpsConnector extends Logging {
 
   def amendProtection(nino: String, id: Long, body: JsObject)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
     val requestUrl = getAmendUrl(nino, id)
-    val responseFut = put(requestUrl, body)(hc: HeaderCarrier, ec = ec)
+    val responseFut = put(requestUrl, body)
 
     responseFut map { response =>
       val auditEvent = new NPSAmendLTAEvent(nino = nino, id = id, npsRequestBodyJs = body, npsResponseBodyJs = response.json.as[JsObject], statusCode = response.status, path = requestUrl)
