@@ -27,7 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait AuthorisedActions extends AuthProvider with AuthorisedFunctions with Logging {
 
-  def userAuthorised(nino: String)(body: => Future[Result])(implicit request: Request[_], ec: ExecutionContext): Future[Result] = {
+  def userAuthorised(nino: String)(body: => Future[Result])(implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
     authorised(Nino(hasNino = true, nino = Some(nino)) and ConfidenceLevel.L200) {

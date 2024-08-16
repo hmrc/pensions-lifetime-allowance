@@ -25,7 +25,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, LOCKED, NOT_FOUND, OK}
 import play.api.inject.guice.GuiceableModule
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
+import uk.gov.hmrc.http.client.HttpClientV2
 import util.{TestUtils, WireMockHelper, WithFakeApplication}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -44,13 +44,14 @@ class CitizenDetailsConnectorSpec extends PlaySpec with MockitoSugar with Before
 
   object testCitizenDetailsConnector extends CitizenDetailsConnector {
     override val serviceUrl = DefaultLocalUrl
-    override def http: DefaultHttpClient = app.injector.instanceOf[DefaultHttpClient]
+
+    override def http: HttpClientV2 = app.injector.instanceOf[HttpClientV2]
     override val checkRequired = true
   }
 
   object NoCheckRequiredCitizenDetailsConnector extends CitizenDetailsConnector {
     override val serviceUrl = DefaultLocalUrl
-    override def http: DefaultHttpClient = app.injector.instanceOf[DefaultHttpClient]
+    override def http: HttpClientV2 = app.injector.instanceOf[HttpClientV2]
     override val checkRequired = false
   }
 

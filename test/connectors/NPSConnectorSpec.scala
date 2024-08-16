@@ -25,18 +25,18 @@ import play.api.libs.json._
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
+import uk.gov.hmrc.http.client.HttpClientV2
 import org.scalatestplus.play.PlaySpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class NPSConnectorSpec extends PlaySpec with MockitoSugar {
 
-  private val mockHttp = mock[DefaultHttpClient]
+  private val mockHttp = mock[HttpClientV2]
 
   object testNPSConnector extends NpsConnector {
     override val serviceUrl = "http://localhost:80"
-    override val http: DefaultHttpClient = mockHttp
+    override val http: HttpClientV2 = mockHttp
     override val serviceAccessToken = "token"
     override val serviceEnvironment = "environment"
 

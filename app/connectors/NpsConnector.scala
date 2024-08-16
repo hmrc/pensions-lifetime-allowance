@@ -21,15 +21,15 @@ import model.{Error, HttpResponseDetails}
 import play.api.{Configuration, Environment, Logging, Mode}
 import util.NinoHelper
 import play.api.libs.json._
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpErrorFunctions, HttpReads, HttpResponse, NotFoundException, Upstream4xxResponse, Upstream5xxResponse}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpErrorFunctions, HttpReads, HttpResponse, NotFoundException, StringContextOps}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class DefaultNpsConnector @Inject()(val http: DefaultHttpClient,
+class DefaultNpsConnector @Inject()(val http: HttpClientV2,
                                     environment: Environment,
                                     val runModeConfiguration: Configuration,
                                     servicesConfig: ServicesConfig,
@@ -42,7 +42,7 @@ class DefaultNpsConnector @Inject()(val http: DefaultHttpClient,
 }
 
 trait NpsConnector extends Logging {
-  val http: DefaultHttpClient
+  val http: HttpClientV2
   val serviceUrl: String
   val serviceAccessToken: String
   val serviceEnvironment: String
@@ -122,11 +122,11 @@ trait NpsConnector extends Logging {
   }
 
   def post(requestUrl: String, body: JsValue)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
-    http.POST[JsValue, HttpResponse](requestUrl, body, httpHeaders())(implicitly, HttpReads.apply, hc, ec)
+    http.post(url"$requestUrl").withBody(Json.toJson(body)).setHeader(httpHeaders(): _*).execute[HttpResponse]
   }
 
   def put(requestUrl: String, body: JsValue)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
-    http.PUT[JsValue, HttpResponse](requestUrl, body, httpHeaders())(implicitly, HttpReads.apply, hc, ec)
+    http.put(url"$requestUrl").withBody(Json.toJson(body)).setHeader(httpHeaders(): _*).execute[HttpResponse]
   }
 
   def readExistingProtections(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
@@ -139,7 +139,7 @@ trait NpsConnector extends Logging {
   }
 
   def get(requestUrl: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
-    http.GET[HttpResponse](requestUrl, queryParams = Seq.empty, httpHeaders())(implicitly, hc, ec)
+    http.get(url"$requestUrl").setHeader(httpHeaders(): _*).execute[HttpResponse]
   }
 
   def handleExpectedReadResponse(nino: String, response: HttpResponse): HttpResponseDetails = {
