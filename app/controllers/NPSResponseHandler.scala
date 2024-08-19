@@ -23,18 +23,22 @@ import play.api.mvc.Result
 import play.api.mvc.Results._
 import play.api.http.Status._
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.UpstreamErrorResponse.{Upstream4xxResponse, Upstream5xxResponse}
 
 trait NPSResponseHandler extends Logging {
 
   private[controllers] def handleNPSError(error : Throwable, errorContext: String): Result = {
     error match {
-      case err @ UpstreamErrorResponse(errorDetails, SERVICE_UNAVAILABLE, _, _) =>
+      case err @ Upstream5xxResponse(UpstreamErrorResponse(errorDetails, SERVICE_UNAVAILABLE, _, _)) =>
         logger.error(s"$errorContext $errorDetails", err)
         ServiceUnavailable(errorDetails)
-      case err @ UpstreamErrorResponse(errorDetails, UNAUTHORIZED, _, _) =>
+      case err @ Upstream5xxResponse(UpstreamErrorResponse(errorDetails, _, _, _)) =>
+        logger.error(s"$errorContext $errorDetails", err)
+        InternalServerError(errorDetails)
+      case err @ Upstream4xxResponse(UpstreamErrorResponse(errorDetails, UNAUTHORIZED, _, _)) =>
         logger.error(s"$errorContext $errorDetails", err)
         Unauthorized(errorDetails)
-      case err @ UpstreamErrorResponse(errorDetails, _, _, _) =>
+      case err @ Upstream4xxResponse(UpstreamErrorResponse(errorDetails, _, _, _)) =>
         logger.error(s"$errorContext $errorDetails", err)
         InternalServerError(errorDetails)
       case badRequest: BadRequestException =>
