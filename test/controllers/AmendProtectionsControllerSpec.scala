@@ -32,7 +32,7 @@ import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.domain.Generator
 
 import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.http.{HeaderCarrier, Upstream5xxResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 class AmendProtectionsControllerSpec  extends PlaySpec with GuiceOneServerPerSuite with WithFakeApplication with AuthMock {
 
