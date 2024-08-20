@@ -22,11 +22,11 @@ import play.api.http.Status._
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DefaultCitizenDetailsConnector @Inject()(val http: DefaultHttpClient,
+class DefaultCitizenDetailsConnector @Inject()(val http: HttpClientV2,
                                                environment: Environment,
                                                val runModeConfiguration: Configuration,
                                                servicesConfig: ServicesConfig)
@@ -51,7 +51,7 @@ case class CitizenRecordOther4xxResponse(e: UpstreamErrorResponse) extends Citiz
 case class CitizenRecord5xxResponse(e: UpstreamErrorResponse) extends CitizenRecordCheckResult
 
 trait CitizenDetailsConnector {
-  def http: DefaultHttpClient
+  def http: HttpClientV2
 
   val serviceUrl: String
   val checkRequired: Boolean
@@ -65,7 +65,7 @@ trait CitizenDetailsConnector {
       Future.successful(CitizenRecordOK)
     } else {
       val requestUrl = getCitizenRecordCheckUrl(nino)
-      http.GET[HttpResponse](requestUrl) map {
+      http.get(url"$requestUrl").execute[HttpResponse] map {
         _ => CitizenRecordOK
       } recover {
         case e: UpstreamErrorResponse =>
