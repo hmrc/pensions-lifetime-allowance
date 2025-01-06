@@ -4,11 +4,11 @@ object AppDependencies {
 
   import play.sbt.PlayImport._
 
-  val boostrapVersion = "9.0.0"
+  val boostrapVersion = "9.6.0"
   val compile: Seq[ModuleID] = Seq(
     ws,
     "uk.gov.hmrc" %% "bootstrap-backend-play-30" % boostrapVersion,
-    "uk.gov.hmrc" %% "domain-play-30" % "9.0.0"
+    "uk.gov.hmrc" %% "domain-play-30" % "10.0.0"
   )
 
   trait TestDependencies {
