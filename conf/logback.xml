@@ -20,15 +20,6 @@
         </encoder>
     </appender>
 
-
-    <logger name="accesslog" level="INFO" additivity="false">
-        <appender-ref ref="ACCESS_LOG_FILE" />
-    </logger>
-
-    <logger name="com.ning.http.client.providers.netty" additivity="false">
-        <appender-ref ref="STDOUT_IGNORE_NETTY" />
-    </logger>
-
     <logger name="org.eclipse.jetty" level="OFF"/>
 
     <logger name="org.apache.http" level="OFF"/>
