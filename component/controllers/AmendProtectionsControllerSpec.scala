@@ -215,7 +215,7 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/check-your-pension-protections/$path")
         .withFollowRedirects(false)
         .withHeaders(("X-Session-ID", "session-12345"))
 
@@ -262,7 +262,7 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/check-your-pension-protections/$path")
         .withFollowRedirects(false)
         .withHeaders(("X-Session-ID", "session-12345"))
 
@@ -310,7 +310,7 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/check-your-pension-protections/$path")
         .withFollowRedirects(false)
         .withHeaders(("X-Session-ID", "session-12345"))
 
@@ -358,7 +358,7 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/check-your-pension-protections/$path")
         .withFollowRedirects(false)
         .withHeaders(("X-Session-ID", "session-12345"))
 
@@ -407,7 +407,7 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/check-your-pension-protections/$path")
         .withFollowRedirects(false)
         .withHeaders(("X-Session-ID", "session-12345"))
 
@@ -456,7 +456,7 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/check-your-pension-protections/$path")
         .withFollowRedirects(false)
         .withHeaders(("X-Session-ID", "session-12345"))
 
@@ -502,7 +502,7 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/check-your-pension-protections/$path")
         .withFollowRedirects(false)
         .withHeaders(("X-Session-ID", "session-12345"))
 
@@ -549,7 +549,7 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/check-your-pension-protections/$path")
         .withFollowRedirects(false)
         .withHeaders(("X-Session-ID", "session-12345"))
 
@@ -597,7 +597,7 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/check-your-pension-protections/$path")
         .withFollowRedirects(false)
         .withHeaders(("X-Session-ID", "session-12345"))
 
@@ -645,7 +645,7 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/check-your-pension-protections/$path")
         .withFollowRedirects(false)
         .withHeaders(("X-Session-ID", "session-12345"))
 
@@ -694,7 +694,7 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/check-your-pension-protections/$path")
         .withFollowRedirects(false)
         .withHeaders(("X-Session-ID", "session-12345"))
 
@@ -743,7 +743,7 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/check-your-pension-protections/$path")
         .withFollowRedirects(false)
         .withHeaders(("X-Session-ID", "session-12345"))
 
