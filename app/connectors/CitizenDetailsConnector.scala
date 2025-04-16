@@ -29,7 +29,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class DefaultCitizenDetailsConnector @Inject() (
     val http: HttpClientV2,
     environment: Environment,
-    val runModeConfiguration: Configuration,
     servicesConfig: ServicesConfig
 ) extends CitizenDetailsConnector {
 
@@ -60,7 +59,7 @@ trait CitizenDetailsConnector {
   def getCitizenRecordCheckUrl(nino: String): String =
     serviceUrl + s"/citizen-details/$nino/designatory-details"
 
-  implicit val legacyRawReads =
+  implicit val legacyRawReads: HttpReads[HttpResponse] =
     HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
 
   def checkCitizenRecord(

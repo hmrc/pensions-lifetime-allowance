@@ -26,7 +26,6 @@ import uk.gov.hmrc.http.client.HttpClientV2
 class DefaultAuthClientConnector @Inject() (
     val httpClientV2: HttpClientV2,
     environment: Environment,
-    val runModeConfiguration: Configuration,
     servicesConfig: ServicesConfig
 ) extends AuthClientConnector {
 

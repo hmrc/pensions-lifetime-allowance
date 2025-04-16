@@ -40,7 +40,6 @@ import scala.concurrent.{ExecutionContext, Future}
 class DefaultNpsConnector @Inject() (
     val http: HttpClientV2,
     environment: Environment,
-    val runModeConfiguration: Configuration,
     servicesConfig: ServicesConfig,
     val audit: AuditConnector
 ) extends NpsConnector {
