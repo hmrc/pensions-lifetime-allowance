@@ -23,12 +23,14 @@ import uk.gov.hmrc.auth.core.PlayAuthConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.http.client.HttpClientV2
 
-class DefaultAuthClientConnector @Inject()(val httpClientV2: HttpClientV2,
-                                           environment: Environment,
-                                           val runModeConfiguration: Configuration,
-                                           servicesConfig: ServicesConfig) extends AuthClientConnector {
+class DefaultAuthClientConnector @Inject() (
+    val httpClientV2: HttpClientV2,
+    environment: Environment,
+    val runModeConfiguration: Configuration,
+    servicesConfig: ServicesConfig
+) extends AuthClientConnector {
 
-  val mode: Mode = environment.mode
+  val mode: Mode                       = environment.mode
   override lazy val serviceUrl: String = servicesConfig.baseUrl("auth")
 }
 

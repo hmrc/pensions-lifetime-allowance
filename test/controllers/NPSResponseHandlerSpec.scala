@@ -23,7 +23,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.http.Status._
 import util.TestUtils
 import play.api.libs.json._
-import uk.gov.hmrc.http.{BadRequestException, UpstreamErrorResponse, NotFoundException}
+import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorResponse}
 
 class NPSResponseHandlerSpec extends PlaySpec with TestUtils {
 
@@ -43,73 +43,85 @@ class NPSResponseHandlerSpec extends PlaySpec with TestUtils {
       }
       "NPS returns an OK with an invalid body" in {
         val fakeResponse = HttpResponseDetails(OK, JsError("error message"))
-        val result = testResponseHandler.handleNPSSuccess(fakeResponse)
+        val result       = testResponseHandler.handleNPSSuccess(fakeResponse)
         status(result) shouldBe INTERNAL_SERVER_ERROR
-        jsonBodyOf(result) shouldBe Json.obj("message" -> JsString(
-          "NPS request resulted in a response with: HTTP status=" + fakeResponse.status + ", but unable to parse the NPS response body"
-        ))
+        jsonBodyOf(result) shouldBe Json.obj(
+          "message" -> JsString(
+            "NPS request resulted in a response with: HTTP status=" + fakeResponse.status + ", but unable to parse the NPS response body"
+          )
+        )
       }
       "NPS returns a CONFLICT with an invalid body" in {
         val fakeResponse = HttpResponseDetails(CONFLICT, JsError("error message"))
-        val result = testResponseHandler.handleNPSSuccess(fakeResponse)
+        val result       = testResponseHandler.handleNPSSuccess(fakeResponse)
         status(result) shouldBe INTERNAL_SERVER_ERROR
-        jsonBodyOf(result) shouldBe Json.obj("message" -> JsString(
-          "NPS request resulted in a response with: HTTP status=" + fakeResponse.status + ", but unable to parse the NPS response body"
-        ))
+        jsonBodyOf(result) shouldBe Json.obj(
+          "message" -> JsString(
+            "NPS request resulted in a response with: HTTP status=" + fakeResponse.status + ", but unable to parse the NPS response body"
+          )
+        )
       }
       "NPS returns a NOT_ACCEPTABLE with a valid body" in {
         val fakeResponse = HttpResponseDetails(NOT_ACCEPTABLE, JsSuccess(Json.obj("result" -> JsString("success"))))
-        val result = testResponseHandler.handleNPSSuccess(fakeResponse)
+        val result       = testResponseHandler.handleNPSSuccess(fakeResponse)
         status(result) shouldBe INTERNAL_SERVER_ERROR
-        jsonBodyOf(result) shouldBe Json.obj("message" -> JsString(
-          "NPS request resulted in a response with: HTTP status=" + fakeResponse.status +  ", body=" + Json.asciiStringify(fakeResponse.body.get)
-        ))
+        jsonBodyOf(result) shouldBe Json.obj(
+          "message" -> JsString(
+            "NPS request resulted in a response with: HTTP status=" + fakeResponse.status + ", body=" + Json
+              .asciiStringify(fakeResponse.body.get)
+          )
+        )
       }
       "NPS returns a NOT_ACCEPTABLE with an invalid body" in {
         val fakeResponse = HttpResponseDetails(NOT_ACCEPTABLE, JsError("error message"))
-        val result = testResponseHandler.handleNPSSuccess(fakeResponse)
+        val result       = testResponseHandler.handleNPSSuccess(fakeResponse)
         status(result) shouldBe INTERNAL_SERVER_ERROR
-        jsonBodyOf(result) shouldBe Json.obj("message" -> JsString(
-          "NPS request resulted in a response with: HTTP status=" + fakeResponse.status + ", but unable to parse the NPS response body"
-        ))
+        jsonBodyOf(result) shouldBe Json.obj(
+          "message" -> JsString(
+            "NPS request resulted in a response with: HTTP status=" + fakeResponse.status + ", but unable to parse the NPS response body"
+          )
+        )
       }
     }
 
     "handle a NPS error" when {
       "a Service unavailable response is received" in {
         val npsError = UpstreamErrorResponse("service unavailable", SERVICE_UNAVAILABLE, 1)
-        val result = testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]")
+        val result   = testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]")
         status(result) shouldBe SERVICE_UNAVAILABLE
       }
       "a Bad gateway response is received" in {
         val npsError = UpstreamErrorResponse("bad gateway", BAD_GATEWAY, 1)
-        val result = testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]")
+        val result   = testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]")
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
       "an Unauthorized response is received" in {
         val npsError = UpstreamErrorResponse("unauthorized", UNAUTHORIZED, 1)
-        val result = testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]")
+        val result   = testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]")
         status(result) shouldBe UNAUTHORIZED
       }
       "a Forbidden response is received" in {
         val npsError = UpstreamErrorResponse("forbidden", FORBIDDEN, 1)
-        val result = testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]")
+        val result   = testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]")
         status(result) shouldBe INTERNAL_SERVER_ERROR
       }
       "a Bad request response is received" in {
         val npsError = new BadRequestException("bad request")
-        val result = testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]")
+        val result   = testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]")
         status(result) shouldBe BAD_REQUEST
       }
       "a Not found response is received" in {
         val npsError = new NotFoundException("not found")
-        val result = testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]")
+        val result   = testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]")
         status(result) shouldBe NOT_FOUND
       }
       "a different error is thrown" in {
         val npsError = new RuntimeException("different error")
-        a[RuntimeException] shouldBe thrownBy(testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]"))
+        a[RuntimeException] shouldBe thrownBy(
+          testResponseHandler.handleNPSError(npsError, "[TestController] [callNps]")
+        )
       }
     }
   }
+
 }

@@ -22,22 +22,28 @@ import play.api.libs.json.{JsNumber, JsObject}
 import uk.gov.hmrc.http.HeaderCarrier
 
 abstract class NPSBaseLTAEvent(
-  ltaAuditType: String,
-  transactionName: String,
-  nino: String,
-  npsRequestBodyJs: JsObject,
-  npsResponseBodyJs: JsObject,
-  statusCode: Int,
-  path: String,
-  extraDetail: Map[String, String])(implicit hc: HeaderCarrier)
-extends DataEvent(
-  auditSource = "pensions-lifetime-allowance",
-  auditType = ltaAuditType,
-  detail = Map[String,String](
-    "nino" -> nino,
-    "protectionType" ->  (npsRequestBodyJs \ "protection" \ "type").as[JsNumber].value.toInt.toString,
-    "statusCode" -> statusCode.toString,
-    "protectionStatus" -> (npsResponseBodyJs \ "protection").as[JsObject].fields.find(_._1 == "status").map(_._2.as[JsNumber].value.toInt.toString).getOrElse("n/a")
-  ) ++ extraDetail,
-  tags = hc.toAuditTags(transactionName, path)
-)
+    ltaAuditType: String,
+    transactionName: String,
+    nino: String,
+    npsRequestBodyJs: JsObject,
+    npsResponseBodyJs: JsObject,
+    statusCode: Int,
+    path: String,
+    extraDetail: Map[String, String]
+)(implicit hc: HeaderCarrier)
+    extends DataEvent(
+      auditSource = "pensions-lifetime-allowance",
+      auditType = ltaAuditType,
+      detail = Map[String, String](
+        "nino"           -> nino,
+        "protectionType" -> (npsRequestBodyJs \ "protection" \ "type").as[JsNumber].value.toInt.toString,
+        "statusCode"     -> statusCode.toString,
+        "protectionStatus" -> (npsResponseBodyJs \ "protection")
+          .as[JsObject]
+          .fields
+          .find(_._1 == "status")
+          .map(_._2.as[JsNumber].value.toInt.toString)
+          .getOrElse("n/a")
+      ) ++ extraDetail,
+      tags = hc.toAuditTags(transactionName, path)
+    )

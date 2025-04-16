@@ -24,8 +24,8 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
 trait WiremockHelper extends FakeConfig {
 
-  val url = s"http://$wiremockHost:$wiremockPort"
-  val wmConfig = wireMockConfig().port(wiremockPort)
+  val url            = s"http://$wiremockHost:$wiremockPort"
+  val wmConfig       = wireMockConfig().port(wiremockPort)
   val wireMockServer = new WireMockServer(wmConfig)
 
   def startWiremock(): Unit = {
@@ -39,62 +39,58 @@ trait WiremockHelper extends FakeConfig {
 
   def stubGet(url: String, status: Integer, body: String): StubMapping = {
     removeStub(get(urlMatching(url)))
-    stubFor(get(urlMatching(url))
-      .willReturn(
-        aResponse().
-          withStatus(status).
-          withBody(body)
-      )
+    stubFor(
+      get(urlMatching(url))
+        .willReturn(
+          aResponse().withStatus(status).withBody(body)
+        )
     )
   }
 
   def stubPost(url: String, status: Integer, responseBody: String): StubMapping = {
     removeStub(post(urlMatching(url)))
-    stubFor(post(urlMatching(url))
-      .willReturn(
-        aResponse().
-          withStatus(status).
-          withBody(responseBody)
-      )
+    stubFor(
+      post(urlMatching(url))
+        .willReturn(
+          aResponse().withStatus(status).withBody(responseBody)
+        )
     )
   }
 
-  def stubPatch(url: String, status: Integer, responseBody: String): StubMapping = {
-    stubFor(patch(urlMatching(url))
-      .willReturn(
-        aResponse().
-          withStatus(status).
-          withBody(responseBody)
-      )
+  def stubPatch(url: String, status: Integer, responseBody: String): StubMapping =
+    stubFor(
+      patch(urlMatching(url))
+        .willReturn(
+          aResponse().withStatus(status).withBody(responseBody)
+        )
     )
-  }
 
   def stubPut(url: String, status: Integer, responseBody: String): StubMapping = {
     removeStub(put(urlMatching(url)))
-    stubFor(put(urlMatching(url))
-      .willReturn(
-        aResponse().
-          withStatus(status).
-          withBody(responseBody)
-      )
+    stubFor(
+      put(urlMatching(url))
+        .willReturn(
+          aResponse().withStatus(status).withBody(responseBody)
+        )
     )
   }
-}
 
+}
 
 trait FakeConfig {
   val wiremockPort = 11111
   val wiremockHost = "localhost"
 
   def fakeConfig(additionalConfig: Map[String, String] = Map.empty): Map[String, String] = Map(
-    "auditing.consumer.baseUri.host" -> s"$wiremockHost",
-    "auditing.consumer.baseUri.port" -> s"$wiremockPort",
-    "microservice.services.auth.host" -> s"$wiremockHost",
-    "microservice.services.auth.port" -> s"$wiremockPort",
-    "microservice.services.nps.host" -> s"$wiremockHost",
-    "microservice.services.nps.port" -> s"$wiremockPort",
-    "microservice.services.citizen-details.host" -> s"$wiremockHost",
-    "microservice.services.citizen-details.port" -> s"$wiremockPort",
+    "auditing.consumer.baseUri.host"                      -> s"$wiremockHost",
+    "auditing.consumer.baseUri.port"                      -> s"$wiremockPort",
+    "microservice.services.auth.host"                     -> s"$wiremockHost",
+    "microservice.services.auth.port"                     -> s"$wiremockPort",
+    "microservice.services.nps.host"                      -> s"$wiremockHost",
+    "microservice.services.nps.port"                      -> s"$wiremockPort",
+    "microservice.services.citizen-details.host"          -> s"$wiremockHost",
+    "microservice.services.citizen-details.port"          -> s"$wiremockPort",
     "microservice.services.citizen-details.checkRequired" -> "true"
   ) ++ additionalConfig
+
 }

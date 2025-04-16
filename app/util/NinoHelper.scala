@@ -17,13 +17,14 @@
 package util
 
 object NinoHelper {
+
   def dropNinoSuffix(nino: String): (String, Option[Char]) = {
     val lastChar = nino.last
     if (lastChar.isLetter) {
-      (nino.substring(0,nino.length-1), Some(lastChar))
-    }
-    else {
+      (nino.substring(0, nino.length - 1), Some(lastChar))
+    } else {
       (nino, None)
     }
   }
+
 }

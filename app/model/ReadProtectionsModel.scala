@@ -20,25 +20,27 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 case class ReadProtectionsModel(
-                                 nino: String,
-                                 psaCheckReference: String,
-                                 lifetimeAllowanceProtections: Option[List[ReadProtection]] = None
-                               )
+    nino: String,
+    psaCheckReference: String,
+    lifetimeAllowanceProtections: Option[List[ReadProtection]] = None
+)
 
 object ReadProtectionsModel {
 
   implicit val formats: Format[ReadProtectionsModel] = {
 
     val jsonReads: Reads[ReadProtectionsModel] = new Reads[ReadProtectionsModel] {
-      override def reads(json: JsValue): JsResult[ReadProtectionsModel] = (
-        (JsPath \ "nino").read[String] and
-          (JsPath \ "pensionSchemeAdministratorCheckReference").read[String] and
-          (JsPath \ "protections").readNullable[List[ReadProtection]]
-        ) (ReadProtectionsModel.apply _).reads(json)
+      override def reads(json: JsValue): JsResult[ReadProtectionsModel] =
+        (JsPath \ "nino")
+          .read[String]
+          .and((JsPath \ "pensionSchemeAdministratorCheckReference").read[String])
+          .and((JsPath \ "protections").readNullable[List[ReadProtection]])(ReadProtectionsModel.apply _)
+          .reads(json)
     }
 
     val jsonWrites: Writes[ReadProtectionsModel] = Json.writes[ReadProtectionsModel]
 
     Format(jsonReads, jsonWrites)
   }
+
 }

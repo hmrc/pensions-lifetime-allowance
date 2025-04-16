@@ -29,8 +29,11 @@ trait AuthMock extends MockitoSugar {
 
   val mockAuthConnector = mock[AuthClientConnector]
 
-  def mockAuthConnector[T](future: Future[T]): OngoingStubbing[Future[T]] = {
-    when(mockAuthConnector.authorise[T](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+  def mockAuthConnector[T](future: Future[T]): OngoingStubbing[Future[T]] =
+    when(
+      mockAuthConnector
+        .authorise[T](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
+    )
       .thenReturn(future)
-  }
+
 }

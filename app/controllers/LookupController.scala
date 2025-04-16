@@ -27,26 +27,31 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.ExecutionContext
 
-class DefaultLookupController @Inject()(val npsConnector: NpsConnector,
-                                        cc: ControllerComponents)
-                                       (implicit ec: ExecutionContext)
-                                        extends BackendController(cc) with NPSResponseHandler {
+class DefaultLookupController @Inject() (val npsConnector: NpsConnector, cc: ControllerComponents)(
+    implicit ec: ExecutionContext
+) extends BackendController(cc)
+    with NPSResponseHandler {
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
   def psaLookup(psaRef: String, ltaRef: String): Action[AnyContent] = Action.async {
-    npsConnector.getPSALookup(psaRef, ltaRef).map { response =>
-      response.status match {
-        case OK => {
-          Ok(response.json)
+    npsConnector
+      .getPSALookup(psaRef, ltaRef)
+      .map { response =>
+        response.status match {
+          case OK =>
+            Ok(response.json)
+          case _ =>
+            val error = Json.toJson(
+              Error(
+                s"NPS request resulted in a response with: HTTP status = ${response.status} body = ${response.json}"
+              )
+            )
+            logger.error(error.toString)
+            InternalServerError(error)
         }
-        case _ =>
-          val error = Json.toJson(Error(s"NPS request resulted in a response with: HTTP status = ${response.status} body = ${response.json}"))
-          logger.error(error.toString)
-          InternalServerError(error)
       }
-    }.recover {
-      case error => handleNPSError(error, "[LookupController.psaLookup]")
-    }
+      .recover { case error => handleNPSError(error, "[LookupController.psaLookup]") }
   }
+
 }

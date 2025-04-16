@@ -21,7 +21,9 @@ import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 
 trait WithFakeApplication extends GuiceFakeApplicationFactory {
+
   override def fakeApplication(): Application = GuiceApplicationBuilder()
     .configure("auditing.enabled" -> false)
     .build()
+
 }

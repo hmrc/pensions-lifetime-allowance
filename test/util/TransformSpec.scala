@@ -167,48 +167,45 @@ class TransformSpec extends PlaySpec {
     "read a datetime from json correctly using dateReads" when {
 
       "provided with both a date and time" in {
-        val json = Json.parse(
-          """
-            |{
-            | "certificateDate": "2015-05-05",
-            | "certificateTime": "12:22:59"
-            |}
+        val json = Json.parse("""
+                                |{
+                                | "certificateDate": "2015-05-05",
+                                | "certificateTime": "12:22:59"
+                                |}
           """.stripMargin)
 
         Json.fromJson[Option[String]](json)(Transformers.dateReads).get shouldBe Some("2015-05-05T12:22:59")
       }
 
       "provided with only a date" in {
-        val json = Json.parse(
-          """
-            |{
-            | "certificateDate": "2015-05-05"
-            |}
+        val json = Json.parse("""
+                                |{
+                                | "certificateDate": "2015-05-05"
+                                |}
           """.stripMargin)
 
         Json.fromJson[Option[String]](json)(Transformers.dateReads).get shouldBe None
       }
 
       "provided with only a time" in {
-        val json = Json.parse(
-          """
-            |{
-            | "certificateTime": "12:22:59"
-            |}
+        val json = Json.parse("""
+                                |{
+                                | "certificateTime": "12:22:59"
+                                |}
           """.stripMargin)
 
         Json.fromJson[Option[String]](json)(Transformers.dateReads).get shouldBe None
       }
 
       "provided with no date or time" in {
-        val json = Json.parse(
-          """
-            |{
-            |}
+        val json = Json.parse("""
+                                |{
+                                |}
           """.stripMargin)
 
         Json.fromJson[Option[String]](json)(Transformers.dateReads).get shouldBe None
       }
     }
   }
+
 }

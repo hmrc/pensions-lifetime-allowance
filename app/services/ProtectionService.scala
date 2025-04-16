@@ -25,49 +25,68 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DefaultProtectionService @Inject()(val npsConnector: NpsConnector) extends ProtectionService
+class DefaultProtectionService @Inject() (val npsConnector: NpsConnector) extends ProtectionService
 
 trait ProtectionService {
   val npsConnector: NpsConnector
 
-  def applyForProtection(nino: String, applicationRequestBody: JsObject)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
+  def applyForProtection(
+      nino: String,
+      applicationRequestBody: JsObject
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
     val (ninoWithoutSuffix, lastNinoCharOpt) = NinoHelper.dropNinoSuffix(nino)
-    val npsRequestBody = applicationRequestBody.deepMerge(Json.obj("nino" -> ninoWithoutSuffix))
-    npsConnector.applyForProtection(nino, npsRequestBody) map { npsResponse =>
-      val transformedResponseJs = npsResponse.body.flatMap{
-        json => Json.fromJson[ProtectionModel](json).map(base => base.copy(nino = base.nino + lastNinoCharOpt.getOrElse("")))
+    val npsRequestBody                       = applicationRequestBody.deepMerge(Json.obj("nino" -> ninoWithoutSuffix))
+    npsConnector.applyForProtection(nino, npsRequestBody).map { npsResponse =>
+      val transformedResponseJs = npsResponse.body.flatMap { json =>
+        Json.fromJson[ProtectionModel](json).map(base => base.copy(nino = base.nino + lastNinoCharOpt.getOrElse("")))
       }
-      HttpResponseDetails(npsResponse.status, transformedResponseJs.map(model => Json.toJson[ProtectionModel](model).as[JsObject]))
+      HttpResponseDetails(
+        npsResponse.status,
+        transformedResponseJs.map(model => Json.toJson[ProtectionModel](model).as[JsObject])
+      )
     }
   }
 
-  def amendProtection(nino: String,
-                      protectionId: Long,
-                      amendmentRequestBody: JsObject)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
+  def amendProtection(nino: String, protectionId: Long, amendmentRequestBody: JsObject)(
+      implicit hc: HeaderCarrier,
+      ec: ExecutionContext
+  ): Future[HttpResponseDetails] = {
     val (ninoWithoutSuffix, lastNinoCharOpt) = NinoHelper.dropNinoSuffix(nino)
-    val npsRequestBody: JsObject = {
-      amendmentRequestBody.deepMerge(Json.obj(
-        "nino" -> ninoWithoutSuffix,
-        "protection" -> Json.obj("id" -> protectionId)
-      ))
-    }
+    val npsRequestBody: JsObject =
+      amendmentRequestBody.deepMerge(
+        Json.obj(
+          "nino"       -> ninoWithoutSuffix,
+          "protection" -> Json.obj("id" -> protectionId)
+        )
+      )
 
-    npsConnector.amendProtection(nino, protectionId, npsRequestBody) map { npsResponse =>
-      val transformedResponseJs = npsResponse.body.flatMap{
-        json => Json.fromJson[ProtectionModel](json).map(base => base.copy(nino = base.nino + lastNinoCharOpt.getOrElse("")))
+    npsConnector.amendProtection(nino, protectionId, npsRequestBody).map { npsResponse =>
+      val transformedResponseJs = npsResponse.body.flatMap { json =>
+        Json.fromJson[ProtectionModel](json).map(base => base.copy(nino = base.nino + lastNinoCharOpt.getOrElse("")))
       }
-      HttpResponseDetails(npsResponse.status, transformedResponseJs.map(model => Json.toJson[ProtectionModel](model).as[JsObject]))
+      HttpResponseDetails(
+        npsResponse.status,
+        transformedResponseJs.map(model => Json.toJson[ProtectionModel](model).as[JsObject])
+      )
     }
   }
 
-  def readExistingProtections(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
+  def readExistingProtections(
+      nino: String
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
     val (_, lastNinoCharOpt) = NinoHelper.dropNinoSuffix(nino)
 
-    npsConnector.readExistingProtections(nino) map { npsResponse =>
-      val transformedResponseJs = npsResponse.body.flatMap{
-        json => Json.fromJson[ReadProtectionsModel](json).map(base => base.copy(nino = base.nino + lastNinoCharOpt.getOrElse("")))
+    npsConnector.readExistingProtections(nino).map { npsResponse =>
+      val transformedResponseJs = npsResponse.body.flatMap { json =>
+        Json
+          .fromJson[ReadProtectionsModel](json)
+          .map(base => base.copy(nino = base.nino + lastNinoCharOpt.getOrElse("")))
       }
-      HttpResponseDetails(npsResponse.status, transformedResponseJs.map(model => Json.toJson[ReadProtectionsModel](model).as[JsObject]))
+      HttpResponseDetails(
+        npsResponse.status,
+        transformedResponseJs.map(model => Json.toJson[ReadProtectionsModel](model).as[JsObject])
+      )
     }
   }
+
 }

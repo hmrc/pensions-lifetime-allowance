@@ -21,12 +21,26 @@ import play.api.libs.json.Reads._
 import play.api.libs.json._
 
 object Transformers {
+
   val protectionTypes = Vector(
-    "Unknown", "FP2016", "IP2014", "IP2016", "Primary", "Enhanced", "Fixed", "FP2014"
+    "Unknown",
+    "FP2016",
+    "IP2014",
+    "IP2016",
+    "Primary",
+    "Enhanced",
+    "Fixed",
+    "FP2014"
   )
 
   val protectionStatuses = Vector(
-    "Unknown", "Open", "Dormant", "Withdrawn", "Expired", "Unsuccessful", "Rejected"
+    "Unknown",
+    "Open",
+    "Dormant",
+    "Withdrawn",
+    "Expired",
+    "Unsuccessful",
+    "Rejected"
   )
 
   val typeToInt: String => Int = protectionType => protectionTypes.indexOf(protectionType)
@@ -37,15 +51,18 @@ object Transformers {
 
   val intToStatus: Int => String = id => protectionStatuses.apply(id)
 
-  val dateReads: Reads[Option[String]] = {
+  val dateReads: Reads[Option[String]] =
     new Reads[Option[String]] {
-      override def reads(json: JsValue): JsResult[Option[String]] = (
-        (JsPath \ "certificateDate").readNullable[String] and
-          (JsPath \ "certificateTime").readNullable[String]
-        ) ((dateOpt, timeOpt) => (dateOpt, timeOpt) match {
-        case (Some(date), Some(time)) => Some(date + "T" + time)
-        case _ => None
-      }).reads(json)
+      override def reads(json: JsValue): JsResult[Option[String]] =
+        (JsPath \ "certificateDate")
+          .readNullable[String]
+          .and((JsPath \ "certificateTime").readNullable[String])((dateOpt, timeOpt) =>
+            (dateOpt, timeOpt) match {
+              case (Some(date), Some(time)) => Some(date + "T" + time)
+              case _                        => None
+            }
+          )
+          .reads(json)
     }
-  }
+
 }

@@ -21,9 +21,10 @@ import play.api.libs.json._
 case class PensionDebit(startDate: String, amount: Double)
 
 object PensionDebit {
+
   val jsonWrites: Writes[PensionDebit] = new Writes[PensionDebit] {
     override def writes(o: PensionDebit): JsValue = Json.obj(
-      "pensionDebitStartDate" -> o.startDate,
+      "pensionDebitStartDate"     -> o.startDate,
       "pensionDebitEnteredAmount" -> o.amount
     )
   }

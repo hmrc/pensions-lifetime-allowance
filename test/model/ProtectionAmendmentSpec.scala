@@ -48,8 +48,19 @@ class ProtectionAmendmentSpec extends PlaySpec {
       }
 
       "including all optional elements" in {
-        val application = ProtectionAmendment("IP2016", 1, "Open", 1000.0, 2000.0, 3000.0, 4000.0, 5000.0, Some(6000.0),
-          Some(List(PensionDebit("2016-04-04", 1001.0), PensionDebit("2016-05-05", 1002.0))), Some("2017-04-04"))
+        val application = ProtectionAmendment(
+          "IP2016",
+          1,
+          "Open",
+          1000.0,
+          2000.0,
+          3000.0,
+          4000.0,
+          5000.0,
+          Some(6000.0),
+          Some(List(PensionDebit("2016-04-04", 1001.0), PensionDebit("2016-05-05", 1002.0))),
+          Some("2017-04-04")
+        )
 
         Json.toJson(application) shouldBe Json.parse(
           """
@@ -110,8 +121,19 @@ class ProtectionAmendmentSpec extends PlaySpec {
         """.stripMargin
       )
 
-      json.as[ProtectionAmendment] shouldBe ProtectionAmendment("IP2016", 1, "Open", 1000.0, 2000.0, 3000.0, 4000.0, 5000.0, Some(6000.0),
-        Some(List(PensionDebit("2016-04-04", 1001.0), PensionDebit("2016-05-05", 1002.0))), Some("2017-04-04"))
+      json.as[ProtectionAmendment] shouldBe ProtectionAmendment(
+        "IP2016",
+        1,
+        "Open",
+        1000.0,
+        2000.0,
+        3000.0,
+        4000.0,
+        5000.0,
+        Some(6000.0),
+        Some(List(PensionDebit("2016-04-04", 1001.0), PensionDebit("2016-05-05", 1002.0))),
+        Some("2017-04-04")
+      )
     }
   }
 

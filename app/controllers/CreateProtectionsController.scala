@@ -29,25 +29,31 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CreateProtectionsController @Inject()(val authConnector: AuthClientConnector,
-                                            val citizenDetailsConnector: CitizenDetailsConnector,
-                                            val protectionService: ProtectionService,
-                                            cc: ControllerComponents)
-                                           (implicit ec: ExecutionContext)
-                                            extends  BackendController(cc) with AuthorisedActions with NPSResponseHandler {
-
+class CreateProtectionsController @Inject() (
+    val authConnector: AuthClientConnector,
+    val citizenDetailsConnector: CitizenDetailsConnector,
+    val protectionService: ProtectionService,
+    cc: ControllerComponents
+)(implicit ec: ExecutionContext)
+    extends BackendController(cc)
+    with AuthorisedActions
+    with NPSResponseHandler {
 
   def applyForProtection(nino: String): Action[JsValue] = Action.async(cc.parsers.json) { implicit request =>
     userAuthorised(nino) {
       val protectionApplicationJs = request.body.validate[ProtectionApplication]
       protectionApplicationJs.fold(
-        errors => Future.successful(BadRequest(Json.toJson(Error(message = "body failed validation with errors: " + errors)))),
-        p => protectionService.applyForProtection(nino, Json.toJson(p).as[JsObject]).map { response =>
-          handleNPSSuccess(response)
-        }.recover {
-          case downstreamError => handleNPSError(downstreamError, "[AmendProtectionsController.amendProtection]")
-        }
+        errors =>
+          Future.successful(BadRequest(Json.toJson(Error(message = "body failed validation with errors: " + errors)))),
+        p =>
+          protectionService
+            .applyForProtection(nino, Json.toJson(p).as[JsObject])
+            .map(response => handleNPSSuccess(response))
+            .recover { case downstreamError =>
+              handleNPSError(downstreamError, "[AmendProtectionsController.amendProtection]")
+            }
       )
     }
   }
+
 }

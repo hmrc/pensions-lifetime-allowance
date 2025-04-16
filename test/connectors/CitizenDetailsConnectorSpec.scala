@@ -30,13 +30,18 @@ import util.{TestUtils, WireMockHelper, WithFakeApplication}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
+class CitizenDetailsConnectorSpec
+    extends PlaySpec
+    with MockitoSugar
+    with BeforeAndAfter
+    with TestUtils
+    with GuiceOneAppPerSuite
+    with WithFakeApplication
+    with WireMockHelper {
 
-class CitizenDetailsConnectorSpec extends PlaySpec with MockitoSugar with BeforeAndAfter with TestUtils
-  with GuiceOneAppPerSuite with WithFakeApplication with WireMockHelper {
-
-  private val DefaultTestNino = "KA191435A"
+  private val DefaultTestNino       = "KA191435A"
   private val DesignatoryDetailsUrl = s"/citizen-details/$DefaultTestNino/designatory-details"
-  private val DefaultLocalUrl = "http://localhost:8083"
+  private val DefaultLocalUrl       = "http://localhost:8083"
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -46,13 +51,13 @@ class CitizenDetailsConnectorSpec extends PlaySpec with MockitoSugar with Before
     override val serviceUrl = DefaultLocalUrl
 
     override def http: HttpClientV2 = app.injector.instanceOf[HttpClientV2]
-    override val checkRequired = true
+    override val checkRequired      = true
   }
 
   object NoCheckRequiredCitizenDetailsConnector extends CitizenDetailsConnector {
-    override val serviceUrl = DefaultLocalUrl
+    override val serviceUrl         = DefaultLocalUrl
     override def http: HttpClientV2 = app.injector.instanceOf[HttpClientV2]
-    override val checkRequired = false
+    override val checkRequired      = false
   }
 
   "The CitizenDetails Connector getCitizenRecordCheckUrl method" when {
@@ -119,7 +124,6 @@ class CitizenDetailsConnectorSpec extends PlaySpec with MockitoSugar with Before
       res.isInstanceOf[CitizenRecordOther4xxResponse] shouldBe true
     }
 
-
     "return an error if Upstream5xxResponse received" in {
 
       server.stubFor(
@@ -136,7 +140,6 @@ class CitizenDetailsConnectorSpec extends PlaySpec with MockitoSugar with Before
       res.isInstanceOf[CitizenRecord5xxResponse] shouldBe true
     }
 
-
     "return an error if CitizenRecordLocked received" in {
 
       server.stubFor(
@@ -152,4 +155,5 @@ class CitizenDetailsConnectorSpec extends PlaySpec with MockitoSugar with Before
       res shouldBe CitizenRecordLocked
     }
   }
+
 }
