@@ -29,19 +29,25 @@ class ProtectionApplicationSpec extends PlaySpec {
       "missing all optional elements" in {
         val application = ProtectionApplication("FP2016")
 
-        Json.toJson(application) shouldBe Json.parse(
-          """
-            |{
-            | "protection": {
-            |   "type": 1
-            | }
-            |}
+        Json.toJson(application) shouldBe Json.parse("""
+                                                       |{
+                                                       | "protection": {
+                                                       |   "type": 1
+                                                       | }
+                                                       |}
           """.stripMargin)
       }
 
       "including all optional elements" in {
-        val application = ProtectionApplication("FP2016", Some(1000.0), Some(2000.0), Some(3000.0), Some(4000.0), Some(5000.0),
-          Some(List(PensionDebit("2016-04-04", 1001.0), PensionDebit("2016-05-05", 1002.0))))
+        val application = ProtectionApplication(
+          "FP2016",
+          Some(1000.0),
+          Some(2000.0),
+          Some(3000.0),
+          Some(4000.0),
+          Some(5000.0),
+          Some(List(PensionDebit("2016-04-04", 1001.0), PensionDebit("2016-05-05", 1002.0)))
+        )
 
         Json.toJson(application) shouldBe Json.parse(
           """
@@ -71,29 +77,39 @@ class ProtectionApplicationSpec extends PlaySpec {
     }
 
     "read correctly from Json using the default formatter" in {
-      Json.parse(
-        """
-          |{
-          | "protectionType": "FP2016",
-          | "relevantAmount": 1000.00,
-          | "preADayPensionInPayment": 2000.00,
-          | "postADayBenefitCrystallisationEvents": 3000.00,
-          | "uncrystallisedRights": 4000.00,
-          | "nonUKRights": 5000.00,
-          | "pensionDebits": [
-          |     {
-          |       "startDate": "2016-04-04",
-          |       "amount": 1001.00
-          |     },
-          |     {
-          |       "startDate": "2016-05-05",
-          |       "amount": 1002.00
-          |     }
-          |   ]
-          |}
+      Json
+        .parse(
+          """
+            |{
+            | "protectionType": "FP2016",
+            | "relevantAmount": 1000.00,
+            | "preADayPensionInPayment": 2000.00,
+            | "postADayBenefitCrystallisationEvents": 3000.00,
+            | "uncrystallisedRights": 4000.00,
+            | "nonUKRights": 5000.00,
+            | "pensionDebits": [
+            |     {
+            |       "startDate": "2016-04-04",
+            |       "amount": 1001.00
+            |     },
+            |     {
+            |       "startDate": "2016-05-05",
+            |       "amount": 1002.00
+            |     }
+            |   ]
+            |}
         """.stripMargin
-      ).as[ProtectionApplication] shouldBe ProtectionApplication("FP2016", Some(1000.0), Some(2000.0), Some(3000.0), Some(4000.0), Some(5000.0),
-        Some(List(PensionDebit("2016-04-04", 1001.0), PensionDebit("2016-05-05", 1002.0))))
+        )
+        .as[ProtectionApplication] shouldBe ProtectionApplication(
+        "FP2016",
+        Some(1000.0),
+        Some(2000.0),
+        Some(3000.0),
+        Some(4000.0),
+        Some(5000.0),
+        Some(List(PensionDebit("2016-04-04", 1001.0), PensionDebit("2016-05-05", 1002.0)))
+      )
     }
   }
+
 }

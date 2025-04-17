@@ -34,32 +34,42 @@ import uk.gov.hmrc.domain.Generator
 import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
-class AmendProtectionsControllerSpec  extends PlaySpec with GuiceOneServerPerSuite with WithFakeApplication with AuthMock {
+class AmendProtectionsControllerSpec
+    extends PlaySpec
+    with GuiceOneServerPerSuite
+    with WithFakeApplication
+    with AuthMock {
 
-  val rand = new Random()
-  val ninoGenerator = new Generator(rand)
+  val rand                                                 = new Random()
+  val ninoGenerator                                        = new Generator(rand)
   val mockCitizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
 
-  when(mockCitizenDetailsConnector.checkCitizenRecord(ArgumentMatchers.any[String])(ArgumentMatchers.any(), ArgumentMatchers.any()))
+  when(
+    mockCitizenDetailsConnector
+      .checkCitizenRecord(ArgumentMatchers.any[String])(ArgumentMatchers.any(), ArgumentMatchers.any())
+  )
     .thenReturn(Future.successful(CitizenRecordOK))
 
-  mockAuthConnector(Future.successful({}))
+  mockAuthConnector(Future.successful {})
 
   def randomNino: String = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
 
-  val testNino = randomNino
-  val (testNinoWithoutSuffix, _) = NinoHelper.dropNinoSuffix(testNino)
-  val testProtectionId = 1
-  val testProtectionVersion = 1
-  implicit lazy val hc = mock[HeaderCarrier]
-  val mockNpsConnector = mock[NpsConnector]
+  val testNino                      = randomNino
+  val (testNinoWithoutSuffix, _)    = NinoHelper.dropNinoSuffix(testNino)
+  val testProtectionId              = 1
+  val testProtectionVersion         = 1
+  implicit lazy val hc              = mock[HeaderCarrier]
+  val mockNpsConnector              = mock[NpsConnector]
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   lazy val cc = app.injector.instanceOf[ControllerComponents]
-  lazy val controller = new AmendProtectionsController(mockAuthConnector,
+
+  lazy val controller = new AmendProtectionsController(
+    mockAuthConnector,
     citizenDetailsConnector = mockCitizenDetailsConnector,
-    testProtectionService, cc
-    )
+    testProtectionService,
+    cc
+  )
 
   val validAmendBody = Json.parse(
     s"""
@@ -76,54 +86,56 @@ class AmendProtectionsControllerSpec  extends PlaySpec with GuiceOneServerPerSui
     """.stripMargin
   )
 
-  val invalidAmendBody = Json.parse(
-    """
-      |{
-      |  "type" : 100000
-      |}
+  val invalidAmendBody = Json.parse("""
+                                      |{
+                                      |  "type" : 100000
+                                      |}
     """.stripMargin)
 
-  val successfulAmendIP2016NPSResponseBody = Json.parse(
-    s"""
-       |  {
-       |      "nino": "${testNinoWithoutSuffix}",
-       |      "pensionSchemeAdministratorCheckReference" : "PSA123456789",
-       |      "protection": {
-       |        "id": ${testProtectionId},
-       |        "version": ${testProtectionVersion},
-       |        "type": 1,
-       |        "certificateDate": "2015-05-22",
-       |        "certificateTime": "12:22:59",
-       |        "status": 1,
-       |        "protectionReference": "IP161234567890C",
-       |        "relevantAmount": 1250000.00,
-       |        "notificationID": 12
-       |      }
-       |    }
-       |
-    """.stripMargin).as[JsObject]
+  val successfulAmendIP2016NPSResponseBody = Json
+    .parse(s"""
+              |  {
+              |      "nino": "$testNinoWithoutSuffix",
+              |      "pensionSchemeAdministratorCheckReference" : "PSA123456789",
+              |      "protection": {
+              |        "id": $testProtectionId,
+              |        "version": $testProtectionVersion,
+              |        "type": 1,
+              |        "certificateDate": "2015-05-22",
+              |        "certificateTime": "12:22:59",
+              |        "status": 1,
+              |        "protectionReference": "IP161234567890C",
+              |        "relevantAmount": 1250000.00,
+              |        "notificationID": 12
+              |      }
+              |    }
+              |
+    """.stripMargin)
+    .as[JsObject]
 
-  val unsuccessfulAmendIP2016NPSResponseBody = Json.parse(
-    s"""
-       |  {
-       |      "nino": "${testNinoWithoutSuffix}",
-       |      "protection": {
-       |        "id": ${testProtectionId},
-       |        "version": ${testProtectionVersion + 1},
-       |        "type": 2,
-       |        "status": 5,
-       |        "notificationID": 10
-       |      }
-       |  }
-    """.stripMargin).as[JsObject]
+  val unsuccessfulAmendIP2016NPSResponseBody = Json
+    .parse(s"""
+              |  {
+              |      "nino": "$testNinoWithoutSuffix",
+              |      "protection": {
+              |        "id": $testProtectionId,
+              |        "version": ${testProtectionVersion + 1},
+              |        "type": 2,
+              |        "status": 5,
+              |        "notificationID": 10
+              |      }
+              |  }
+    """.stripMargin)
+    .as[JsObject]
 
   val standardHeaders = Seq("Content-type" -> Seq("application/json"))
-  val validExtraHOutboundHeaders = Seq("Environment" -> Seq("local"), "Authorisation" -> Seq("Bearer abcdef12345678901234567890"))
+
+  val validExtraHOutboundHeaders =
+    Seq("Environment" -> Seq("local"), "Authorisation" -> Seq("Bearer abcdef12345678901234567890"))
 
   object testProtectionService extends services.ProtectionService {
     override val npsConnector = mockNpsConnector
   }
-
 
   "AmendProtectionController" when {
     "respond to an invalid Amend Protection request with BAD_REQUEST" in {
@@ -132,35 +144,48 @@ class AmendProtectionsControllerSpec  extends PlaySpec with GuiceOneServerPerSui
         method = "PUT",
         uri = "",
         headers = FakeHeaders(Seq("content-type" -> "application.json")),
-        body = invalidAmendBody)
+        body = invalidAmendBody
+      )
 
       val result = controller.amendProtection(testNino, testProtectionId.toString)(fakeRequest)
       status(result) must be(BAD_REQUEST)
     }
 
     "respond to a valid Amend Protection request with OK" in {
-      when(mockNpsConnector.amendProtection(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(
+        mockNpsConnector.amendProtection(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any()
+        )
+      )
         .thenReturn(Future.successful(model.HttpResponseDetails(200, JsSuccess(successfulAmendIP2016NPSResponseBody))))
 
       val fakeRequest: FakeRequest[JsValue] = FakeRequest(
         method = "PUT",
         uri = "",
         headers = FakeHeaders(Seq("content-type" -> "application.json")),
-        body = validAmendBody)
+        body = validAmendBody
+      )
 
       val result: Future[Result] = controller.amendProtection(testNino, testProtectionId.toString).apply(fakeRequest)
       status(result) must be(OK)
     }
 
     "handle a 500 (INTERNAL_SERVER_ERROR) response from NPS service by passing it back to the caller" in {
-      when(mockNpsConnector.amendProtection(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      when(
+        mockNpsConnector.amendProtection(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
+          ArgumentMatchers.any(),
+          ArgumentMatchers.any()
+        )
+      )
         .thenReturn(Future.failed(UpstreamErrorResponse("test", INTERNAL_SERVER_ERROR, BAD_GATEWAY)))
 
       val fakeRequest = FakeRequest(
         method = "PUT",
         uri = "",
         headers = FakeHeaders(Seq("content-type" -> "application.json")),
-        body = validAmendBody)
+        body = validAmendBody
+      )
 
       val result = controller.amendProtection(testNino, testProtectionId.toString).apply(fakeRequest)
       status(result) must be(INTERNAL_SERVER_ERROR)
@@ -171,11 +196,12 @@ class AmendProtectionsControllerSpec  extends PlaySpec with GuiceOneServerPerSui
         method = "PUT",
         uri = "",
         headers = FakeHeaders(Seq("content-type" -> "application.json")),
-        body = validAmendBody)
+        body = validAmendBody
+      )
 
       val result = controller.amendProtection(testNino, "not a long").apply(fakeRequest)
       status(result) must be(BAD_REQUEST)
     }
   }
-}
 
+}

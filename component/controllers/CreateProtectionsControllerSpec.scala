@@ -31,35 +31,41 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
     method = "POST",
     uri = "",
     headers = FakeHeaders(Seq("content-type" -> "application.json")),
-    body = body)
+    body = body
+  )
 
-  def validCreateIPBody(ninoWithoutSuffix: String): JsObject = Json.parse(
-    s"""
-       |  {
-       |    "protectionType" : "IP2016",
-       |    "relevantAmount" : 10000.0,
-       |    "preADayPensionInPayment" : 1000.0,
-       |    "postADayBenefitCrystallisationEvents" : 1000.0,
-       |    "uncrystallisedRights" : 1000.0,
-       |    "nonUKRights": 1000.0
-       |  }
-    """.stripMargin).as[JsObject]
+  def validCreateIPBody(ninoWithoutSuffix: String): JsObject =
+    Json
+      .parse(s"""
+                |  {
+                |    "protectionType" : "IP2016",
+                |    "relevantAmount" : 10000.0,
+                |    "preADayPensionInPayment" : 1000.0,
+                |    "postADayBenefitCrystallisationEvents" : 1000.0,
+                |    "uncrystallisedRights" : 1000.0,
+                |    "nonUKRights": 1000.0
+                |  }
+    """.stripMargin)
+      .as[JsObject]
 
-  def validSubmissionIPBody(ninoWithoutSuffix: String): String = Json.parse(
-    s"""
-       |{
-       |"nino" : "$ninoWithoutSuffix",
-       |"protection" : {
-       |  "type" : 3,
-       |  "relevantAmount" : 10000,
-       |  "postADayBCE" : 1000,
-       |  "preADayPensionInPayment" : 1000,
-       |  "uncrystallisedRights" : 1000,
-       |  "nonUKRights" : 1000
-       |  }
-       |}
+  def validSubmissionIPBody(ninoWithoutSuffix: String): String =
+    Json
+      .parse(
+        s"""
+           |{
+           |"nino" : "$ninoWithoutSuffix",
+           |"protection" : {
+           |  "type" : 3,
+           |  "relevantAmount" : 10000,
+           |  "postADayBCE" : 1000,
+           |  "preADayPensionInPayment" : 1000,
+           |  "uncrystallisedRights" : 1000,
+           |  "nonUKRights" : 1000
+           |  }
+           |}
      """.stripMargin
-  ).toString()
+      )
+      .toString()
 
   def validResponseIPBody(ninoWithoutSuffix: String): String =
     s"""
@@ -89,79 +95,83 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
        |}
       """.stripMargin
 
-  def validResultIPBody(nino: String): String = {
-    Json.parse(s"""
-                  |{
-                  | "nino":"$nino",
-                  |	"psaCheckReference":"PSA12345678A",
-                  |	"protectionID":1,
-                  |	"certificateDate":"2015-05-22T12:22:59",
-                  |	"version":1,
-                  | "protectionType":"IP2016",
-                  |	"status":"Open",
-                  |	"protectedAmount":600000,
-                  |	"relevantAmount":1250000,
-                  |	"postADayBenefitCrystallisationEvents":250000,
-                  |	"preADayPensionInPayment":250000,
-                  |	"uncrystallisedRights":500000,
-                  |	"nonUKRights":250000,
-                  |	"pensionDebitAmount":0,
-                  |	"pensionDebitEnteredAmount":300,
-                  |	"pensionDebitStartDate":"2015-01-29",
-                  |	"pensionDebitTotalAmount":800,
-                  |	"notificationId":5,
-                  |	"protectionReference":"IP141234567890C"
-                  |}
-    """.stripMargin).toString()
-  }
+  def validResultIPBody(nino: String): String =
+    Json
+      .parse(s"""
+                |{
+                | "nino":"$nino",
+                |	"psaCheckReference":"PSA12345678A",
+                |	"protectionID":1,
+                |	"certificateDate":"2015-05-22T12:22:59",
+                |	"version":1,
+                | "protectionType":"IP2016",
+                |	"status":"Open",
+                |	"protectedAmount":600000,
+                |	"relevantAmount":1250000,
+                |	"postADayBenefitCrystallisationEvents":250000,
+                |	"preADayPensionInPayment":250000,
+                |	"uncrystallisedRights":500000,
+                |	"nonUKRights":250000,
+                |	"pensionDebitAmount":0,
+                |	"pensionDebitEnteredAmount":300,
+                |	"pensionDebitStartDate":"2015-01-29",
+                |	"pensionDebitTotalAmount":800,
+                |	"notificationId":5,
+                |	"protectionReference":"IP141234567890C"
+                |}
+    """.stripMargin)
+      .toString()
 
-  def invalidResultBodyForCreate(ninoWithoutSuffix: String, status: Int, message: String): String = {
+  def invalidResultBodyForCreate(ninoWithoutSuffix: String, status: Int, message: String): String =
     s"POST of 'http://localhost:11111/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection' returned $status. Response body: '$message'"
-  }
 
-  def badRequestResultBody(ninoWithoutSuffix: String, message: String): String = {
+  def badRequestResultBody(ninoWithoutSuffix: String, message: String): String =
     s"POST of 'http://localhost:11111/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection' returned 400 (Bad Request). Response body '$message'"
-  }
 
-  def validCreateFPBody(ninoWithoutSuffix: String): JsObject = Json.parse(
-    s"""
-       |  {
-       |    "protectionType" : "FP2016",
-       |    "relevantAmount" : 10000.0,
-       |    "preADayPensionInPayment" : 1000.0,
-       |    "postADayBenefitCrystallisationEvents" : 1000.0,
-       |    "uncrystallisedRights" : 1000.0,
-       |    "nonUKRights": 1000.0,
-       |    "pensionDebits": [
-       |      {
-       |        "startDate": "2016-04-04",
-       |        "amount": 1001.0
-       |      }
-       |    ]
-       |  }
-    """.stripMargin).as[JsObject]
+  def validCreateFPBody(ninoWithoutSuffix: String): JsObject =
+    Json
+      .parse(s"""
+                |  {
+                |    "protectionType" : "FP2016",
+                |    "relevantAmount" : 10000.0,
+                |    "preADayPensionInPayment" : 1000.0,
+                |    "postADayBenefitCrystallisationEvents" : 1000.0,
+                |    "uncrystallisedRights" : 1000.0,
+                |    "nonUKRights": 1000.0,
+                |    "pensionDebits": [
+                |      {
+                |        "startDate": "2016-04-04",
+                |        "amount": 1001.0
+                |      }
+                |    ]
+                |  }
+    """.stripMargin)
+      .as[JsObject]
 
-  def validSubmissionFPBody(ninoWithoutSuffix: String): String = Json.parse(
-    s"""
-       |{
-       |"nino" : "$ninoWithoutSuffix",
-       |"pensionDebits": [
-       |  {
-       |    "pensionDebitStartDate":  "2016-04-04",
-       |    "pensionDebitEnteredAmount": 1001.00
-       |  }
-       |],
-       |"protection" : {
-       |  "type" : 1,
-       |  "relevantAmount" : 10000,
-       |  "postADayBCE" : 1000,
-       |  "preADayPensionInPayment" : 1000,
-       |  "uncrystallisedRights" : 1000,
-       |  "nonUKRights" : 1000
-       |  }
-       |}
+  def validSubmissionFPBody(ninoWithoutSuffix: String): String =
+    Json
+      .parse(
+        s"""
+           |{
+           |"nino" : "$ninoWithoutSuffix",
+           |"pensionDebits": [
+           |  {
+           |    "pensionDebitStartDate":  "2016-04-04",
+           |    "pensionDebitEnteredAmount": 1001.00
+           |  }
+           |],
+           |"protection" : {
+           |  "type" : 1,
+           |  "relevantAmount" : 10000,
+           |  "postADayBCE" : 1000,
+           |  "preADayPensionInPayment" : 1000,
+           |  "uncrystallisedRights" : 1000,
+           |  "nonUKRights" : 1000
+           |  }
+           |}
      """.stripMargin
-  ).toString()
+      )
+      .toString()
 
   def validResponseFPBody(ninoWithoutSuffix: String): String =
     s"""
@@ -191,96 +201,109 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
        |}
       """.stripMargin
 
-  def validResultFPBody(nino: String): String = {
-    Json.parse(s"""
-                  |{
-                  |"nino":"$nino",
-                  |"psaCheckReference":"PSA12345678A",
-                  |	"protectionID":1,
-                  |	"certificateDate":"2015-05-22T12:22:59",
-                  |	"version":1,
-                  | "protectionType":"FP2016",
-                  |	"status":"Open",
-                  |	"protectedAmount":600000,
-                  |	"relevantAmount":1250000,
-                  |	"postADayBenefitCrystallisationEvents":250000,
-                  |	"preADayPensionInPayment":250000,
-                  |	"uncrystallisedRights":500000,
-                  |	"nonUKRights":250000,
-                  |	"pensionDebitAmount":0,
-                  |	"pensionDebitEnteredAmount":300,
-                  |	"pensionDebitStartDate":"2015-01-29",
-                  |	"pensionDebitTotalAmount":800,
-                  |	"notificationId":5,
-                  |	"protectionReference":"FP141234567890C"
-                  |}
-    """.stripMargin).toString()
-  }
+  def validResultFPBody(nino: String): String =
+    Json
+      .parse(s"""
+                |{
+                |"nino":"$nino",
+                |"psaCheckReference":"PSA12345678A",
+                |	"protectionID":1,
+                |	"certificateDate":"2015-05-22T12:22:59",
+                |	"version":1,
+                | "protectionType":"FP2016",
+                |	"status":"Open",
+                |	"protectedAmount":600000,
+                |	"relevantAmount":1250000,
+                |	"postADayBenefitCrystallisationEvents":250000,
+                |	"preADayPensionInPayment":250000,
+                |	"uncrystallisedRights":500000,
+                |	"nonUKRights":250000,
+                |	"pensionDebitAmount":0,
+                |	"pensionDebitEnteredAmount":300,
+                |	"pensionDebitStartDate":"2015-01-29",
+                |	"pensionDebitTotalAmount":800,
+                |	"notificationId":5,
+                |	"protectionReference":"FP141234567890C"
+                |}
+    """.stripMargin)
+      .toString()
 
-  def sucessfulAuditResult(nino: String, ninoWithoutSuffix: String, protectionType: Int, status: Int): String = Json.parse(
-    s"""
-       |{
-       |"auditSource" : "pensions-lifetime-allowance",
-       |"auditType" : "CreateAllowance",
-       |"tags" : {
-       |  "clientIP" : "-",
-       |  "path" : "http://localhost:11111/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection",
-       |  "X-Session-ID" : "session-12345",
-       |  "Akamai-Reputation" : "-",
-       |  "X-Request-ID" : "-",
-       |  "clientPort" : "-",
-       |  "transactionName" : "create-pensions-lifetime-allowance"
-       |},
-       |"detail" : {
-       |  "nino" : "$nino",
-       |  "protectionType" : "$protectionType",
-       |  "statusCode" : "$status",
-       |  "protectionStatus" : "1"
-       |}
-       |}
+  def sucessfulAuditResult(nino: String, ninoWithoutSuffix: String, protectionType: Int, status: Int): String =
+    Json
+      .parse(
+        s"""
+           |{
+           |"auditSource" : "pensions-lifetime-allowance",
+           |"auditType" : "CreateAllowance",
+           |"tags" : {
+           |  "clientIP" : "-",
+           |  "path" : "http://localhost:11111/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection",
+           |  "X-Session-ID" : "session-12345",
+           |  "Akamai-Reputation" : "-",
+           |  "X-Request-ID" : "-",
+           |  "clientPort" : "-",
+           |  "transactionName" : "create-pensions-lifetime-allowance"
+           |},
+           |"detail" : {
+           |  "nino" : "$nino",
+           |  "protectionType" : "$protectionType",
+           |  "statusCode" : "$status",
+           |  "protectionStatus" : "1"
+           |}
+           |}
      """.stripMargin
-  ).toString()
+      )
+      .toString()
 
-  def failureAuditResponse(nino: String, ninoWithoutSuffix: String, protectionType: Int, status: Int, message: String): String = Json.parse(
-    s"""
-       |{
-       |"auditSource" : "pensions-lifetime-allowance",
-       |"auditType" : "OutboundCall",
-       |"request" : {
-       |  "tags" : {
-       |    "clientIP" : "-",
-       |    "path" : "http://localhost:11111/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection",
-       |    "X-Session-ID" : "session-12345",
-       |    "Akamai-Reputation" : "-",
-       |    "X-Request-ID" : "-",
-       |    "clientPort" : "-",
-       |    "transactionName" : "http://localhost:11111/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"
-       |  },
-       |  "detail" : {
-       |    "method" : "POST",
-       |    "path" : "http://localhost:11111/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection",
-       |    "deviceID" : "-",
-       |    "ipAddress" : "-",
-       |    "token" : "-",
-       |    "Authorization" : "Bearer accessToken"
-       |  }
-       |},
-       |"response" : {
-       |  "tags" : { },
-       |  "detail" : {
-       |    "responseMessage" : "$message",
-       |    "statusCode" : "$status"
-       |  }
-       |}
-       |}
+  def failureAuditResponse(
+      nino: String,
+      ninoWithoutSuffix: String,
+      protectionType: Int,
+      status: Int,
+      message: String
+  ): String =
+    Json
+      .parse(
+        s"""
+           |{
+           |"auditSource" : "pensions-lifetime-allowance",
+           |"auditType" : "OutboundCall",
+           |"request" : {
+           |  "tags" : {
+           |    "clientIP" : "-",
+           |    "path" : "http://localhost:11111/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection",
+           |    "X-Session-ID" : "session-12345",
+           |    "Akamai-Reputation" : "-",
+           |    "X-Request-ID" : "-",
+           |    "clientPort" : "-",
+           |    "transactionName" : "http://localhost:11111/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"
+           |  },
+           |  "detail" : {
+           |    "method" : "POST",
+           |    "path" : "http://localhost:11111/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection",
+           |    "deviceID" : "-",
+           |    "ipAddress" : "-",
+           |    "token" : "-",
+           |    "Authorization" : "Bearer accessToken"
+           |  }
+           |},
+           |"response" : {
+           |  "tags" : { },
+           |  "detail" : {
+           |    "responseMessage" : "$message",
+           |    "statusCode" : "$status"
+           |  }
+           |}
+           |}
      """.stripMargin
-  ).toString()
+      )
+      .toString()
 
   "CreateProtectionsController" when {
 
     "submitting a successful application for IP2016" in {
       val ninoWithoutSuffix = "AA100001"
-      val nino = s"${ninoWithoutSuffix}A"
+      val nino              = s"${ninoWithoutSuffix}A"
 
       def testMocks(): Unit = {
         mockNPSConnector(ninoWithoutSuffix, OK, validResponseIPBody(ninoWithoutSuffix))
@@ -289,13 +312,15 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws
+        .url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
         .withFollowRedirects(false)
-        .withHeaders(("X-Session-ID","session-12345"))
+        .withHeaders(("X-Session-ID", "session-12345"))
 
-      def result: WSResponse = client(s"individuals/$nino/protections").post(validCreateIPBody(ninoWithoutSuffix)).futureValue
+      def result: WSResponse =
+        client(s"individuals/$nino/protections").post(validCreateIPBody(ninoWithoutSuffix)).futureValue
 
-     "return a success response" in {
+      "return a success response" in {
         testMocks()
         result.status shouldBe 200
       }
@@ -308,16 +333,18 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
       "submit the correct json to nps" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
-          .withRequestBody(equalToJson(validSubmissionIPBody(ninoWithoutSuffix), false, false))
+        verify(
+          postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
+            .withRequestBody(equalToJson(validSubmissionIPBody(ninoWithoutSuffix), false, false))
         )
       }
 
       "submit the correct auditing data" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo("/write/audit"))
-          .withRequestBody(equalToJson(sucessfulAuditResult(nino, ninoWithoutSuffix, 3, OK), false, true))
+        verify(
+          postRequestedFor(urlEqualTo("/write/audit"))
+            .withRequestBody(equalToJson(sucessfulAuditResult(nino, ninoWithoutSuffix, 3, OK), false, true))
         )
       }
     }
@@ -325,7 +352,7 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
     "submitting a conflicting application for IP2016" in {
 
       val ninoWithoutSuffix = "AA100002"
-      val nino = s"${ninoWithoutSuffix}A"
+      val nino              = s"${ninoWithoutSuffix}A"
 
       def testMocks(): Unit = {
         mockNPSConnector(ninoWithoutSuffix, CONFLICT, validResponseIPBody(ninoWithoutSuffix))
@@ -334,11 +361,13 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws
+        .url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
         .withFollowRedirects(false)
-        .withHeaders(("X-Session-ID","session-12345"))
+        .withHeaders(("X-Session-ID", "session-12345"))
 
-      def result: WSResponse = client(s"individuals/$nino/protections").post(validCreateIPBody(ninoWithoutSuffix)).futureValue
+      def result: WSResponse =
+        client(s"individuals/$nino/protections").post(validCreateIPBody(ninoWithoutSuffix)).futureValue
 
       "return a conflict response" in {
         testMocks()
@@ -353,16 +382,18 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
       "submit the correct json to nps" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
-          .withRequestBody(equalToJson(validSubmissionIPBody(ninoWithoutSuffix), false, true))
+        verify(
+          postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
+            .withRequestBody(equalToJson(validSubmissionIPBody(ninoWithoutSuffix), false, true))
         )
       }
 
       "submit the correct auditing data" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo("/write/audit"))
-          .withRequestBody(equalToJson(sucessfulAuditResult(nino, ninoWithoutSuffix, 3, CONFLICT), false, true))
+        verify(
+          postRequestedFor(urlEqualTo("/write/audit"))
+            .withRequestBody(equalToJson(sucessfulAuditResult(nino, ninoWithoutSuffix, 3, CONFLICT), false, true))
         )
       }
     }
@@ -370,7 +401,7 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
     "submitting an application which results in a Service Unavailable response" in {
 
       val ninoWithoutSuffix = "AA100002"
-      val nino = s"${ninoWithoutSuffix}A"
+      val nino              = s"${ninoWithoutSuffix}A"
 
       def testMocks(): Unit = {
         mockNPSConnector(ninoWithoutSuffix, SERVICE_UNAVAILABLE, "error message")
@@ -379,12 +410,13 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws
+        .url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
         .withFollowRedirects(false)
-        .withHeaders(("X-Session-ID","session-12345"))
+        .withHeaders(("X-Session-ID", "session-12345"))
 
-      def result: WSResponse = client(s"individuals/$nino/protections").post(validCreateIPBody(ninoWithoutSuffix)).futureValue
-
+      def result: WSResponse =
+        client(s"individuals/$nino/protections").post(validCreateIPBody(ninoWithoutSuffix)).futureValue
 
       "return a service_unavailable response" in {
         testMocks()
@@ -399,16 +431,24 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
       "submit the correct json to nps" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
-          .withRequestBody(equalToJson(validSubmissionIPBody(ninoWithoutSuffix), false, true))
+        verify(
+          postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
+            .withRequestBody(equalToJson(validSubmissionIPBody(ninoWithoutSuffix), false, true))
         )
       }
 
       "submit the correct auditing data" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo("/write/audit/merged"))
-          .withRequestBody(equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 3, SERVICE_UNAVAILABLE, "error message"), false, true))
+        verify(
+          postRequestedFor(urlEqualTo("/write/audit/merged"))
+            .withRequestBody(
+              equalToJson(
+                failureAuditResponse(nino, ninoWithoutSuffix, 3, SERVICE_UNAVAILABLE, "error message"),
+                false,
+                true
+              )
+            )
         )
       }
     }
@@ -416,7 +456,7 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
     "submitting an application which results in a generic 500 response" in {
 
       val ninoWithoutSuffix = "AA100002"
-      val nino = s"${ninoWithoutSuffix}A"
+      val nino              = s"${ninoWithoutSuffix}A"
 
       def testMocks(): Unit = {
         mockNPSConnector(ninoWithoutSuffix, BAD_GATEWAY, "error message")
@@ -425,11 +465,13 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws
+        .url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
         .withFollowRedirects(false)
-        .withHeaders(("X-Session-ID","session-12345"))
+        .withHeaders(("X-Session-ID", "session-12345"))
 
-      def result: WSResponse = client(s"individuals/$nino/protections").post(validCreateIPBody(ninoWithoutSuffix)).futureValue
+      def result: WSResponse =
+        client(s"individuals/$nino/protections").post(validCreateIPBody(ninoWithoutSuffix)).futureValue
 
       "return a internal_server_error response" in {
         testMocks()
@@ -444,16 +486,20 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
       "submit the correct json to nps" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
-          .withRequestBody(equalToJson(validSubmissionIPBody(ninoWithoutSuffix), false, true))
+        verify(
+          postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
+            .withRequestBody(equalToJson(validSubmissionIPBody(ninoWithoutSuffix), false, true))
         )
       }
 
       "submit the correct auditing data" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo("/write/audit/merged"))
-          .withRequestBody(equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 3, BAD_GATEWAY, "error message"), false, true))
+        verify(
+          postRequestedFor(urlEqualTo("/write/audit/merged"))
+            .withRequestBody(
+              equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 3, BAD_GATEWAY, "error message"), false, true)
+            )
         )
       }
     }
@@ -461,7 +507,7 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
     "submitting an application which results in a Unauthorised response" in {
 
       val ninoWithoutSuffix = "AA100002"
-      val nino = s"${ninoWithoutSuffix}A"
+      val nino              = s"${ninoWithoutSuffix}A"
 
       def testMocks(): Unit = {
         mockNPSConnector(ninoWithoutSuffix, UNAUTHORIZED, "error message")
@@ -470,11 +516,13 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws
+        .url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
         .withFollowRedirects(false)
-        .withHeaders(("X-Session-ID","session-12345"))
+        .withHeaders(("X-Session-ID", "session-12345"))
 
-      def result: WSResponse = client(s"individuals/$nino/protections").post(validCreateIPBody(ninoWithoutSuffix)).futureValue
+      def result: WSResponse =
+        client(s"individuals/$nino/protections").post(validCreateIPBody(ninoWithoutSuffix)).futureValue
 
       "return a unauthorised response" in {
         testMocks()
@@ -489,16 +537,20 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
       "submit the correct json to nps" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
-          .withRequestBody(equalToJson(validSubmissionIPBody(ninoWithoutSuffix), false, true))
+        verify(
+          postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
+            .withRequestBody(equalToJson(validSubmissionIPBody(ninoWithoutSuffix), false, true))
         )
       }
 
       "submit the correct auditing data" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo("/write/audit/merged"))
-          .withRequestBody(equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 3, UNAUTHORIZED, "error message"), false, true))
+        verify(
+          postRequestedFor(urlEqualTo("/write/audit/merged"))
+            .withRequestBody(
+              equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 3, UNAUTHORIZED, "error message"), false, true)
+            )
         )
       }
     }
@@ -506,7 +558,7 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
     "submitting an application which results in a generic 400 response" in {
 
       val ninoWithoutSuffix = "AA100002"
-      val nino = s"${ninoWithoutSuffix}A"
+      val nino              = s"${ninoWithoutSuffix}A"
 
       def testMocks(): Unit = {
         mockNPSConnector(ninoWithoutSuffix, FORBIDDEN, "error message")
@@ -515,11 +567,13 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws
+        .url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
         .withFollowRedirects(false)
-        .withHeaders(("X-Session-ID","session-12345"))
+        .withHeaders(("X-Session-ID", "session-12345"))
 
-      def result: WSResponse = client(s"individuals/$nino/protections").post(validCreateIPBody(ninoWithoutSuffix)).futureValue
+      def result: WSResponse =
+        client(s"individuals/$nino/protections").post(validCreateIPBody(ninoWithoutSuffix)).futureValue
 
       "return a internal_server_error response" in {
         testMocks()
@@ -534,16 +588,20 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
       "submit the correct json to nps" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
-          .withRequestBody(equalToJson(validSubmissionIPBody(ninoWithoutSuffix), false, true))
+        verify(
+          postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
+            .withRequestBody(equalToJson(validSubmissionIPBody(ninoWithoutSuffix), false, true))
         )
       }
 
       "submit the correct auditing data" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo("/write/audit/merged"))
-          .withRequestBody(equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 3, FORBIDDEN, "error message"), false, true))
+        verify(
+          postRequestedFor(urlEqualTo("/write/audit/merged"))
+            .withRequestBody(
+              equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 3, FORBIDDEN, "error message"), false, true)
+            )
         )
       }
     }
@@ -551,7 +609,7 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
     "submitting an application which results in a BadRequest response" in {
 
       val ninoWithoutSuffix = "AA100002"
-      val nino = s"${ninoWithoutSuffix}A"
+      val nino              = s"${ninoWithoutSuffix}A"
 
       def testMocks(): Unit = {
         mockNPSConnector(ninoWithoutSuffix, BAD_REQUEST, "error message")
@@ -560,11 +618,13 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws
+        .url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
         .withFollowRedirects(false)
-        .withHeaders(("X-Session-ID","session-12345"))
+        .withHeaders(("X-Session-ID", "session-12345"))
 
-      def result: WSResponse = client(s"individuals/$nino/protections").post(validCreateIPBody(ninoWithoutSuffix)).futureValue
+      def result: WSResponse =
+        client(s"individuals/$nino/protections").post(validCreateIPBody(ninoWithoutSuffix)).futureValue
 
       "return a bad_request response" in {
         testMocks()
@@ -579,23 +639,27 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
       "submit the correct json to nps" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
-          .withRequestBody(equalToJson(validSubmissionIPBody(ninoWithoutSuffix), false, true))
+        verify(
+          postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
+            .withRequestBody(equalToJson(validSubmissionIPBody(ninoWithoutSuffix), false, true))
         )
       }
 
       "submit the correct auditing data" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo("/write/audit/merged"))
-          .withRequestBody(equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 3, BAD_REQUEST, "error message"), false, true))
+        verify(
+          postRequestedFor(urlEqualTo("/write/audit/merged"))
+            .withRequestBody(
+              equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 3, BAD_REQUEST, "error message"), false, true)
+            )
         )
       }
     }
 
     "submitting a successful application for FP2016" in {
       val ninoWithoutSuffix = "AA100001"
-      val nino = s"${ninoWithoutSuffix}A"
+      val nino              = s"${ninoWithoutSuffix}A"
 
       def testMocks(): Unit = {
         mockNPSConnector(ninoWithoutSuffix, OK, validResponseFPBody(ninoWithoutSuffix))
@@ -604,11 +668,13 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws
+        .url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
         .withFollowRedirects(false)
-        .withHeaders(("X-Session-ID","session-12345"))
+        .withHeaders(("X-Session-ID", "session-12345"))
 
-      def result: WSResponse = client(s"individuals/$nino/protections").post(validCreateFPBody(ninoWithoutSuffix)).futureValue
+      def result: WSResponse =
+        client(s"individuals/$nino/protections").post(validCreateFPBody(ninoWithoutSuffix)).futureValue
 
       "return a success response" in {
         testMocks()
@@ -623,16 +689,18 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
       "submit the correct json to nps" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
-          .withRequestBody(equalToJson(validSubmissionFPBody(ninoWithoutSuffix), false, true))
+        verify(
+          postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
+            .withRequestBody(equalToJson(validSubmissionFPBody(ninoWithoutSuffix), false, true))
         )
       }
 
       "submit the correct auditing data" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo("/write/audit"))
-          .withRequestBody(equalToJson(sucessfulAuditResult(nino, ninoWithoutSuffix, 1, OK), false, true))
+        verify(
+          postRequestedFor(urlEqualTo("/write/audit"))
+            .withRequestBody(equalToJson(sucessfulAuditResult(nino, ninoWithoutSuffix, 1, OK), false, true))
         )
       }
     }
@@ -640,7 +708,7 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
     "submitting a conflicting application for FP2016" in {
 
       val ninoWithoutSuffix = "AA100002"
-      val nino = s"${ninoWithoutSuffix}A"
+      val nino              = s"${ninoWithoutSuffix}A"
 
       def testMocks(): Unit = {
         mockNPSConnector(ninoWithoutSuffix, CONFLICT, validResponseFPBody(ninoWithoutSuffix))
@@ -649,11 +717,13 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws
+        .url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
         .withFollowRedirects(false)
-        .withHeaders(("X-Session-ID","session-12345"))
+        .withHeaders(("X-Session-ID", "session-12345"))
 
-      def result: WSResponse = client(s"individuals/$nino/protections").post(validCreateFPBody(ninoWithoutSuffix)).futureValue
+      def result: WSResponse =
+        client(s"individuals/$nino/protections").post(validCreateFPBody(ninoWithoutSuffix)).futureValue
 
       "return a conflict response" in {
         testMocks()
@@ -668,16 +738,18 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
       "submit the correct json to nps" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
-          .withRequestBody(equalToJson(validSubmissionFPBody(ninoWithoutSuffix), false, true))
+        verify(
+          postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
+            .withRequestBody(equalToJson(validSubmissionFPBody(ninoWithoutSuffix), false, true))
         )
       }
 
       "submit the correct auditing data" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo("/write/audit"))
-          .withRequestBody(equalToJson(sucessfulAuditResult(nino, ninoWithoutSuffix, 1, CONFLICT), false, true))
+        verify(
+          postRequestedFor(urlEqualTo("/write/audit"))
+            .withRequestBody(equalToJson(sucessfulAuditResult(nino, ninoWithoutSuffix, 1, CONFLICT), false, true))
         )
       }
     }
@@ -685,7 +757,7 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
     "submitting an FP application which results in a Service Unavailable response" in {
 
       val ninoWithoutSuffix = "AA100002"
-      val nino = s"${ninoWithoutSuffix}A"
+      val nino              = s"${ninoWithoutSuffix}A"
 
       def testMocks(): Unit = {
         mockNPSConnector(ninoWithoutSuffix, SERVICE_UNAVAILABLE, "error message")
@@ -694,11 +766,13 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws
+        .url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
         .withFollowRedirects(false)
-        .withHeaders(("X-Session-ID","session-12345"))
+        .withHeaders(("X-Session-ID", "session-12345"))
 
-      def result: WSResponse = client(s"individuals/$nino/protections").post(validCreateFPBody(ninoWithoutSuffix)).futureValue
+      def result: WSResponse =
+        client(s"individuals/$nino/protections").post(validCreateFPBody(ninoWithoutSuffix)).futureValue
 
       "return a service_unavailable response" in {
         testMocks()
@@ -713,16 +787,24 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
       "submit the correct json to nps" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
-          .withRequestBody(equalToJson(validSubmissionFPBody(ninoWithoutSuffix), false, true))
+        verify(
+          postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
+            .withRequestBody(equalToJson(validSubmissionFPBody(ninoWithoutSuffix), false, true))
         )
       }
 
       "submit the correct auditing data" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo("/write/audit/merged"))
-          .withRequestBody(equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 1, SERVICE_UNAVAILABLE, "error message"), false, true))
+        verify(
+          postRequestedFor(urlEqualTo("/write/audit/merged"))
+            .withRequestBody(
+              equalToJson(
+                failureAuditResponse(nino, ninoWithoutSuffix, 1, SERVICE_UNAVAILABLE, "error message"),
+                false,
+                true
+              )
+            )
         )
       }
     }
@@ -730,7 +812,7 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
     "submitting an FP application which results in a generic 500 response" in {
 
       val ninoWithoutSuffix = "AA100002"
-      val nino = s"${ninoWithoutSuffix}A"
+      val nino              = s"${ninoWithoutSuffix}A"
 
       def testMocks(): Unit = {
         mockNPSConnector(ninoWithoutSuffix, BAD_GATEWAY, "error message")
@@ -739,11 +821,13 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws
+        .url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
         .withFollowRedirects(false)
-        .withHeaders(("X-Session-ID","session-12345"))
+        .withHeaders(("X-Session-ID", "session-12345"))
 
-      def result: WSResponse = client(s"individuals/$nino/protections").post(validCreateFPBody(ninoWithoutSuffix)).futureValue
+      def result: WSResponse =
+        client(s"individuals/$nino/protections").post(validCreateFPBody(ninoWithoutSuffix)).futureValue
 
       "return a internal_server_error response" in {
         testMocks()
@@ -758,16 +842,20 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
       "submit the correct json to nps" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
-          .withRequestBody(equalToJson(validSubmissionFPBody(ninoWithoutSuffix), false, true))
+        verify(
+          postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
+            .withRequestBody(equalToJson(validSubmissionFPBody(ninoWithoutSuffix), false, true))
         )
       }
 
       "submit the correct auditing data" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo("/write/audit/merged"))
-          .withRequestBody(equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 1, BAD_GATEWAY, "error message"), false, true))
+        verify(
+          postRequestedFor(urlEqualTo("/write/audit/merged"))
+            .withRequestBody(
+              equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 1, BAD_GATEWAY, "error message"), false, true)
+            )
         )
       }
     }
@@ -775,7 +863,7 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
     "submitting an FP application which results in a Unauthorised response" in {
 
       val ninoWithoutSuffix = "AA100002"
-      val nino = s"${ninoWithoutSuffix}A"
+      val nino              = s"${ninoWithoutSuffix}A"
 
       def testMocks(): Unit = {
         mockNPSConnector(ninoWithoutSuffix, UNAUTHORIZED, "error message")
@@ -784,11 +872,13 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws
+        .url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
         .withFollowRedirects(false)
-        .withHeaders(("X-Session-ID","session-12345"))
+        .withHeaders(("X-Session-ID", "session-12345"))
 
-      def result: WSResponse = client(s"individuals/$nino/protections").post(validCreateFPBody(ninoWithoutSuffix)).futureValue
+      def result: WSResponse =
+        client(s"individuals/$nino/protections").post(validCreateFPBody(ninoWithoutSuffix)).futureValue
 
       "return a unauthorised response" in {
         testMocks()
@@ -803,16 +893,20 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
       "submit the correct json to nps" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
-          .withRequestBody(equalToJson(validSubmissionFPBody(ninoWithoutSuffix), false, true))
+        verify(
+          postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
+            .withRequestBody(equalToJson(validSubmissionFPBody(ninoWithoutSuffix), false, true))
         )
       }
 
       "submit the correct auditing data" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo("/write/audit/merged"))
-          .withRequestBody(equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 1, UNAUTHORIZED, "error message"), false, true))
+        verify(
+          postRequestedFor(urlEqualTo("/write/audit/merged"))
+            .withRequestBody(
+              equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 1, UNAUTHORIZED, "error message"), false, true)
+            )
         )
       }
     }
@@ -820,7 +914,7 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
     "submitting an FP application which results in a generic 400 response" in {
 
       val ninoWithoutSuffix = "AA100002"
-      val nino = s"${ninoWithoutSuffix}A"
+      val nino              = s"${ninoWithoutSuffix}A"
 
       def testMocks(): Unit = {
         mockNPSConnector(ninoWithoutSuffix, FORBIDDEN, "error message")
@@ -829,11 +923,13 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws
+        .url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
         .withFollowRedirects(false)
-        .withHeaders(("X-Session-ID","session-12345"))
+        .withHeaders(("X-Session-ID", "session-12345"))
 
-      def result: WSResponse = client(s"individuals/$nino/protections").post(validCreateFPBody(ninoWithoutSuffix)).futureValue
+      def result: WSResponse =
+        client(s"individuals/$nino/protections").post(validCreateFPBody(ninoWithoutSuffix)).futureValue
 
       "return a internal_server_error response" in {
         testMocks()
@@ -848,16 +944,20 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
       "submit the correct json to nps" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
-          .withRequestBody(equalToJson(validSubmissionFPBody(ninoWithoutSuffix), false, true))
+        verify(
+          postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
+            .withRequestBody(equalToJson(validSubmissionFPBody(ninoWithoutSuffix), false, true))
         )
       }
 
       "submit the correct auditing data" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo("/write/audit/merged"))
-          .withRequestBody(equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 1, FORBIDDEN, "error message"), false, true))
+        verify(
+          postRequestedFor(urlEqualTo("/write/audit/merged"))
+            .withRequestBody(
+              equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 1, FORBIDDEN, "error message"), false, true)
+            )
         )
       }
     }
@@ -865,7 +965,7 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
     "submitting an FP application which results in a BadRequest response" in {
 
       val ninoWithoutSuffix = "AA100002"
-      val nino = s"${ninoWithoutSuffix}A"
+      val nino              = s"${ninoWithoutSuffix}A"
 
       def testMocks(): Unit = {
         mockNPSConnector(ninoWithoutSuffix, BAD_REQUEST, "error message")
@@ -874,11 +974,13 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
         mockCitizenDetails(nino, OK)
       }
 
-      def client(path: String): WSRequest = ws.url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
+      def client(path: String): WSRequest = ws
+        .url(s"http://localhost:$port/protect-your-lifetime-allowance/$path")
         .withFollowRedirects(false)
-        .withHeaders(("X-Session-ID","session-12345"))
+        .withHeaders(("X-Session-ID", "session-12345"))
 
-      def result: WSResponse = client(s"individuals/$nino/protections").post(validCreateFPBody(ninoWithoutSuffix)).futureValue
+      def result: WSResponse =
+        client(s"individuals/$nino/protections").post(validCreateFPBody(ninoWithoutSuffix)).futureValue
 
       "return a bad_request response" in {
         testMocks()
@@ -893,18 +995,23 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
       "submit the correct json to nps" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
-          .withRequestBody(equalToJson(validSubmissionFPBody(ninoWithoutSuffix), false, true))
+        verify(
+          postRequestedFor(urlEqualTo(s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"))
+            .withRequestBody(equalToJson(validSubmissionFPBody(ninoWithoutSuffix), false, true))
         )
       }
 
       "submit the correct auditing data" in {
         testMocks()
         result
-        verify(postRequestedFor(urlEqualTo("/write/audit/merged"))
-          .withRequestBody(equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 1, BAD_REQUEST, "error message"), false, true))
+        verify(
+          postRequestedFor(urlEqualTo("/write/audit/merged"))
+            .withRequestBody(
+              equalToJson(failureAuditResponse(nino, ninoWithoutSuffix, 1, BAD_REQUEST, "error message"), false, true)
+            )
         )
       }
     }
   }
+
 }

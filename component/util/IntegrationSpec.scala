@@ -26,22 +26,26 @@ import uk.gov.hmrc.http.HeaderCarrier
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 
-
-trait IntegrationSpec extends PlaySpec
-  with GuiceOneServerPerSuite with ScalaFutures with IntegrationPatience with Matchers
-  with WiremockHelper with BeforeAndAfterEach with BeforeAndAfterAll {
+trait IntegrationSpec
+    extends PlaySpec
+    with GuiceOneServerPerSuite
+    with ScalaFutures
+    with IntegrationPatience
+    with Matchers
+    with WiremockHelper
+    with BeforeAndAfterEach
+    with BeforeAndAfterAll {
 
   override implicit lazy val app: Application = new GuiceApplicationBuilder()
     .configure(fakeConfig())
     .build()
 
   implicit val actorSystem: ActorSystem = ActorSystem()
-  implicit val mat: Materializer = ActorMaterializer()
-  implicit val hc: HeaderCarrier = new HeaderCarrier()
+  implicit val mat: Materializer        = ActorMaterializer()
+  implicit val hc: HeaderCarrier        = new HeaderCarrier()
 
-  override def beforeEach(): Unit = {
+  override def beforeEach(): Unit =
     resetWiremock()
-  }
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -57,10 +61,11 @@ trait IntegrationSpec extends PlaySpec
 
     stubPost("/auth/authorise", status, "{}")
 
-
     stubGet("/auth/ids", status, """{"internalId":"Int-xxx","externalId":"Ext-xxx"}""")
 
-    stubGet("/auth/userDetails", status,
+    stubGet(
+      "/auth/userDetails",
+      status,
       """
         |{
         |   "name":"xxx",

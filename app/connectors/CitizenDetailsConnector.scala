@@ -26,13 +26,13 @@ import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DefaultCitizenDetailsConnector @Inject()(val http: HttpClientV2,
-                                               environment: Environment,
-                                               val runModeConfiguration: Configuration,
-                                               servicesConfig: ServicesConfig)
-  extends CitizenDetailsConnector {
+class DefaultCitizenDetailsConnector @Inject() (
+    val http: HttpClientV2,
+    environment: Environment,
+    servicesConfig: ServicesConfig
+) extends CitizenDetailsConnector {
 
-  override lazy val serviceUrl: String = servicesConfig.baseUrl("citizen-details")
+  override lazy val serviceUrl: String     = servicesConfig.baseUrl("citizen-details")
   override lazy val checkRequired: Boolean = servicesConfig.getConfBool("citizen-details.checkRequired", defBool = true)
 
   val mode: Mode = environment.mode
@@ -56,27 +56,29 @@ trait CitizenDetailsConnector {
   val serviceUrl: String
   val checkRequired: Boolean
 
-  def getCitizenRecordCheckUrl(nino: String): String = {
+  def getCitizenRecordCheckUrl(nino: String): String =
     serviceUrl + s"/citizen-details/$nino/designatory-details"
-  }
-  implicit val legacyRawReads = HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
-  def checkCitizenRecord(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[CitizenRecordCheckResult] = {
+
+  implicit val legacyRawReads: HttpReads[HttpResponse] =
+    HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
+
+  def checkCitizenRecord(
+      nino: String
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[CitizenRecordCheckResult] =
     if (!checkRequired) {
       Future.successful(CitizenRecordOK)
     } else {
       val requestUrl = getCitizenRecordCheckUrl(nino)
-      http.get(url"$requestUrl").execute[HttpResponse] map {
-        _ => CitizenRecordOK
-      } recover {
+      http.get(url"$requestUrl").execute[HttpResponse].map(_ => CitizenRecordOK).recover {
         case e: UpstreamErrorResponse =>
           e.statusCode match {
             case NOT_FOUND => CitizenRecordNotFound
-            case LOCKED => CitizenRecordLocked
+            case LOCKED    => CitizenRecordLocked
             case status if status >= BAD_REQUEST && status < INTERNAL_SERVER_ERROR =>
               CitizenRecordOther4xxResponse(e)
             case status if status >= INTERNAL_SERVER_ERROR => CitizenRecord5xxResponse(e)
           }
       }
     }
-  }
+
 }

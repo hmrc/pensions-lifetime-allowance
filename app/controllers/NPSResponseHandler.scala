@@ -27,7 +27,7 @@ import uk.gov.hmrc.http.UpstreamErrorResponse.{Upstream4xxResponse, Upstream5xxR
 
 trait NPSResponseHandler extends Logging {
 
-  private[controllers] def handleNPSError(error : Throwable, errorContext: String): Result = {
+  private[controllers] def handleNPSError(error: Throwable, errorContext: String): Result =
     error match {
       case err @ Upstream5xxResponse(UpstreamErrorResponse(errorDetails, SERVICE_UNAVAILABLE, _, _)) =>
         logger.error(s"$errorContext $errorDetails", err)
@@ -49,11 +49,10 @@ trait NPSResponseHandler extends Logging {
         NotFound(notFound.getMessage)
       case e => throw e
     }
-  }
 
-  private[controllers] def handleNPSSuccess(response: HttpResponseDetails): Result = {
+  private[controllers] def handleNPSSuccess(response: HttpResponseDetails): Result =
     response.status match {
-      case OK if response.body.isSuccess => Ok(response.body.get)
+      case OK if response.body.isSuccess       => Ok(response.body.get)
       case CONFLICT if response.body.isSuccess => Conflict(response.body.get)
       case _ =>
         val responseErrorDetails = if (!response.body.isSuccess) {
@@ -61,8 +60,10 @@ trait NPSResponseHandler extends Logging {
         } else {
           ", body=" + Json.asciiStringify(response.body.get)
         }
-        val error = Json.toJson(Error("NPS request resulted in a response with: HTTP status=" + response.status + responseErrorDetails))
+        val error = Json.toJson(
+          Error("NPS request resulted in a response with: HTTP status=" + response.status + responseErrorDetails)
+        )
         InternalServerError(error)
     }
-  }
+
 }

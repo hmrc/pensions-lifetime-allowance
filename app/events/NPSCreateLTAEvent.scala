@@ -24,13 +24,15 @@ class NPSCreateLTAEvent(
     npsRequestBodyJs: JsObject,
     npsResponseBodyJs: JsObject,
     statusCode: Int,
-    path: String)(implicit hc: HeaderCarrier)
-  extends NPSBaseLTAEvent(
-    ltaAuditType = "CreateAllowance",
-    transactionName="create-pensions-lifetime-allowance",
-    nino = nino,
-    npsRequestBodyJs = npsRequestBodyJs,
-    npsResponseBodyJs = npsResponseBodyJs,
-    statusCode=statusCode,
-    path = path,
-    extraDetail = Map())
+    path: String
+)(implicit hc: HeaderCarrier)
+    extends NPSBaseLTAEvent(
+      ltaAuditType = "CreateAllowance",
+      transactionName = "create-pensions-lifetime-allowance",
+      nino = nino,
+      npsRequestBodyJs = npsRequestBodyJs,
+      npsResponseBodyJs = npsResponseBodyJs,
+      statusCode = statusCode,
+      path = path,
+      extraDetail = Map()
+    )

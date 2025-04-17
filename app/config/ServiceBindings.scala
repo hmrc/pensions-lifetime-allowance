@@ -23,6 +23,7 @@ import play.api.inject.{Binding, Module}
 import services.{DefaultProtectionService, ProtectionService}
 
 class ServiceBindings extends Module {
+
   override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] =
     bindServices() ++ bindConnectors()
 
@@ -35,4 +36,5 @@ class ServiceBindings extends Module {
     play.api.inject.bind(classOf[CitizenDetailsConnector]).to(classOf[DefaultCitizenDetailsConnector]).eagerly(),
     play.api.inject.bind(classOf[NpsConnector]).to(classOf[DefaultNpsConnector]).eagerly()
   )
+
 }

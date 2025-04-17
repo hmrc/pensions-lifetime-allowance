@@ -21,7 +21,15 @@ import model.{Error, HttpResponseDetails}
 import play.api.{Configuration, Environment, Logging, Mode}
 import util.NinoHelper
 import play.api.libs.json._
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpErrorFunctions, HttpReads, HttpResponse, NotFoundException, StringContextOps}
+import uk.gov.hmrc.http.{
+  BadRequestException,
+  HeaderCarrier,
+  HttpErrorFunctions,
+  HttpReads,
+  HttpResponse,
+  NotFoundException,
+  StringContextOps
+}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -29,12 +37,13 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class DefaultNpsConnector @Inject()(val http: HttpClientV2,
-                                    environment: Environment,
-                                    val runModeConfiguration: Configuration,
-                                    servicesConfig: ServicesConfig,
-                                    val audit: AuditConnector) extends NpsConnector {
-  override lazy val serviceUrl: String = servicesConfig.baseUrl("nps")
+class DefaultNpsConnector @Inject() (
+    val http: HttpClientV2,
+    environment: Environment,
+    servicesConfig: ServicesConfig,
+    val audit: AuditConnector
+) extends NpsConnector {
+  override lazy val serviceUrl: String         = servicesConfig.baseUrl("nps")
   override lazy val serviceAccessToken: String = servicesConfig.getConfString("nps.accessToken", "")
   override lazy val serviceEnvironment: String = servicesConfig.getConfString("nps.environment", "")
 
@@ -49,59 +58,87 @@ trait NpsConnector extends Logging {
   val audit: AuditConnector
 
   def httpHeaders(): Seq[(String, String)] = Seq(
-    "Accept" -> "application/vnd.hmrc.1.0+json",
-    "Content-Type" -> "application/json",
-    "Environment" -> serviceEnvironment,
-    "Authorization" -> s"Bearer $serviceAccessToken")
+    "Accept"        -> "application/vnd.hmrc.1.0+json",
+    "Content-Type"  -> "application/json",
+    "Environment"   -> serviceEnvironment,
+    "Authorization" -> s"Bearer $serviceAccessToken"
+  )
 
   def getApplyUrl(nino: String): String = {
     val (ninoWithoutSuffix, _) = NinoHelper.dropNinoSuffix(nino)
-    serviceUrl + s"/pensions-lifetime-allowance/individual/${ninoWithoutSuffix}/protection"
+    serviceUrl + s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"
   }
 
   def getAmendUrl(nino: String, id: Long): String = {
     val (ninoWithoutSuffix, _) = NinoHelper.dropNinoSuffix(nino)
-    serviceUrl + s"/pensions-lifetime-allowance/individual/${ninoWithoutSuffix}/protections/${id}"
+    serviceUrl + s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protections/$id"
   }
 
   def getReadUrl(nino: String): String = {
     val (ninoWithoutSuffix, _) = NinoHelper.dropNinoSuffix(nino)
-    serviceUrl + s"/pensions-lifetime-allowance/individual/${ninoWithoutSuffix}/protections"
+    serviceUrl + s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protections"
   }
 
   implicit val readApiResponse: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
-    def read(method: String, url: String, response: HttpResponse) = NpsResponseHandler.handleNpsResponse(method, url, response)
+    override def read(method: String, url: String, response: HttpResponse): HttpResponse =
+      NpsResponseHandler.handleNpsResponse(method, url, response)
   }
 
-  def applyForProtection(nino: String, body: JsObject)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
-    val requestUrl = getApplyUrl(nino)
+  def applyForProtection(
+      nino: String,
+      body: JsObject
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
+    val requestUrl  = getApplyUrl(nino)
     val responseFut = post(requestUrl, body)
 
-    responseFut map { response =>
+    responseFut.map { response =>
       val responseBody = response.json.as[JsObject]
-      val auditEvent = new NPSCreateLTAEvent(nino = nino, npsRequestBodyJs = body, npsResponseBodyJs = responseBody, statusCode = response.status, path = requestUrl)
+      val auditEvent = new NPSCreateLTAEvent(
+        nino = nino,
+        npsRequestBodyJs = body,
+        npsResponseBodyJs = responseBody,
+        statusCode = response.status,
+        path = requestUrl
+      )
       handleAuditableResponse(nino, response, Some(auditEvent))
     }
   }
 
-  def amendProtection(nino: String, id: Long, body: JsObject)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
-    val requestUrl = getAmendUrl(nino, id)
+  def amendProtection(nino: String, id: Long, body: JsObject)(
+      implicit hc: HeaderCarrier,
+      ec: ExecutionContext
+  ): Future[HttpResponseDetails] = {
+    val requestUrl  = getAmendUrl(nino, id)
     val responseFut = put(requestUrl, body)
 
-    responseFut map { response =>
-      val auditEvent = new NPSAmendLTAEvent(nino = nino, id = id, npsRequestBodyJs = body, npsResponseBodyJs = response.json.as[JsObject], statusCode = response.status, path = requestUrl)
+    responseFut.map { response =>
+      val auditEvent = new NPSAmendLTAEvent(
+        nino = nino,
+        id = id,
+        npsRequestBodyJs = body,
+        npsResponseBodyJs = response.json.as[JsObject],
+        statusCode = response.status,
+        path = requestUrl
+      )
       handleAuditableResponse(nino, response, Some(auditEvent))
     }
   }
 
-  def getPSALookup(psaRef: String, ltaRef: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
-    val requestUrl = s"$serviceUrl/pensions-lifetime-allowance/scheme-administrator/certificate-lookup?pensionSchemeAdministratorCheckReference=$psaRef&lifetimeAllowanceReference=$ltaRef"
+  def getPSALookup(
+      psaRef: String,
+      ltaRef: String
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+    val requestUrl =
+      s"$serviceUrl/pensions-lifetime-allowance/scheme-administrator/certificate-lookup?pensionSchemeAdministratorCheckReference=$psaRef&lifetimeAllowanceReference=$ltaRef"
     get(requestUrl)(hc, ec).map(r => r)
   }
 
-  def handleAuditableResponse(nino: String, response: HttpResponse, auditEvent: Option[NPSBaseLTAEvent])(implicit hc: HeaderCarrier, ec: ExecutionContext): HttpResponseDetails = {
+  def handleAuditableResponse(nino: String, response: HttpResponse, auditEvent: Option[NPSBaseLTAEvent])(
+      implicit hc: HeaderCarrier,
+      ec: ExecutionContext
+  ): HttpResponseDetails = {
     val responseBody = response.json.as[JsObject]
-    val httpStatus = response.status
+    val httpStatus   = response.status
 
     logger.debug(s"Created audit event: ${auditEvent.getOrElse("<None>")}")
     auditEvent.foreach {
@@ -109,48 +146,43 @@ trait NpsConnector extends Logging {
     }
 
     // assertion: nino returned in response must be the same as that sent in the request
-    val responseNino = responseBody.value.get("nino").map { n => n.as[String] }.getOrElse("")
+    val responseNino           = responseBody.value.get("nino").map(n => n.as[String]).getOrElse("")
     val (ninoWithoutSuffix, _) = NinoHelper.dropNinoSuffix(nino)
     if (responseNino == ninoWithoutSuffix) {
       HttpResponseDetails(httpStatus, JsSuccess(responseBody))
-    }
-    else {
+    } else {
       val report = s"Received nino $responseNino is not same as sent nino $ninoWithoutSuffix"
       logger.warn(report)
       HttpResponseDetails(400, JsSuccess(Json.toJson(Error(report)).as[JsObject]))
     }
   }
 
-  def post(requestUrl: String, body: JsValue)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+  def post(requestUrl: String, body: JsValue)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] =
     http.post(url"$requestUrl").withBody(Json.toJson(body)).setHeader(httpHeaders(): _*).execute[HttpResponse]
-  }
 
-  def put(requestUrl: String, body: JsValue)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+  def put(requestUrl: String, body: JsValue)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] =
     http.put(url"$requestUrl").withBody(Json.toJson(body)).setHeader(httpHeaders(): _*).execute[HttpResponse]
-  }
 
-  def readExistingProtections(nino: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
-    val requestUrl = getReadUrl(nino)
+  def readExistingProtections(
+      nino: String
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
+    val requestUrl  = getReadUrl(nino)
     val responseFut = get(requestUrl)(hc: HeaderCarrier, ec = ec)
 
-    responseFut map { expectedResponse =>
-      handleExpectedReadResponse(nino, expectedResponse)
-    }
+    responseFut.map(expectedResponse => handleExpectedReadResponse(nino, expectedResponse))
   }
 
-  def get(requestUrl: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
+  def get(requestUrl: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] =
     http.get(url"$requestUrl").setHeader(httpHeaders(): _*).execute[HttpResponse]
-  }
 
   def handleExpectedReadResponse(nino: String, response: HttpResponse): HttpResponseDetails = {
 
-    val responseBody = response.json.as[JsObject]
-    val responseNino = responseBody.value.get("nino").map { n => n.as[String] }.getOrElse("")
+    val responseBody           = response.json.as[JsObject]
+    val responseNino           = responseBody.value.get("nino").map(n => n.as[String]).getOrElse("")
     val (ninoWithoutSuffix, _) = NinoHelper.dropNinoSuffix(nino)
     if (responseNino == ninoWithoutSuffix) {
       HttpResponseDetails(response.status, JsSuccess(responseBody))
-    }
-    else {
+    } else {
       val report = s"Received nino $responseNino is not same as sent nino $ninoWithoutSuffix"
       logger.warn(report)
       HttpResponseDetails(400, JsSuccess(Json.toJson(Error(report)).as[JsObject]))
@@ -163,19 +195,16 @@ object NpsResponseHandler extends NpsResponseHandler
 
 trait NpsResponseHandler extends HttpErrorFunctions {
 
-  /**
-    * Response handler for NSP type responses.
-    * Note: Expected to throw exception 409
+  /** Response handler for NSP type responses. Note: Expected to throw exception 409
     */
-  def handleNpsResponse(method: String, url: String, response: HttpResponse): HttpResponse = {
+  def handleNpsResponse(method: String, url: String, response: HttpResponse): HttpResponse =
     response.status match {
       case 409 => response // this is an expected response for this API, so don't throw an exception
-      case _ => {
+      case _ =>
         response.status match {
           case status if is4xx(status) => throw new NotFoundException(notFoundMessage(method, url, response.body))
-          case _ => response
+          case _                       => response
         }
-      }
     }
-  }
+
 }

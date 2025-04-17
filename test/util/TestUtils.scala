@@ -29,7 +29,7 @@ import scala.language.postfixOps
 
 trait TestUtils {
 
-  implicit val defaultTimeout: FiniteDuration = 5 seconds
+  implicit val defaultTimeout: FiniteDuration = 5.seconds
 
   implicit def extractAwait[A](future: Future[A]): A = await[A](future)
 
@@ -37,13 +37,13 @@ trait TestUtils {
 
   def status(of: Future[Result])(implicit timeout: Duration): Int = status(Await.result(of, timeout))
 
-  def jsonBodyOf(result: Result)(implicit mat: Materializer): JsValue = {
+  def jsonBodyOf(result: Result)(implicit mat: Materializer): JsValue =
     Json.parse(bodyOf(result))
-  }
 
-  def jsonBodyOf(resultF: Future[Result])(implicit mat: Materializer, executionContext: ExecutionContext): Future[JsValue] = {
+  def jsonBodyOf(
+      resultF: Future[Result]
+  )(implicit mat: Materializer, executionContext: ExecutionContext): Future[JsValue] =
     resultF.map(jsonBodyOf)
-  }
 
   def bodyOf(result: Result)(implicit mat: Materializer): String = {
     val bodyBytes: ByteString = await(result.body.consumeData)

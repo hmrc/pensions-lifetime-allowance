@@ -27,25 +27,27 @@ class ReadProtectionsModelSpec extends PlaySpec {
     "read correctly from json" when {
 
       "provided with empty protections" in {
-        val json = Json.parse(
-          """
-            |{
-            | "nino": "A000001",
-            | "pensionSchemeAdministratorCheckReference" : "PSA123456789",
-            | "protections": []
-            |}
+        val json = Json.parse("""
+                                |{
+                                | "nino": "A000001",
+                                | "pensionSchemeAdministratorCheckReference" : "PSA123456789",
+                                | "protections": []
+                                |}
           """.stripMargin)
 
-        Json.fromJson[ReadProtectionsModel](json).get shouldBe ReadProtectionsModel("A000001", "PSA123456789", Some(List.empty))
+        Json.fromJson[ReadProtectionsModel](json).get shouldBe ReadProtectionsModel(
+          "A000001",
+          "PSA123456789",
+          Some(List.empty)
+        )
       }
 
       "provided with no protections" in {
-        val json = Json.parse(
-          """
-            |{
-            | "nino": "A000001",
-            | "pensionSchemeAdministratorCheckReference" : "PSA123456789"
-            |}
+        val json = Json.parse("""
+                                |{
+                                | "nino": "A000001",
+                                | "pensionSchemeAdministratorCheckReference" : "PSA123456789"
+                                |}
           """.stripMargin)
 
         Json.fromJson[ReadProtectionsModel](json).get shouldBe ReadProtectionsModel("A000001", "PSA123456789", None)
@@ -53,51 +55,58 @@ class ReadProtectionsModelSpec extends PlaySpec {
 
       "provided with one protection" in {
         val model = ReadProtection(protectionID = 1, version = 1, protectionType = "FP2016", status = "Open")
-        val json = Json.parse(
-          """
-            |{
-            | "nino": "A000001",
-            | "pensionSchemeAdministratorCheckReference" : "PSA123456789",
-            | "protections" :  [
-            |   {
-            |     "id": 1,
-            |     "version": 1,
-            |     "type": 1,
-            |     "status": 1
-            |   }
-            | ]
-            |}
+        val json = Json.parse("""
+                                |{
+                                | "nino": "A000001",
+                                | "pensionSchemeAdministratorCheckReference" : "PSA123456789",
+                                | "protections" :  [
+                                |   {
+                                |     "id": 1,
+                                |     "version": 1,
+                                |     "type": 1,
+                                |     "status": 1
+                                |   }
+                                | ]
+                                |}
           """.stripMargin)
 
-        Json.fromJson[ReadProtectionsModel](json).get shouldBe ReadProtectionsModel("A000001", "PSA123456789", Some(List(model)))
+        Json.fromJson[ReadProtectionsModel](json).get shouldBe ReadProtectionsModel(
+          "A000001",
+          "PSA123456789",
+          Some(List(model))
+        )
       }
 
       "provided with multiple protections" in {
         val model = ReadProtection(protectionID = 1, version = 1, protectionType = "FP2016", status = "Open")
-        val json = Json.parse(
-          """
-            |{
-            | "nino": "A000001",
-            | "pensionSchemeAdministratorCheckReference" : "PSA123456789",
-            | "protections" :  [
-            |   {
-            |     "id": 1,
-            |     "version": 1,
-            |     "type": 1,
-            |     "status": 1
-            |   },
-            |   {
-            |     "id": 1,
-            |     "version": 1,
-            |     "type": 1,
-            |     "status": 1
-            |   }
-            | ]
-            |}
+        val json = Json.parse("""
+                                |{
+                                | "nino": "A000001",
+                                | "pensionSchemeAdministratorCheckReference" : "PSA123456789",
+                                | "protections" :  [
+                                |   {
+                                |     "id": 1,
+                                |     "version": 1,
+                                |     "type": 1,
+                                |     "status": 1
+                                |   },
+                                |   {
+                                |     "id": 1,
+                                |     "version": 1,
+                                |     "type": 1,
+                                |     "status": 1
+                                |   }
+                                | ]
+                                |}
           """.stripMargin)
 
-        Json.fromJson[ReadProtectionsModel](json).get shouldBe ReadProtectionsModel("A000001", "PSA123456789", Some(List(model, model)))
+        Json.fromJson[ReadProtectionsModel](json).get shouldBe ReadProtectionsModel(
+          "A000001",
+          "PSA123456789",
+          Some(List(model, model))
+        )
       }
     }
   }
+
 }

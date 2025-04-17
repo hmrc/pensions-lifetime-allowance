@@ -25,13 +25,15 @@ class NPSAmendLTAEvent(
     npsRequestBodyJs: JsObject,
     npsResponseBodyJs: JsObject,
     statusCode: Int,
-    path: String)(implicit hc: HeaderCarrier)
-  extends NPSBaseLTAEvent(
-    ltaAuditType = "AmendAllowance",
-    transactionName="amend-pensions-lifetime-allowance",
-    nino = nino,
-    npsRequestBodyJs = npsRequestBodyJs,
-    npsResponseBodyJs = npsResponseBodyJs,
-    statusCode=statusCode,
-    path = path,
-    extraDetail = Map("protectionId" -> id.toString))
+    path: String
+)(implicit hc: HeaderCarrier)
+    extends NPSBaseLTAEvent(
+      ltaAuditType = "AmendAllowance",
+      transactionName = "amend-pensions-lifetime-allowance",
+      nino = nino,
+      npsRequestBodyJs = npsRequestBodyJs,
+      npsResponseBodyJs = npsResponseBodyJs,
+      statusCode = statusCode,
+      path = path,
+      extraDetail = Map("protectionId" -> id.toString)
+    )

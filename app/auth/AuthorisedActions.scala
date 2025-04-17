@@ -27,20 +27,34 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait AuthorisedActions extends AuthProvider with AuthorisedFunctions with Logging {
 
-  def userAuthorised(nino: String)(body: => Future[Result])(implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
+  def userAuthorised(
+      nino: String
+  )(body: => Future[Result])(implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
-    authorised(Nino(hasNino = true, nino = Some(nino)) and ConfidenceLevel.L200) {
-      citizenDetailsConnector.checkCitizenRecord(nino) flatMap {
-        case CitizenRecordOK => body
+    authorised(Nino(hasNino = true, nino = Some(nino)).and(ConfidenceLevel.L200)) {
+      citizenDetailsConnector.checkCitizenRecord(nino).flatMap {
+        case CitizenRecordOK       => body
         case CitizenRecordNotFound => logErrorAndRespond(s"Citizen Record Check: Not Found for '$nino'", NotFound)
-        case CitizenRecordLocked => logErrorAndRespond(s"Citizen Record Check: Locked for '$nino'", Locked)
+        case CitizenRecordLocked   => logErrorAndRespond(s"Citizen Record Check: Locked for '$nino'", Locked)
         case CitizenRecordOther4xxResponse(e) =>
-          logErrorAndRespondFromUpstreamResponse(s"Citizen Record Check: ${e.statusCode} response for '$nino'", BadRequest, e)
+          logErrorAndRespondFromUpstreamResponse(
+            s"Citizen Record Check: ${e.statusCode} response for '$nino'",
+            BadRequest,
+            e
+          )
         case CitizenRecord5xxResponse(e) if e.statusCode == 503 =>
-          logErrorAndRespondFromUpstreamResponse(s"Citizen Record Check: Upstream 503 response for '$nino'", GatewayTimeout, e)
+          logErrorAndRespondFromUpstreamResponse(
+            s"Citizen Record Check: Upstream 503 response for '$nino'",
+            GatewayTimeout,
+            e
+          )
         case CitizenRecord5xxResponse(e) =>
-          logErrorAndRespondFromUpstreamResponse(s"Citizen Record Check: Upstream ${e.statusCode} response for '$nino'", InternalServerError, e)
+          logErrorAndRespondFromUpstreamResponse(
+            s"Citizen Record Check: Upstream ${e.statusCode} response for '$nino'",
+            InternalServerError,
+            e
+          )
         case _ => logErrorAndRespond("err", InternalServerError)
       }
     }.recover(authErrorHandling)
@@ -57,14 +71,12 @@ trait AuthorisedActions extends AuthProvider with AuthorisedFunctions with Loggi
   }
 
   def authErrorHandling: PartialFunction[Throwable, Result] = {
-    case e: NoActiveSession => {
+    case e: NoActiveSession =>
       logger.error("User has no active session", e)
       Unauthorized("User has no active session")
-    }
-    case e: AuthorisationException => {
+    case e: AuthorisationException =>
       logger.error("User forbidden", e)
       Forbidden("User forbidden")
-    }
   }
 
   val citizenDetailsConnector: CitizenDetailsConnector

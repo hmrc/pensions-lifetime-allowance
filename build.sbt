@@ -6,11 +6,10 @@ import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "pensions-lifetime-allowance"
 
-lazy val plugins : Seq[Plugins] = Seq.empty
-lazy val playSettings : Seq[Setting[_]] = Seq.empty
+lazy val plugins: Seq[Plugins]         = Seq.empty
+lazy val playSettings: Seq[Setting[_]] = Seq.empty
 ThisBuild / majorVersion := 2
 ThisBuild / scalaVersion := "2.13.16"
-
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
@@ -18,15 +17,15 @@ lazy val scoverageSettings = {
     // Semicolon-separated list of regexs matching classes to exclude
     ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;uk.gov.hmrc.BuildInfo;app.*;prod.*;config.*;com.*;.*(AuthService|BuildInfo|Routes).*",
     ScoverageKeys.coverageMinimumStmtTotal := 90,
-    ScoverageKeys.coverageFailOnMinimum := false,
-    ScoverageKeys.coverageHighlighting := true
+    ScoverageKeys.coverageFailOnMinimum    := false,
+    ScoverageKeys.coverageHighlighting     := true
   )
 }
 
 lazy val root = Project(appName, file("."))
-  .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins : _*)
-  .settings(playSettings ++ scoverageSettings : _*)
-  .settings(playSettings : _*)
+  .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins: _*)
+  .settings(playSettings ++ scoverageSettings: _*)
+  .settings(playSettings: _*)
   .settings(scalaSettings: _*)
   .settings(defaultSettings(): _*)
   .settings(
@@ -34,9 +33,9 @@ lazy val root = Project(appName, file("."))
   )
   .settings(
     libraryDependencies ++= AppDependencies(),
-    parallelExecution in Test := false,
-    fork in Test := false,
-    retrieveManaged := true,
+    parallelExecution in Test        := false,
+    fork in Test                     := false,
+    retrieveManaged                  := true,
     evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
   )
   .configs(IntegrationTest)
