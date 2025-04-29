@@ -1,5 +1,5 @@
 import uk.gov.hmrc.DefaultBuildSettings
-import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings, targetJvm}
+import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, itSettings, scalaSettings, targetJvm}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
@@ -37,6 +37,12 @@ lazy val root = Project(appName, file("."))
     retrieveManaged                  := true,
     evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
   )
+  .settings(PlayKeys.playDefaultPort := 9011)
+  .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
+  .settings(
+    resolvers += Resolver.jcenterRepo
+  )
+
 lazy val it = project
   .in(file("it"))
   .enablePlugins(PlayScala)
@@ -44,8 +50,3 @@ lazy val it = project
   .settings(DefaultBuildSettings.itSettings(true))
   .settings(libraryDependencies ++= AppDependencies(), addTestReportOption(Test, "int-test-reports"))
 
-  .settings(
-    resolvers += Resolver.jcenterRepo
-  )
-  .settings(PlayKeys.playDefaultPort := 9011)
-  .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
