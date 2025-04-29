@@ -1,6 +1,5 @@
-import sbt.Keys._
-import sbt._
-import uk.gov.hmrc.DefaultBuildSettings.{defaultSettings, scalaSettings, targetJvm}
+import uk.gov.hmrc.DefaultBuildSettings
+import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings, targetJvm}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
@@ -38,8 +37,13 @@ lazy val root = Project(appName, file("."))
     retrieveManaged                  := true,
     evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
   )
-  .configs(IntegrationTest)
-  .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
+lazy val it = project
+  .in(file("it"))
+  .enablePlugins(PlayScala)
+  .dependsOn(root % "test->test") // the "test->test" allows reusing test code and test dependencies
+  .settings(DefaultBuildSettings.itSettings(true))
+  .settings(libraryDependencies ++= AppDependencies(), addTestReportOption(Test, "int-test-reports"))
+
   .settings(
     resolvers += Resolver.jcenterRepo
   )

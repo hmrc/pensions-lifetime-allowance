@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package controllers
-
 import com.github.tomakehurst.wiremock.client.WireMock._
 import play.api.http.Status._
 import play.api.libs.json.{JsObject, JsValue, Json}
