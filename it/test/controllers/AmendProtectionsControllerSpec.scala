@@ -252,12 +252,12 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       "return a success response" in {
         testMocks()
-        result.status shouldBe OK
+        result.status mustBe OK
       }
 
       "include the response in the body" in {
         testMocks()
-        result.body shouldBe validResultIPBody(nino, "IP2016")
+        result.body mustBe validResultIPBody(nino, "IP2016")
       }
 
       "submit the correct json to nps" in {
@@ -302,12 +302,12 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       "return a service_unavailable response" in {
         testMocks()
-        result.status shouldBe SERVICE_UNAVAILABLE
+        result.status mustBe SERVICE_UNAVAILABLE
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForAmend(ninoWithoutSuffix, SERVICE_UNAVAILABLE, "error message", 1)
+        result.body mustBe invalidResultBodyForAmend(ninoWithoutSuffix, SERVICE_UNAVAILABLE, "error message", 1)
       }
 
       "submit the correct json to nps" in {
@@ -359,12 +359,12 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       "return a service_unavailable response" in {
         testMocks()
-        result.status shouldBe INTERNAL_SERVER_ERROR
+        result.status mustBe INTERNAL_SERVER_ERROR
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForAmend(ninoWithoutSuffix, BAD_GATEWAY, "error message", 1)
+        result.body mustBe invalidResultBodyForAmend(ninoWithoutSuffix, BAD_GATEWAY, "error message", 1)
       }
 
       "submit the correct json to nps" in {
@@ -416,12 +416,12 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       "return a service_unavailable response" in {
         testMocks()
-        result.status shouldBe UNAUTHORIZED
+        result.status mustBe UNAUTHORIZED
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForAmend(ninoWithoutSuffix, UNAUTHORIZED, "error message", 1)
+        result.body mustBe invalidResultBodyForAmend(ninoWithoutSuffix, UNAUTHORIZED, "error message", 1)
       }
 
       "submit the correct json to nps" in {
@@ -473,12 +473,12 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       "return a service_unavailable response" in {
         testMocks()
-        result.status shouldBe INTERNAL_SERVER_ERROR
+        result.status mustBe INTERNAL_SERVER_ERROR
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForAmend(ninoWithoutSuffix, FORBIDDEN, "error message", 1)
+        result.body mustBe invalidResultBodyForAmend(ninoWithoutSuffix, FORBIDDEN, "error message", 1)
       }
 
       "submit the correct json to nps" in {
@@ -526,12 +526,12 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       "return a service_unavailable response" in {
         testMocks()
-        result.status shouldBe BAD_REQUEST
+        result.status mustBe BAD_REQUEST
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe badRequestResultBody(ninoWithoutSuffix, "error message", 1)
+        result.body mustBe badRequestResultBody(ninoWithoutSuffix, "error message", 1)
       }
 
       "submit the correct json to nps" in {
@@ -581,12 +581,12 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       "return a success response" in {
         testMocks()
-        result.status shouldBe OK
+        result.status mustBe OK
       }
 
       "include the response in the body" in {
         testMocks()
-        result.body shouldBe validResultIPBody(nino, "IP2014")
+        result.body mustBe validResultIPBody(nino, "IP2014")
       }
 
       "submit the correct json to nps" in {
@@ -631,12 +631,12 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       "return a service_unavailable response" in {
         testMocks()
-        result.status shouldBe SERVICE_UNAVAILABLE
+        result.status mustBe SERVICE_UNAVAILABLE
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForAmend(ninoWithoutSuffix, SERVICE_UNAVAILABLE, "error message", 1)
+        result.body mustBe invalidResultBodyForAmend(ninoWithoutSuffix, SERVICE_UNAVAILABLE, "error message", 1)
       }
 
       "submit the correct json to nps" in {
@@ -688,12 +688,12 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       "return a service_unavailable response" in {
         testMocks()
-        result.status shouldBe INTERNAL_SERVER_ERROR
+        result.status mustBe INTERNAL_SERVER_ERROR
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForAmend(ninoWithoutSuffix, BAD_GATEWAY, "error message", 1)
+        result.body mustBe invalidResultBodyForAmend(ninoWithoutSuffix, BAD_GATEWAY, "error message", 1)
       }
 
       "submit the correct json to nps" in {
@@ -745,12 +745,12 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       "return a service_unavailable response" in {
         testMocks()
-        result.status shouldBe UNAUTHORIZED
+        result.status mustBe UNAUTHORIZED
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForAmend(ninoWithoutSuffix, UNAUTHORIZED, "error message", 1)
+        result.body mustBe invalidResultBodyForAmend(ninoWithoutSuffix, UNAUTHORIZED, "error message", 1)
       }
 
       "submit the correct json to nps" in {
@@ -802,12 +802,12 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       "return a service_unavailable response" in {
         testMocks()
-        result.status shouldBe INTERNAL_SERVER_ERROR
+        result.status mustBe INTERNAL_SERVER_ERROR
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForAmend(ninoWithoutSuffix, FORBIDDEN, "error message", 1)
+        result.body mustBe invalidResultBodyForAmend(ninoWithoutSuffix, FORBIDDEN, "error message", 1)
       }
 
       "submit the correct json to nps" in {
@@ -855,12 +855,12 @@ class AmendProtectionsControllerSpec extends IntegrationSpec {
 
       "return a service_unavailable response" in {
         testMocks()
-        result.status shouldBe BAD_REQUEST
+        result.status mustBe BAD_REQUEST
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe badRequestResultBody(ninoWithoutSuffix, "error message", 1)
+        result.body mustBe badRequestResultBody(ninoWithoutSuffix, "error message", 1)
       }
 
       "submit the correct json to nps" in {

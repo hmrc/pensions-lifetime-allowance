@@ -322,12 +322,12 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
 
       "return a success response" in {
         testMocks()
-        result.status shouldBe 200
+        result.status mustBe 200
       }
 
       "include the response in the body" in {
         testMocks()
-        result.body shouldBe validResultIPBody(nino)
+        result.body mustBe validResultIPBody(nino)
       }
 
       "submit the correct json to nps" in {
@@ -371,12 +371,12 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
 
       "return a conflict response" in {
         testMocks()
-        result.status shouldBe CONFLICT
+        result.status mustBe CONFLICT
       }
 
       "include the response in the body" in {
         testMocks()
-        result.body shouldBe validResultIPBody(nino)
+        result.body mustBe validResultIPBody(nino)
       }
 
       "submit the correct json to nps" in {
@@ -420,12 +420,12 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
 
       "return a service_unavailable response" in {
         testMocks()
-        result.status shouldBe SERVICE_UNAVAILABLE
+        result.status mustBe SERVICE_UNAVAILABLE
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForCreate(ninoWithoutSuffix, SERVICE_UNAVAILABLE, "error message")
+        result.body mustBe invalidResultBodyForCreate(ninoWithoutSuffix, SERVICE_UNAVAILABLE, "error message")
       }
 
       "submit the correct json to nps" in {
@@ -475,12 +475,12 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
 
       "return a internal_server_error response" in {
         testMocks()
-        result.status shouldBe INTERNAL_SERVER_ERROR
+        result.status mustBe INTERNAL_SERVER_ERROR
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForCreate(ninoWithoutSuffix, BAD_GATEWAY, "error message")
+        result.body mustBe invalidResultBodyForCreate(ninoWithoutSuffix, BAD_GATEWAY, "error message")
       }
 
       "submit the correct json to nps" in {
@@ -526,12 +526,12 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
 
       "return a unauthorised response" in {
         testMocks()
-        result.status shouldBe UNAUTHORIZED
+        result.status mustBe UNAUTHORIZED
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForCreate(ninoWithoutSuffix, UNAUTHORIZED, "error message")
+        result.body mustBe invalidResultBodyForCreate(ninoWithoutSuffix, UNAUTHORIZED, "error message")
       }
 
       "submit the correct json to nps" in {
@@ -577,12 +577,12 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
 
       "return a internal_server_error response" in {
         testMocks()
-        result.status shouldBe INTERNAL_SERVER_ERROR
+        result.status mustBe INTERNAL_SERVER_ERROR
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForCreate(ninoWithoutSuffix, FORBIDDEN, "error message")
+        result.body mustBe invalidResultBodyForCreate(ninoWithoutSuffix, FORBIDDEN, "error message")
       }
 
       "submit the correct json to nps" in {
@@ -628,12 +628,12 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
 
       "return a bad_request response" in {
         testMocks()
-        result.status shouldBe BAD_REQUEST
+        result.status mustBe BAD_REQUEST
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe badRequestResultBody(ninoWithoutSuffix, "error message")
+        result.body mustBe badRequestResultBody(ninoWithoutSuffix, "error message")
       }
 
       "submit the correct json to nps" in {
@@ -678,12 +678,12 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
 
       "return a success response" in {
         testMocks()
-        result.status shouldBe 200
+        result.status mustBe 200
       }
 
       "include the response in the body" in {
         testMocks()
-        result.body shouldBe validResultFPBody(nino)
+        result.body mustBe validResultFPBody(nino)
       }
 
       "submit the correct json to nps" in {
@@ -727,12 +727,12 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
 
       "return a conflict response" in {
         testMocks()
-        result.status shouldBe CONFLICT
+        result.status mustBe CONFLICT
       }
 
       "include the response in the body" in {
         testMocks()
-        result.body shouldBe validResultFPBody(nino)
+        result.body mustBe validResultFPBody(nino)
       }
 
       "submit the correct json to nps" in {
@@ -776,12 +776,12 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
 
       "return a service_unavailable response" in {
         testMocks()
-        result.status shouldBe SERVICE_UNAVAILABLE
+        result.status mustBe SERVICE_UNAVAILABLE
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForCreate(ninoWithoutSuffix, SERVICE_UNAVAILABLE, "error message")
+        result.body mustBe invalidResultBodyForCreate(ninoWithoutSuffix, SERVICE_UNAVAILABLE, "error message")
       }
 
       "submit the correct json to nps" in {
@@ -831,12 +831,12 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
 
       "return a internal_server_error response" in {
         testMocks()
-        result.status shouldBe INTERNAL_SERVER_ERROR
+        result.status mustBe INTERNAL_SERVER_ERROR
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForCreate(ninoWithoutSuffix, BAD_GATEWAY, "error message")
+        result.body mustBe invalidResultBodyForCreate(ninoWithoutSuffix, BAD_GATEWAY, "error message")
       }
 
       "submit the correct json to nps" in {
@@ -882,12 +882,12 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
 
       "return a unauthorised response" in {
         testMocks()
-        result.status shouldBe UNAUTHORIZED
+        result.status mustBe UNAUTHORIZED
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForCreate(ninoWithoutSuffix, UNAUTHORIZED, "error message")
+        result.body mustBe invalidResultBodyForCreate(ninoWithoutSuffix, UNAUTHORIZED, "error message")
       }
 
       "submit the correct json to nps" in {
@@ -933,12 +933,12 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
 
       "return a internal_server_error response" in {
         testMocks()
-        result.status shouldBe INTERNAL_SERVER_ERROR
+        result.status mustBe INTERNAL_SERVER_ERROR
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe invalidResultBodyForCreate(ninoWithoutSuffix, FORBIDDEN, "error message")
+        result.body mustBe invalidResultBodyForCreate(ninoWithoutSuffix, FORBIDDEN, "error message")
       }
 
       "submit the correct json to nps" in {
@@ -984,12 +984,12 @@ class CreateProtectionsControllerSpec extends IntegrationSpec {
 
       "return a bad_request response" in {
         testMocks()
-        result.status shouldBe BAD_REQUEST
+        result.status mustBe BAD_REQUEST
       }
 
       "includes a body with the error message" in {
         testMocks()
-        result.body shouldBe badRequestResultBody(ninoWithoutSuffix, "error message")
+        result.body mustBe badRequestResultBody(ninoWithoutSuffix, "error message")
       }
 
       "submit the correct json to nps" in {

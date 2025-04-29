@@ -19,7 +19,7 @@ package util
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.{ActorMaterializer, Materializer}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.matchers.should.Matchers
+import org.scalatest.matchers.must.Matchers
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
