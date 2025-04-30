@@ -78,7 +78,7 @@ trait WiremockHelper extends FakeConfig {
 }
 
 trait FakeConfig {
-  val wiremockPort = 11111
+  val wiremockPort = 80
   val wiremockHost = "localhost"
 
   def fakeConfig(additionalConfig: Map[String, String] = Map.empty): Map[String, String] = Map(

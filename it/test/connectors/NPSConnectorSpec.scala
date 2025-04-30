@@ -18,19 +18,18 @@ package connectors
 
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.mockito.MockitoSugar
-
-import java.util.Random
+import org.scalatestplus.play.PlaySpec
 import util._
 import play.api.libs.json._
 import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.http.client.HttpClientV2
-import org.scalatestplus.play.PlaySpec
 
+import java.util.Random
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class NPSConnectorSpec extends PlaySpec with MockitoSugar {
+class NPSConnectorSpec extends PlaySpec with MockitoSugar with WireMockHelper{
 
   private val mockHttp = mock[HttpClientV2]
 
