@@ -28,23 +28,21 @@ import play.api.inject.guice.GuiceableModule
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.HttpClientV2
 import util.{TestUtils, WithFakeApplication}
-import utilities.WiremockHelperIT
+import utilities.{IntegrationSpec, WiremockHelperIT}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class CitizenDetailsConnectorSpec
-    extends PlaySpec
+    extends IntegrationSpec
     with MockitoSugar
     with BeforeAndAfter
     with TestUtils
-    with GuiceOneAppPerSuite
     with WithFakeApplication
     with WiremockHelperIT {
 
   private val DefaultTestNino       = "KA191435A"
   private val DesignatoryDetailsUrl = s"/citizen-details/$DefaultTestNino/designatory-details"
   private val DefaultLocalUrl       = url
-    //"http://localhost:8083"
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 

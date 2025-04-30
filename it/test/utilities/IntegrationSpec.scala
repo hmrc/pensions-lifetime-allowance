@@ -43,7 +43,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.http.HeaderCarrier
 
 trait IntegrationSpec
-  extends PlaySpec
+    extends PlaySpec
     with GuiceOneServerPerSuite
     with ScalaFutures
     with IntegrationPatience
@@ -58,10 +58,11 @@ trait IntegrationSpec
 
   implicit val actorSystem: ActorSystem = ActorSystem()
   implicit val mat: Materializer        = ActorMaterializer()
-  implicit val hc: HeaderCarrier        = new HeaderCarrier()
 
-  override def beforeEach(): Unit =
+  override def beforeEach(): Unit = {
+    super.beforeEach()
     resetWiremock()
+  }
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -69,8 +70,8 @@ trait IntegrationSpec
   }
 
   override def afterAll(): Unit = {
-    stopWiremock()
     super.afterAll()
+    stopWiremock()
   }
 
   def mockAuth(status: Int): Unit = {

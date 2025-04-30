@@ -29,7 +29,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import java.util.Random
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class NPSConnectorSpec extends PlaySpec with MockitoSugar with WireMockHelper{
+class NPSConnectorSpec extends PlaySpec with MockitoSugar with WireMockHelper {
 
   private val mockHttp = mock[HttpClientV2]
 
