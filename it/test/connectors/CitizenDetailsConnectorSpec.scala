@@ -27,7 +27,8 @@ import play.api.http.Status._
 import play.api.inject.guice.GuiceableModule
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.HttpClientV2
-import util.{TestUtils, WireMockHelper, WithFakeApplication}
+import util.{TestUtils, WithFakeApplication}
+import utilities.WiremockHelperIT
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -38,7 +39,7 @@ class CitizenDetailsConnectorSpec
     with TestUtils
     with GuiceOneAppPerSuite
     with WithFakeApplication
-    with WireMockHelper {
+    with WiremockHelperIT {
 
   private val DefaultTestNino       = "KA191435A"
   private val DesignatoryDetailsUrl = s"/citizen-details/$DefaultTestNino/designatory-details"
@@ -80,7 +81,7 @@ class CitizenDetailsConnectorSpec
   "The CitizenDetails Connector checkCitizenRecord method" when {
 
     "return a valid HTTPResponse for successful retrieval" in {
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlPathMatching(DesignatoryDetailsUrl))
           .willReturn(
             aResponse()
@@ -96,7 +97,7 @@ class CitizenDetailsConnectorSpec
 
     "return an error if NotFoundException received" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlPathMatching(DesignatoryDetailsUrl))
           .willReturn(
             aResponse()
@@ -112,7 +113,7 @@ class CitizenDetailsConnectorSpec
 
     "return an error if Upstream4xxResponse received" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlPathMatching(DesignatoryDetailsUrl))
           .willReturn(
             aResponse()
@@ -128,7 +129,7 @@ class CitizenDetailsConnectorSpec
 
     "return an error if Upstream5xxResponse received" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlPathMatching(DesignatoryDetailsUrl))
           .willReturn(
             aResponse()
@@ -144,7 +145,7 @@ class CitizenDetailsConnectorSpec
 
     "return an error if CitizenRecordLocked received" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlPathMatching(DesignatoryDetailsUrl))
           .willReturn(
             aResponse()
