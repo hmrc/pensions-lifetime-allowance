@@ -1,5 +1,7 @@
+package utilities
+
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +16,15 @@
  * limitations under the License.
  */
 
-package util
-
-import akka.actor.ActorSystem
-import akka.stream.{ActorMaterializer, Materializer}
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.{ActorMaterializer, Materializer}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers}
-import play.api.Application
-import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.http.HeaderCarrier
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.Application
+import play.api.inject.guice.GuiceApplicationBuilder
 
 trait IntegrationSpec
     extends PlaySpec
@@ -32,7 +32,7 @@ trait IntegrationSpec
     with ScalaFutures
     with IntegrationPatience
     with Matchers
-    with WiremockHelper
+    with WiremockHelperIT
     with BeforeAndAfterEach
     with BeforeAndAfterAll {
 
@@ -42,10 +42,11 @@ trait IntegrationSpec
 
   implicit val actorSystem: ActorSystem = ActorSystem()
   implicit val mat: Materializer        = ActorMaterializer()
-  implicit val hc: HeaderCarrier        = new HeaderCarrier()
 
-  override def beforeEach(): Unit =
+  override def beforeEach(): Unit = {
+    super.beforeEach()
     resetWiremock()
+  }
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -53,8 +54,8 @@ trait IntegrationSpec
   }
 
   override def afterAll(): Unit = {
-    stopWiremock()
     super.afterAll()
+    stopWiremock()
   }
 
   def mockAuth(status: Int): Unit = {

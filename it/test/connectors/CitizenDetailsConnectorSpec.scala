@@ -1,3 +1,5 @@
+package connectors
+
 /*
  * Copyright 2024 HM Revenue & Customs
  *
@@ -14,34 +16,30 @@
  * limitations under the License.
  */
 
-package connectors
-
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, urlPathMatching}
 import org.scalatest.BeforeAndAfter
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, LOCKED, NOT_FOUND, OK}
+import play.api.http.Status._
 import play.api.inject.guice.GuiceableModule
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.HttpClientV2
-import util.{TestUtils, WireMockHelper, WithFakeApplication}
+import util.{TestUtils, WithFakeApplication}
+import utilities.{IntegrationSpec, WiremockHelperIT}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class CitizenDetailsConnectorSpec
-    extends PlaySpec
+    extends IntegrationSpec
     with MockitoSugar
     with BeforeAndAfter
     with TestUtils
-    with GuiceOneAppPerSuite
     with WithFakeApplication
-    with WireMockHelper {
+    with WiremockHelperIT {
 
   private val DefaultTestNino       = "KA191435A"
   private val DesignatoryDetailsUrl = s"/citizen-details/$DefaultTestNino/designatory-details"
-  private val DefaultLocalUrl       = "http://localhost:8083"
+  private val DefaultLocalUrl       = url
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
@@ -78,7 +76,7 @@ class CitizenDetailsConnectorSpec
   "The CitizenDetails Connector checkCitizenRecord method" when {
 
     "return a valid HTTPResponse for successful retrieval" in {
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlPathMatching(DesignatoryDetailsUrl))
           .willReturn(
             aResponse()
@@ -94,7 +92,7 @@ class CitizenDetailsConnectorSpec
 
     "return an error if NotFoundException received" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlPathMatching(DesignatoryDetailsUrl))
           .willReturn(
             aResponse()
@@ -110,7 +108,7 @@ class CitizenDetailsConnectorSpec
 
     "return an error if Upstream4xxResponse received" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlPathMatching(DesignatoryDetailsUrl))
           .willReturn(
             aResponse()
@@ -126,7 +124,7 @@ class CitizenDetailsConnectorSpec
 
     "return an error if Upstream5xxResponse received" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlPathMatching(DesignatoryDetailsUrl))
           .willReturn(
             aResponse()
@@ -142,7 +140,7 @@ class CitizenDetailsConnectorSpec
 
     "return an error if CitizenRecordLocked received" in {
 
-      server.stubFor(
+      wireMockServer.stubFor(
         get(urlPathMatching(DesignatoryDetailsUrl))
           .willReturn(
             aResponse()
