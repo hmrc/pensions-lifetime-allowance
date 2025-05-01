@@ -1,3 +1,5 @@
+package connectors
+
 /*
  * Copyright 2024 HM Revenue & Customs
  *
@@ -14,15 +16,10 @@
  * limitations under the License.
  */
 
-package connectors
-
-import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, urlPathMatching}
 import org.scalatest.BeforeAndAfter
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.mockito.MockitoSugar
-import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status._
 import play.api.inject.guice.GuiceableModule
 import uk.gov.hmrc.http.HeaderCarrier

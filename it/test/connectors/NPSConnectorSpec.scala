@@ -1,3 +1,5 @@
+package connectors
+
 /*
  * Copyright 2024 HM Revenue & Customs
  *
@@ -14,8 +16,6 @@
  * limitations under the License.
  */
 
-package connectors
-
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -29,7 +29,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import java.util.Random
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class NPSConnectorSpec extends PlaySpec with MockitoSugar with WireMockHelper {
+class NPSConnectorSpec extends PlaySpec with MockitoSugar {
 
   private val mockHttp = mock[HttpClientV2]
 
