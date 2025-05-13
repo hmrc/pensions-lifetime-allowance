@@ -12,22 +12,10 @@ object AppDependencies {
     "uk.gov.hmrc" %% "domain-play-30"            % "11.0.0"
   )
 
-  trait TestDependencies {
-    lazy val scope: String       = "test"
-    lazy val test: Seq[ModuleID] = ???
-  }
+  val test: Seq[ModuleID] = Seq(
+    "uk.gov.hmrc"       %% "bootstrap-test-play-30" % boostrapVersion,
+    "org.scalatestplus" %% "scalacheck-1-18"        % "3.2.19.0"
+  ).map(_ % Test)
 
-  object Test {
-
-    def apply(): Seq[ModuleID] = new TestDependencies {
-      override lazy val test = Seq(
-        "uk.gov.hmrc"       %% "bootstrap-test-play-30" % boostrapVersion % scope,
-        "org.scalatestplus" %% "scalatestplus-mockito"  % "1.0.0-M2"      % scope,
-        "org.mockito"        % "mockito-core"           % "3.7.7"         % scope
-      )
-    }.test
-
-  }
-
-  def apply(): Seq[ModuleID] = compile ++ Test()
+  def apply(): Seq[ModuleID] = compile ++ test
 }

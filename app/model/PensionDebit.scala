@@ -31,5 +31,5 @@ object PensionDebit {
 
   val jsonReads: Reads[PensionDebit] = Json.reads
 
-  implicit val pdFormat = Format[PensionDebit](jsonReads, jsonWrites)
+  implicit val pdFormat: Format[PensionDebit] = Format[PensionDebit](jsonReads, jsonWrites)
 }

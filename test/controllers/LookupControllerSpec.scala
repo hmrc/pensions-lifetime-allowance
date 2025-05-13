@@ -38,11 +38,11 @@ class LookupControllerSpec
     with WithFakeApplication
     with BeforeAndAfterEach {
 
-  implicit lazy val hc               = HeaderCarrier()
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
 
-  implicit lazy val cc              = app.injector.instanceOf[ControllerComponents]
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+  implicit lazy val hc: HeaderCarrier        = HeaderCarrier()
+  implicit lazy val cc: ControllerComponents = app.injector.instanceOf[ControllerComponents]
+  implicit val ec: ExecutionContext          = app.injector.instanceOf[ExecutionContext]
 
   lazy val validResponse: JsValue = Json.parse(
     s"""{"pensionSchemeAdministratorCheckReference": "PSA12345678A","ltaType": 7,"psaCheckResult": 1,"relevantAmount": 25000}"""

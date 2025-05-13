@@ -17,31 +17,26 @@
 package controllers
 
 import _root_.mock.AuthMock
-import org.apache.pekko.actor.ActorSystem
 import connectors.{CitizenDetailsConnector, CitizenRecordOK, NpsConnector}
+import org.apache.pekko.actor.ActorSystem
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.mvc._
-import util.{NinoHelper, TestUtils}
-import util.WithFakeApplication
+import util.{TestUtils, WithFakeApplication}
 import play.api.libs.json._
 import play.api.test.Helpers._
 import play.api.test.{FakeHeaders, FakeRequest}
 import services.ProtectionService
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
+import uk.gov.hmrc.http.BadRequestException
 
-import java.util.Random
 import scala.concurrent.{ExecutionContext, Future}
 
 class CreateProtectionsControllerSpec
     extends PlaySpec
-    with MockitoSugar
     with BeforeAndAfterEach
     with AuthMock
     with GuiceOneServerPerSuite
@@ -50,10 +45,7 @@ class CreateProtectionsControllerSpec
 
   private implicit val system: ActorSystem = ActorSystem("test-sys")
 
-  val rand                                                 = new Random()
-  val ninoGenerator                                        = new Generator(rand)
   val mockCitizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
-  def randomNino: String                                   = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
 
   when(
     mockCitizenDetailsConnector
@@ -63,9 +55,7 @@ class CreateProtectionsControllerSpec
 
   mockAuthConnector(Future.successful {})
 
-  val testNino: String                           = randomNino
-  val (testNinoWithoutSuffix, _)                 = NinoHelper.dropNinoSuffix(testNino)
-  implicit lazy val cc                           = app.injector.instanceOf[ControllerComponents]
+  implicit lazy val cc: ControllerComponents     = app.injector.instanceOf[ControllerComponents]
   val mockService: ProtectionService             = mock[ProtectionService]
   val mockNPSResponseHandler: NPSResponseHandler = mock[NPSResponseHandler]
   implicit val ec: ExecutionContext              = app.injector.instanceOf[ExecutionContext]
@@ -77,7 +67,6 @@ class CreateProtectionsControllerSpec
     cc
   )
 
-  implicit lazy val hc                          = HeaderCarrier()
   val mockNpsConnector: NpsConnector            = mock[NpsConnector]
   val mockHandleNpsResponse: NPSResponseHandler = mock[NPSResponseHandler]
 

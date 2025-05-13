@@ -31,7 +31,7 @@ case class ProtectionApplication(
 
 object ProtectionApplication {
 
-  implicit val protectionApplicationFormat = {
+  implicit val protectionApplicationFormat: Format[ProtectionApplication] = {
     val jsonReads = Json.reads[ProtectionApplication]
 
     val jsonWrites: Writes[ProtectionApplication] = new Writes[ProtectionApplication] {

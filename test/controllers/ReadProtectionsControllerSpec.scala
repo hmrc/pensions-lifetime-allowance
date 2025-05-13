@@ -16,49 +16,38 @@
 
 package controllers
 
-import java.util.Random
-import org.apache.pekko.stream.Materializer
-import connectors.{CitizenDetailsConnector, CitizenRecordOK}
-import org.mockito.ArgumentMatchers
-import org.scalatestplus.mockito.MockitoSugar
 import _root_.mock.AuthMock
 import com.codahale.metrics.SharedMetricRegistries
+import connectors.{CitizenDetailsConnector, CitizenRecordOK}
 import model.HttpResponseDetails
+import org.apache.pekko.stream.Materializer
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfter
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.libs.json.{JsError, JsObject, JsSuccess, Json}
+import play.api.libs.json._
 import play.api.mvc._
-import play.api.test.Helpers._
 import play.api.test.FakeRequest
-import uk.gov.hmrc.domain.Generator
-import util.{NinoHelper, WithFakeApplication}
-import play.api.libs.json.JsNumber
+import play.api.test.Helpers._
 import services.ProtectionService
+import uk.gov.hmrc.http.BadRequestException
+import _root_.util.{TestUtils, WithFakeApplication}
 
 import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier}
 
 class ReadProtectionsControllerSpec
     extends PlaySpec
     with GuiceOneServerPerSuite
     with WithFakeApplication
-    with MockitoSugar
     with BeforeAndAfter
-    with AuthMock {
+    with AuthMock
+    with TestUtils {
 
   SharedMetricRegistries.clear()
 
-  val rand          = new Random()
-  val ninoGenerator = new Generator(rand)
-
-  def randomNino: String = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
-
   val mockCitizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
   val mockProtectionService: ProtectionService             = mock[ProtectionService]
-  val testNino: String                                     = randomNino
-  val (testNinoWithoutSuffix, _)                           = NinoHelper.dropNinoSuffix(testNino)
 
   when(
     mockCitizenDetailsConnector
@@ -68,7 +57,6 @@ class ReadProtectionsControllerSpec
 
   mockAuthConnector(Future.successful {})
 
-  implicit val hc: HeaderCarrier          = HeaderCarrier()
   implicit val cc: ControllerComponents   = app.injector.instanceOf[ControllerComponents]
   implicit val materializer: Materializer = app.materializer
   implicit val ec: ExecutionContext       = app.injector.instanceOf[ExecutionContext]
