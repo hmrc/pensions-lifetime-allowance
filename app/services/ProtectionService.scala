@@ -30,22 +30,6 @@ class DefaultProtectionService @Inject() (val npsConnector: NpsConnector) extend
 trait ProtectionService {
   val npsConnector: NpsConnector
 
-  def applyForProtection(
-      nino: String,
-      applicationRequestBody: JsObject
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
-    val (ninoWithoutSuffix, lastNinoCharOpt) = NinoHelper.dropNinoSuffix(nino)
-    val npsRequestBody                       = applicationRequestBody.deepMerge(Json.obj("nino" -> ninoWithoutSuffix))
-    npsConnector.applyForProtection(nino, npsRequestBody).map { npsResponse =>
-      val transformedResponseJs = npsResponse.body.flatMap { json =>
-        Json.fromJson[ProtectionModel](json).map(base => base.copy(nino = base.nino + lastNinoCharOpt.getOrElse("")))
-      }
-      HttpResponseDetails(
-        npsResponse.status,
-        transformedResponseJs.map(model => Json.toJson[ProtectionModel](model).as[JsObject])
-      )
-    }
-  }
 
   def amendProtection(nino: String, protectionId: Long, amendmentRequestBody: JsObject)(
       implicit hc: HeaderCarrier,

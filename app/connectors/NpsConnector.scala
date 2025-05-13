@@ -64,11 +64,6 @@ trait NpsConnector extends Logging {
     "Authorization" -> s"Bearer $serviceAccessToken"
   )
 
-  def getApplyUrl(nino: String): String = {
-    val (ninoWithoutSuffix, _) = NinoHelper.dropNinoSuffix(nino)
-    serviceUrl + s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protection"
-  }
-
   def getAmendUrl(nino: String, id: Long): String = {
     val (ninoWithoutSuffix, _) = NinoHelper.dropNinoSuffix(nino)
     serviceUrl + s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protections/$id"
@@ -82,26 +77,6 @@ trait NpsConnector extends Logging {
   implicit val readApiResponse: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
     override def read(method: String, url: String, response: HttpResponse): HttpResponse =
       NpsResponseHandler.handleNpsResponse(method, url, response)
-  }
-
-  def applyForProtection(
-      nino: String,
-      body: JsObject
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
-    val requestUrl  = getApplyUrl(nino)
-    val responseFut = post(requestUrl, body)
-
-    responseFut.map { response =>
-      val responseBody = response.json.as[JsObject]
-      val auditEvent = new NPSCreateLTAEvent(
-        nino = nino,
-        npsRequestBodyJs = body,
-        npsResponseBodyJs = responseBody,
-        statusCode = response.status,
-        path = requestUrl
-      )
-      handleAuditableResponse(nino, response, Some(auditEvent))
-    }
   }
 
   def amendProtection(nino: String, id: Long, body: JsObject)(
