@@ -30,7 +30,6 @@ class DefaultProtectionService @Inject() (val npsConnector: NpsConnector) extend
 trait ProtectionService {
   val npsConnector: NpsConnector
 
-
   def amendProtection(nino: String, protectionId: Long, amendmentRequestBody: JsObject)(
       implicit hc: HeaderCarrier,
       ec: ExecutionContext
