@@ -18,7 +18,15 @@ package services
 
 import connectors.NpsConnector
 import connectors.NpsResponseHandler.notFoundMessage
-import model.{Error, HttpResponseDetails, PensionDebit, ProtectionAmendment, ProtectionModel, ReadProtection, ReadProtectionsModel}
+import model.{
+  Error,
+  HttpResponseDetails,
+  PensionDebit,
+  ProtectionAmendment,
+  ProtectionModel,
+  ReadProtection,
+  ReadProtectionsModel
+}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
@@ -38,13 +46,14 @@ import java.util.Random
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ProtectionServiceSpec extends PlaySpec
-  with GuiceOneServerPerSuite
-  with WithFakeApplication
-  with MockitoSugar
-  with ScalaFutures
-  with BeforeAndAfterEach
-  with ScalaCheckDrivenPropertyChecks {
+class ProtectionServiceSpec
+    extends PlaySpec
+    with GuiceOneServerPerSuite
+    with WithFakeApplication
+    with MockitoSugar
+    with ScalaFutures
+    with BeforeAndAfterEach
+    with ScalaCheckDrivenPropertyChecks {
 
   val rand               = new Random()
   val ninoGenerator      = new Generator(rand)
@@ -110,7 +119,6 @@ class ProtectionServiceSpec extends PlaySpec
               |
     """.stripMargin)
 
-
   val protectionModel: ProtectionModel = ProtectionModel(testNinoWithoutSuffix, protectionType = "IP2016")
 
   override def beforeEach(): Unit = {
@@ -122,12 +130,14 @@ class ProtectionServiceSpec extends PlaySpec
 
     ".amendProtection is called" must {
 
-      val requestJson = validAmendBody.as[JsObject].deepMerge(
-        Json.obj(
-          "nino" -> testNinoWithoutSuffix,
-          "protection" -> Json.obj("id" -> id)
+      val requestJson = validAmendBody
+        .as[JsObject]
+        .deepMerge(
+          Json.obj(
+            "nino"       -> testNinoWithoutSuffix,
+            "protection" -> Json.obj("id" -> id)
+          )
         )
-      )
 
       "return 200 with a protection model created from the NPS payload" when {
 
@@ -140,18 +150,22 @@ class ProtectionServiceSpec extends PlaySpec
 
           result.futureValue.status mustBe OK
           result.futureValue.body mustBe JsSuccess(
-            Json.toJson[ProtectionModel](ProtectionModel(
-              nino = testNino,
-              psaCheckReference = Some("PSA123456789"),
-              protectionID = Some(id),
-              certificateDate = Some("2015-05-22T12:22:59"),
-              version = Some(1),
-              protectionType = "FP2016",
-              status = Some("Open"),
-              relevantAmount = Some(1250000),
-              notificationId = Some(12),
-              protectionReference = Some("IP161234567890C")
-            )).as[JsObject]
+            Json
+              .toJson[ProtectionModel](
+                ProtectionModel(
+                  nino = testNino,
+                  psaCheckReference = Some("PSA123456789"),
+                  protectionID = Some(id),
+                  certificateDate = Some("2015-05-22T12:22:59"),
+                  version = Some(1),
+                  protectionType = "FP2016",
+                  status = Some("Open"),
+                  relevantAmount = Some(1250000),
+                  notificationId = Some(12),
+                  protectionReference = Some("IP161234567890C")
+                )
+              )
+              .as[JsObject]
           )
         }
       }
@@ -182,7 +196,7 @@ class ProtectionServiceSpec extends PlaySpec
           when(mockNpsConnector.amendProtection(eqTo(testNino), any(), eqTo(requestJson))(any(), any()))
             .thenReturn(
               Future.failed(
-              new NotFoundException(
+                new NotFoundException(
                   notFoundMessage(
                     "PUT",
                     s"/pensions-lifetime-allowance/individual/$testNinoWithoutSuffix/protections/$id",
@@ -225,13 +239,15 @@ class ProtectionServiceSpec extends PlaySpec
         "NPS Connector returns 200 with no protections" in {
 
           val existingProtectionsPayload =
-            Json.parse(s"""
-                          |{
-                          | "nino": "$testNinoWithoutSuffix",
-                          | "pensionSchemeAdministratorCheckReference": "PSA123456789",
-                          | "protections": []
-                          |}
-        """.stripMargin).as[JsObject]
+            Json
+              .parse(s"""
+                        |{
+                        | "nino": "$testNinoWithoutSuffix",
+                        | "pensionSchemeAdministratorCheckReference": "PSA123456789",
+                        | "protections": []
+                        |}
+        """.stripMargin)
+              .as[JsObject]
 
           when(mockNpsConnector.readExistingProtections(eqTo(testNino))(any(), any()))
             .thenReturn(Future.successful(HttpResponseDetails(OK, JsSuccess(existingProtectionsPayload))))
@@ -240,29 +256,33 @@ class ProtectionServiceSpec extends PlaySpec
 
           result.futureValue.status mustBe OK
           result.futureValue.body mustBe JsSuccess(
-            Json.toJson[ReadProtectionsModel](
-              ReadProtectionsModel(testNino, "PSA123456789", Some(List.empty))
-            ).as[JsObject]
+            Json
+              .toJson[ReadProtectionsModel](
+                ReadProtectionsModel(testNino, "PSA123456789", Some(List.empty))
+              )
+              .as[JsObject]
           )
         }
 
         "NPS Connector returns 200 with a single protection" in {
 
           val existingProtectionsPayload =
-            Json.parse(s"""
-                          |{
-                          | "nino": "$testNinoWithoutSuffix",
-                          | "pensionSchemeAdministratorCheckReference" : "PSA123456789",
-                          | "protections" :  [
-                          |   {
-                          |     "id": 1,
-                          |     "version": 1,
-                          |     "type": 1,
-                          |     "status": 1
-                          |   }
-                          | ]
-                          |}
-        """.stripMargin).as[JsObject]
+            Json
+              .parse(s"""
+                        |{
+                        | "nino": "$testNinoWithoutSuffix",
+                        | "pensionSchemeAdministratorCheckReference" : "PSA123456789",
+                        | "protections" :  [
+                        |   {
+                        |     "id": 1,
+                        |     "version": 1,
+                        |     "type": 1,
+                        |     "status": 1
+                        |   }
+                        | ]
+                        |}
+        """.stripMargin)
+              .as[JsObject]
 
           when(mockNpsConnector.readExistingProtections(eqTo(testNino))(any(), any()))
             .thenReturn(Future.successful(HttpResponseDetails(OK, JsSuccess(existingProtectionsPayload))))
@@ -271,37 +291,43 @@ class ProtectionServiceSpec extends PlaySpec
 
           result.futureValue.status mustBe OK
           result.futureValue.body mustBe JsSuccess(
-            Json.toJson[ReadProtectionsModel](ReadProtectionsModel(
-              testNino,
-              "PSA123456789",
-              Some(List(ReadProtection(id, version = id, protectionType = "FP2016", status = "Open")))
-          )).as[JsObject]
+            Json
+              .toJson[ReadProtectionsModel](
+                ReadProtectionsModel(
+                  testNino,
+                  "PSA123456789",
+                  Some(List(ReadProtection(id, version = id, protectionType = "FP2016", status = "Open")))
+                )
+              )
+              .as[JsObject]
           )
         }
 
         "NPS Connector returns 200 with multiple protections" in {
 
           val existingProtectionsPayload =
-            Json.parse(s"""
-                          |{
-                          | "nino": "$testNinoWithoutSuffix",
-                          | "pensionSchemeAdministratorCheckReference" : "PSA123456789",
-                          | "protections" : [
-                          |   {
-                          |     "id": 1,
-                          |     "version": 1,
-                          |     "type": 1,
-                          |     "status": 1
-                          |   },
-                          |   {
-                          |     "id": 2,
-                          |     "version": 1,
-                          |     "type": 1,
-                          |     "status": 3
-                          |   }
-                          | ]
-                          |}
-        """.stripMargin).as[JsObject]
+            Json
+              .parse(s"""
+                        |{
+                        | "nino": "$testNinoWithoutSuffix",
+                        | "pensionSchemeAdministratorCheckReference" : "PSA123456789",
+                        | "protections" : [
+                        |   {
+                        |     "id": 1,
+                        |     "version": 1,
+                        |     "type": 1,
+                        |     "status": 1
+                        |   },
+                        |   {
+                        |     "id": 2,
+                        |     "version": 1,
+                        |     "type": 1,
+                        |     "status": 3
+                        |   }
+                        | ]
+                        |}
+        """.stripMargin)
+              .as[JsObject]
 
           when(mockNpsConnector.readExistingProtections(eqTo(testNino))(any(), any()))
             .thenReturn(Future.successful(HttpResponseDetails(OK, JsSuccess(existingProtectionsPayload))))
@@ -310,14 +336,20 @@ class ProtectionServiceSpec extends PlaySpec
 
           result.futureValue.status mustBe OK
           result.futureValue.body mustBe JsSuccess(
-            Json.toJson[ReadProtectionsModel](ReadProtectionsModel(
-              testNino,
-              "PSA123456789",
-              Some(List(
-                ReadProtection(id, version = id, protectionType = "FP2016", status = "Open"),
-                ReadProtection(2, version = id, protectionType = "FP2016", status = "Withdrawn")
-              ))
-            )).as[JsObject]
+            Json
+              .toJson[ReadProtectionsModel](
+                ReadProtectionsModel(
+                  testNino,
+                  "PSA123456789",
+                  Some(
+                    List(
+                      ReadProtection(id, version = id, protectionType = "FP2016", status = "Open"),
+                      ReadProtection(2, version = id, protectionType = "FP2016", status = "Withdrawn")
+                    )
+                  )
+                )
+              )
+              .as[JsObject]
           )
         }
       }
@@ -384,4 +416,5 @@ class ProtectionServiceSpec extends PlaySpec
       }
     }
   }
+
 }

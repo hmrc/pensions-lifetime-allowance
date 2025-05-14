@@ -52,12 +52,6 @@ class NPSConnectorSpec extends PlaySpec with WithFakeApplication with TestUtils 
     }
   }
 
-  "The NPS Connector getApplyUrl method" when {
-    "return a  URL that contains the nino passed to it" in {
-      npsConnector.getApplyUrl(testNinoWithoutSuffix).contains(testNinoWithoutSuffix) mustBe true
-    }
-  }
-
   "The NPS Connector getAmendUrl method" when {
     "return a  URL that contains the nino passed to it" in {
       npsConnector.getAmendUrl(testNinoWithoutSuffix, 1).contains(testNinoWithoutSuffix) mustBe true
@@ -144,4 +138,5 @@ class NPSConnectorSpec extends PlaySpec with WithFakeApplication with TestUtils 
       responseDetails.body.isSuccess mustBe true
     }
   }
+
 }
