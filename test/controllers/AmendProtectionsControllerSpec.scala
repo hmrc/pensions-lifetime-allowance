@@ -54,13 +54,13 @@ class AmendProtectionsControllerSpec
 
   def randomNino: String = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
 
-  val testNino                      = randomNino
-  val (testNinoWithoutSuffix, _)    = NinoHelper.dropNinoSuffix(testNino)
-  val testProtectionId              = 1
-  val testProtectionVersion         = 1
-  implicit lazy val hc              = mock[HeaderCarrier]
-  val mockNpsConnector              = mock[NpsConnector]
-  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+  val testNino                        = randomNino
+  val (testNinoWithoutSuffix, _)      = NinoHelper.dropNinoSuffix(testNino)
+  val testProtectionId                = 1
+  val testProtectionVersion           = 1
+  val mockNpsConnector                = mock[NpsConnector]
+  implicit lazy val hc: HeaderCarrier = mock[HeaderCarrier]
+  implicit val ec: ExecutionContext   = app.injector.instanceOf[ExecutionContext]
 
   lazy val cc = app.injector.instanceOf[ControllerComponents]
 

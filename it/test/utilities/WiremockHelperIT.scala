@@ -106,7 +106,8 @@ trait FakeConfig {
     "microservice.services.nps.port"                      -> s"$wiremockPort",
     "microservice.services.citizen-details.host"          -> s"$wiremockHost",
     "microservice.services.citizen-details.port"          -> s"$wiremockPort",
-    "microservice.services.citizen-details.checkRequired" -> "true"
+    "microservice.services.citizen-details.checkRequired" -> "true",
+    "auditing.enabled"                                    -> "false"
   ) ++ additionalConfig
 
 }

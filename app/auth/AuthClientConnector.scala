@@ -16,12 +16,12 @@
 
 package auth
 
-import javax.inject.Inject
-import play.api.Mode
-import play.api.{Configuration, Environment}
+import play.api.{Environment, Mode}
 import uk.gov.hmrc.auth.core.PlayAuthConnector
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
+import javax.inject.Inject
 
 class DefaultAuthClientConnector @Inject() (
     val httpClientV2: HttpClientV2,

@@ -16,14 +16,13 @@
 
 package connectors
 
-import javax.inject.Inject
-import play.api.Mode
+import play.api.{Environment, Mode}
 import play.api.http.Status._
-import play.api.{Configuration, Environment}
 import uk.gov.hmrc.http._
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DefaultCitizenDetailsConnector @Inject() (

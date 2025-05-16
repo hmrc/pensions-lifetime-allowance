@@ -38,14 +38,13 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status._
 import play.api.inject.guice.GuiceableModule
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.HttpClientV2
 import util.{TestUtils, WithFakeApplication}
 import utilities.{IntegrationSpec, WiremockHelperIT}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class CitizenDetailsConnectorSpec
+class CitizenDetailsConnectorISpec
     extends IntegrationSpec
     with MockitoSugar
     with BeforeAndAfter
@@ -56,8 +55,6 @@ class CitizenDetailsConnectorSpec
   private val DefaultTestNino       = "KA191435A"
   private val DesignatoryDetailsUrl = s"/citizen-details/$DefaultTestNino/designatory-details"
   private val DefaultLocalUrl       = url
-
-  implicit val hc: HeaderCarrier = HeaderCarrier()
 
   def bindModules: Seq[GuiceableModule] = Seq()
 

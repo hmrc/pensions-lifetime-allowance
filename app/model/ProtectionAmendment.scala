@@ -35,7 +35,7 @@ case class ProtectionAmendment(
 
 object ProtectionAmendment {
 
-  implicit val protectionAmendmentFormat = {
+  implicit val protectionAmendmentFormat: Format[ProtectionAmendment] = {
     val jsonReads = Json.reads[ProtectionAmendment]
 
     val jsonWrites: Writes[ProtectionAmendment] = new Writes[ProtectionAmendment] {

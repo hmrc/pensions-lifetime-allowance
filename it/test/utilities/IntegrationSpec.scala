@@ -32,8 +32,9 @@ package utilities
  * limitations under the License.
  */
 
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.stream.{ActorMaterializer, Materializer}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, get, stubFor}
+import com.github.tomakehurst.wiremock.matching.StringValuePattern
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
@@ -42,9 +43,10 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 
+import java.util
+
 trait IntegrationSpec
     extends PlaySpec
-    with GuiceOneServerPerSuite
     with ScalaFutures
     with IntegrationPatience
     with Matchers
@@ -52,12 +54,9 @@ trait IntegrationSpec
     with BeforeAndAfterEach
     with BeforeAndAfterAll {
 
-  override implicit lazy val app: Application = new GuiceApplicationBuilder()
+  implicit lazy val app: Application = new GuiceApplicationBuilder()
     .configure(fakeConfig())
     .build()
-
-  implicit val actorSystem: ActorSystem = ActorSystem()
-  implicit val mat: Materializer        = ActorMaterializer()
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -74,46 +73,37 @@ trait IntegrationSpec
     stopWiremock()
   }
 
-  def mockAuth(status: Int): Unit = {
-
-    stubPost("/auth/authorise", status, "{}")
-
-    stubGet("/auth/ids", status, """{"internalId":"Int-xxx","externalId":"Ext-xxx"}""")
-
-    stubGet(
-      "/auth/userDetails",
-      status,
-      """
-        |{
-        |   "name":"xxx",
-        |   "email":"xxx",
-        |   "affinityGroup":"xxx",
-        |   "authProviderId":"123456789",
-        |   "authProviderType":"xxx"
-        |}
-      """.stripMargin
-    )
-  }
-
-  def mockCitizenDetails(nino: String, status: Int): Unit = {
-    val url = s"/citizen-details/$nino/designatory-details"
-    stubGet(url, status, "")
-  }
-
-  def mockAudit(status: Int): Unit = {
-    val url = s"/write/audit"
-    stubPost(url, status, "audit-response")
-    stubPost(url + "/merged", status, "audit-response")
-  }
-
-  def mockNPSConnector(nino: String, status: Int, body: String): Unit = {
-    val url = s"/pensions-lifetime-allowance/individual/$nino/protection"
-    stubPost(url, status, body)
-  }
-
-  def mockAmend(nino: String, status: Int, body: String, id: Long): Unit = {
+  def mockAmend(nino: String, status: Int, body: String, id: Long): StubMapping = {
     val url = s"/pensions-lifetime-allowance/individual/$nino/protections/$id"
     stubPut(url, status, body)
   }
+
+  def stubPSALookup(psaRef: String, ltaRef: String, status: Int, body: String): StubMapping = {
+
+    val url =
+      s"/pensions-lifetime-allowance/scheme-administrator/certificate-lookup?pensionSchemeAdministratorCheckReference=$psaRef&lifetimeAllowanceReference=$ltaRef"
+
+    def lookupQueryParams: util.Map[String, StringValuePattern] = {
+      import scala.jdk.CollectionConverters._
+
+      Map(
+        "pensionSchemeAdministratorCheckReference" -> equalTo(psaRef),
+        "lifetimeAllowanceReference"               -> equalTo(ltaRef)
+      ).asJava
+    }
+
+    stubFor(
+      get(url)
+        .withQueryParams(lookupQueryParams)
+        .willReturn(
+          aResponse()
+            .withStatus(status)
+            .withBody(body)
+        )
+    )
+  }
+
+  def stubReadExistingProtections(nino: String, status: Int, body: String): StubMapping =
+    stubGet(s"/pensions-lifetime-allowance/individual/$nino/protections", status, body)
 
 }

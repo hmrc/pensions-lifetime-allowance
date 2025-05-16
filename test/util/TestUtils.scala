@@ -20,12 +20,14 @@ import org.apache.pekko.stream.Materializer
 import org.apache.pekko.util.ByteString
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
+import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.http.HeaderCarrier
 
 import java.nio.charset.Charset
+import java.util.Random
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.duration._
-import scala.language.postfixOps
 
 trait TestUtils {
 
@@ -56,4 +58,13 @@ trait TestUtils {
   }
 
   def await[A](future: Future[A])(implicit timeout: Duration): A = Await.result(future, timeout)
+
+  val rand               = new Random()
+  val ninoGenerator      = new Generator(rand)
+  def randomNino: String = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
+
+  val testNino: String           = randomNino
+  val (testNinoWithoutSuffix, _) = NinoHelper.dropNinoSuffix(testNino)
+
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 }

@@ -16,68 +16,28 @@
 
 package connectors
 
-/*
- * Copyright 2024 HM Revenue & Customs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
-import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import util._
-import play.api.libs.json._
-import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import play.api.libs.json.{JsObject, Json}
+import uk.gov.hmrc.http.HttpResponse
+import util.{NinoHelper, TestUtils, WithFakeApplication}
 
-import java.util.Random
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class NPSConnectorSpec extends PlaySpec with MockitoSugar {
+class NPSConnectorSpec extends PlaySpec with WithFakeApplication with TestUtils {
 
-  private val mockHttp = mock[HttpClientV2]
-
-  object testNPSConnector extends NpsConnector {
-    override val serviceUrl         = "http://localhost:80"
-    override val http: HttpClientV2 = mockHttp
-    override val serviceAccessToken = "token"
-    override val serviceEnvironment = "environment"
-
-    override val audit: AuditConnector = mock[AuditConnector]
-  }
-
-  val rand               = new Random()
-  val ninoGenerator      = new Generator(rand)
-  def randomNino: String = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
-
-  val testNino: String           = randomNino
-  val (testNinoWithoutSuffix, _) = NinoHelper.dropNinoSuffix(testNino)
-
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  val npsConnector: NpsConnector = fakeApplication().injector.instanceOf[NpsConnector]
 
   "The NPS connector implicit header carrier  " when {
     "should have the environment and authorisation headers set" in {
-      testNPSConnector.httpHeaders().exists(_._1 == "Environment") shouldBe true
-      testNPSConnector.httpHeaders().exists(_._1 == "Authorization") shouldBe true
+      npsConnector.httpHeaders().exists(_._1 == "Environment") mustBe true
+      npsConnector.httpHeaders().exists(_._1 == "Authorization") mustBe true
     }
   }
 
   "The  NPS Connector response handler" when {
     "handle 409 responses as successes and pass the status back unmodifed" in {
       val handledHttpResponse = NpsResponseHandler.handleNpsResponse("POST", "", HttpResponse(409, ""))
-      handledHttpResponse.status shouldBe 409
+      handledHttpResponse.status mustBe 409
     }
   }
 
@@ -94,13 +54,13 @@ class NPSConnectorSpec extends PlaySpec with MockitoSugar {
 
   "The NPS Connector getAmendUrl method" when {
     "return a  URL that contains the nino passed to it" in {
-      testNPSConnector.getAmendUrl(testNinoWithoutSuffix, 1).contains(testNinoWithoutSuffix) shouldBe true
+      npsConnector.getAmendUrl(testNinoWithoutSuffix, 1).contains(testNinoWithoutSuffix) mustBe true
     }
   }
 
   "The NPS Connector getReadUrl method" when {
     "return a  URL that contains the nino passed to it" in {
-      testNPSConnector.getReadUrl(testNinoWithoutSuffix).contains(testNinoWithoutSuffix) shouldBe true
+      npsConnector.getReadUrl(testNinoWithoutSuffix).contains(testNinoWithoutSuffix) mustBe true
     }
   }
 
@@ -114,12 +74,12 @@ class NPSConnectorSpec extends PlaySpec with MockitoSugar {
            |   "type": 1
            |   }
            | }
-        """.stripMargin
+      """.stripMargin
       val responseBody = Json.parse(requestStr).as[JsObject]
       val responseDetails =
-        testNPSConnector.handleAuditableResponse(testNino, HttpResponse(200, responseBody.toString()), None)
-      responseDetails.status shouldBe 200
-      responseDetails.body.isSuccess shouldBe true
+        npsConnector.handleAuditableResponse(testNino, HttpResponse(200, responseBody.toString()), None)
+      responseDetails.status mustBe 200
+      responseDetails.body.isSuccess mustBe true
     }
   }
 
@@ -136,12 +96,12 @@ class NPSConnectorSpec extends PlaySpec with MockitoSugar {
            |   "type": 1
            |   }
            | }
-        """.stripMargin
+      """.stripMargin
       val responseBody = Json.parse(requestStr).as[JsObject]
       val responseDetails =
-        testNPSConnector.handleAuditableResponse(testNino, HttpResponse(200, responseBody.toString()), None)
-      responseDetails.status shouldBe 400
-      responseDetails.body.isSuccess shouldBe true
+        npsConnector.handleAuditableResponse(testNino, HttpResponse(200, responseBody.toString()), None)
+      responseDetails.status mustBe 400
+      responseDetails.body.isSuccess mustBe true
     }
   }
 
@@ -149,16 +109,16 @@ class NPSConnectorSpec extends PlaySpec with MockitoSugar {
     "return a HTTPResponseDetails object with valid fields" in {
       val responseStr =
         s"""
-          {
+        {
            |"nino": "$testNinoWithoutSuffix",
            | "protection": {
            |   "type": 1
            |  }
            |}
-        """.stripMargin
-      val responseDetails = testNPSConnector.handleExpectedReadResponse(testNino, HttpResponse(200, responseStr))
-      responseDetails.status shouldBe 200
-      responseDetails.body.isSuccess shouldBe true
+      """.stripMargin
+      val responseDetails = npsConnector.handleExpectedReadResponse(testNino, HttpResponse(200, responseStr))
+      responseDetails.status mustBe 200
+      responseDetails.body.isSuccess mustBe true
     }
   }
 
@@ -171,11 +131,11 @@ class NPSConnectorSpec extends PlaySpec with MockitoSugar {
            |{
            | "nino": "$t1NinoWithoutSuffix"
            | }
-        """.stripMargin
+      """.stripMargin
 
-      val responseDetails = testNPSConnector.handleExpectedReadResponse(testNino, HttpResponse(200, requestStr))
-      responseDetails.status shouldBe 400
-      responseDetails.body.isSuccess shouldBe true
+      val responseDetails = npsConnector.handleExpectedReadResponse(testNino, HttpResponse(200, requestStr))
+      responseDetails.status mustBe 400
+      responseDetails.body.isSuccess mustBe true
     }
   }
 

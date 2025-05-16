@@ -18,11 +18,11 @@ package connectors
 
 import events.{NPSAmendLTAEvent, NPSBaseLTAEvent, NPSCreateLTAEvent}
 import model.{Error, HttpResponseDetails}
-import play.api.{Configuration, Environment, Logging, Mode}
+import play.api.{Environment, Logging, Mode}
 import util.NinoHelper
 import play.api.libs.json._
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{
-  BadRequestException,
   HeaderCarrier,
   HttpErrorFunctions,
   HttpReads,
@@ -32,7 +32,6 @@ import uk.gov.hmrc.http.{
 }
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.http.client.HttpClientV2
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -131,9 +130,6 @@ trait NpsConnector extends Logging {
       HttpResponseDetails(400, JsSuccess(Json.toJson(Error(report)).as[JsObject]))
     }
   }
-
-  def post(requestUrl: String, body: JsValue)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] =
-    http.post(url"$requestUrl").withBody(Json.toJson(body)).setHeader(httpHeaders(): _*).execute[HttpResponse]
 
   def put(requestUrl: String, body: JsValue)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] =
     http.put(url"$requestUrl").withBody(Json.toJson(body)).setHeader(httpHeaders(): _*).execute[HttpResponse]
