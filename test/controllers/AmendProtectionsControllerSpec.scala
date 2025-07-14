@@ -17,9 +17,10 @@
 package controllers
 
 import java.util.Random
-import connectors.{CitizenDetailsConnector, CitizenRecordOK, NpsConnector}
+import connectors.{CitizenDetailsConnector, CitizenRecordOK, HipConnector, NpsConnector}
 import org.mockito.ArgumentMatchers
 import _root_.mock.AuthMock
+import config.AppConfig
 import org.mockito.Mockito.when
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import org.scalatestplus.play.PlaySpec
@@ -58,7 +59,9 @@ class AmendProtectionsControllerSpec
   val (testNinoWithoutSuffix, _)      = NinoHelper.dropNinoSuffix(testNino)
   val testProtectionId                = 1
   val testProtectionVersion           = 1
-  val mockNpsConnector                = mock[NpsConnector]
+  val mockNpsConnector: NpsConnector  = mock[NpsConnector]
+  val mockHipConnector: HipConnector  = mock[HipConnector]
+  val mockAppConfig: AppConfig        = mock[AppConfig]
   implicit lazy val hc: HeaderCarrier = mock[HeaderCarrier]
   implicit val ec: ExecutionContext   = app.injector.instanceOf[ExecutionContext]
 
@@ -135,6 +138,8 @@ class AmendProtectionsControllerSpec
 
   object testProtectionService extends services.ProtectionService {
     override val npsConnector = mockNpsConnector
+    override val hipConnector = mockHipConnector
+    override val appConfig    = mockAppConfig
   }
 
   "AmendProtectionController" when {

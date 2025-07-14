@@ -16,19 +16,12 @@
 
 package services
 
-import connectors.NpsConnector
+import config.AppConfig
 import connectors.NpsResponseHandler.notFoundMessage
-import model.{
-  Error,
-  HttpResponseDetails,
-  PensionDebit,
-  ProtectionAmendment,
-  ProtectionModel,
-  ReadProtection,
-  ReadProtectionsModel
-}
+import connectors.{HipConnector, NpsConnector}
+import model._
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{reset, when}
+import org.mockito.Mockito.{reset, verify, verifyNoInteractions, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.RecoverMethods.recoverToSucceededIf
 import org.scalatest.concurrent.ScalaFutures
@@ -63,12 +56,15 @@ class ProtectionServiceSpec
   val (testNinoWithoutSuffix, _) = NinoHelper.dropNinoSuffix(testNino)
 
   val mockNpsConnector: NpsConnector = mock[NpsConnector]
+  val hipConnector: HipConnector     = mock[HipConnector]
+  val appConfig: AppConfig           = mock[AppConfig]
 
-  val service: ProtectionService = new DefaultProtectionService(mockNpsConnector)
+  val service: ProtectionService = new DefaultProtectionService(mockNpsConnector, hipConnector, appConfig)
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  val id = 1
+  private val protectionId = 1L
+  private val version      = 1
 
   val amendment: ProtectionAmendment = ProtectionAmendment(
     "IP2016",
@@ -89,7 +85,7 @@ class ProtectionServiceSpec
        |{
        | "protectionType": "IP2016",
        | "status": "Open",
-       | "version": $id,
+       | "version": $protectionId,
        | "relevantAmount": 1250000.00,
        | "postADayBenefitCrystallisationEvents": 250000.00,
        | "preADayPensionInPayment": 250000.00,
@@ -105,8 +101,8 @@ class ProtectionServiceSpec
               |      "nino": "$testNinoWithoutSuffix",
               |      "pensionSchemeAdministratorCheckReference" : "PSA123456789",
               |      "protection": {
-              |        "id": $id,
-              |        "version": $id,
+              |        "id": $protectionId,
+              |        "version": $protectionId,
               |        "type": 1,
               |        "certificateDate": "2015-05-22",
               |        "certificateTime": "12:22:59",
@@ -122,8 +118,10 @@ class ProtectionServiceSpec
   val protectionModel: ProtectionModel = ProtectionModel(testNinoWithoutSuffix, protectionType = "IP2016")
 
   override def beforeEach(): Unit = {
-    reset(mockNpsConnector)
     super.beforeEach()
+    reset(mockNpsConnector)
+    reset(hipConnector)
+    reset(appConfig)
   }
 
   "ProtectionService" when {
@@ -135,9 +133,31 @@ class ProtectionServiceSpec
         .deepMerge(
           Json.obj(
             "nino"       -> testNinoWithoutSuffix,
-            "protection" -> Json.obj("id" -> id)
+            "protection" -> Json.obj("id" -> protectionId)
           )
         )
+
+      "call HipConnector when AppConfig.isHipApiEnabled is true" in {
+        when(appConfig.isHipApiEnabled).thenReturn(true)
+        when(hipConnector.amendProtection())
+          .thenReturn(Future.successful(HttpResponseDetails(OK, JsSuccess(JsObject.empty))))
+
+        service.amendProtection(testNino, protectionId, requestJson).futureValue
+
+        verify(hipConnector).amendProtection()
+        verifyNoInteractions(mockNpsConnector)
+      }
+
+      "call NPSConnector when AppConfig.isHipApiEnabled is false" in {
+        when(appConfig.isHipApiEnabled).thenReturn(false)
+        when(mockNpsConnector.amendProtection(eqTo(testNino), any(), eqTo(requestJson))(any(), any()))
+          .thenReturn(Future.successful(HttpResponseDetails(OK, JsSuccess(amendResponse.as[JsObject]))))
+
+        service.amendProtection(testNino, protectionId, requestJson).futureValue
+
+        verify(mockNpsConnector).amendProtection(eqTo(testNino), eqTo(protectionId), eqTo(requestJson))(any(), any())
+        verifyNoInteractions(hipConnector)
+      }
 
       "return 200 with a protection model created from the NPS payload" when {
 
@@ -146,7 +166,7 @@ class ProtectionServiceSpec
           when(mockNpsConnector.amendProtection(eqTo(testNino), any(), eqTo(requestJson))(any(), any()))
             .thenReturn(Future.successful(HttpResponseDetails(OK, JsSuccess(amendResponse.as[JsObject]))))
 
-          val result: Future[HttpResponseDetails] = service.amendProtection(testNino, id, requestJson)
+          val result: Future[HttpResponseDetails] = service.amendProtection(testNino, protectionId, requestJson)
 
           result.futureValue.status mustBe OK
           result.futureValue.body mustBe JsSuccess(
@@ -155,7 +175,7 @@ class ProtectionServiceSpec
                 ProtectionModel(
                   nino = testNino,
                   psaCheckReference = Some("PSA123456789"),
-                  protectionID = Some(id),
+                  protectionID = Some(protectionId),
                   certificateDate = Some("2015-05-22T12:22:59"),
                   version = Some(1),
                   protectionType = "FP2016",
@@ -182,7 +202,7 @@ class ProtectionServiceSpec
           when(mockNpsConnector.amendProtection(eqTo(testNino), any(), eqTo(requestJson))(any(), any()))
             .thenReturn(Future.successful(HttpResponseDetails(BAD_REQUEST, npsResponseBody)))
 
-          val result: Future[HttpResponseDetails] = service.amendProtection(testNino, id, requestJson)
+          val result: Future[HttpResponseDetails] = service.amendProtection(testNino, protectionId, requestJson)
 
           result.futureValue.status mustBe BAD_REQUEST
           result.futureValue.body.isError mustBe true
@@ -199,7 +219,7 @@ class ProtectionServiceSpec
                 new NotFoundException(
                   notFoundMessage(
                     "PUT",
-                    s"/pensions-lifetime-allowance/individual/$testNinoWithoutSuffix/protections/$id",
+                    s"/pensions-lifetime-allowance/individual/$testNinoWithoutSuffix/protections/$protectionId",
                     "Something went wrong"
                   )
                 )
@@ -207,7 +227,7 @@ class ProtectionServiceSpec
             )
 
           recoverToSucceededIf[NotFoundException] {
-            service.amendProtection(testNino, id, requestJson)
+            service.amendProtection(testNino, protectionId, requestJson)
           }
         }
       }
@@ -224,7 +244,7 @@ class ProtectionServiceSpec
           when(mockNpsConnector.amendProtection(eqTo(testNino), any(), eqTo(requestJson))(any(), any()))
             .thenReturn(Future.successful(HttpResponseDetails(INTERNAL_SERVER_ERROR, npsResponseBody)))
 
-          val result: Future[HttpResponseDetails] = service.amendProtection(testNino, id, requestJson)
+          val result: Future[HttpResponseDetails] = service.amendProtection(testNino, protectionId, requestJson)
 
           result.futureValue.status mustBe INTERNAL_SERVER_ERROR
           result.futureValue.body.isError mustBe true
@@ -296,7 +316,9 @@ class ProtectionServiceSpec
                 ReadProtectionsModel(
                   testNino,
                   "PSA123456789",
-                  Some(List(ReadProtection(id, version = id, protectionType = "FP2016", status = "Open")))
+                  Some(
+                    List(ReadProtection(protectionId, version = version, protectionType = "FP2016", status = "Open"))
+                  )
                 )
               )
               .as[JsObject]
@@ -343,8 +365,8 @@ class ProtectionServiceSpec
                   "PSA123456789",
                   Some(
                     List(
-                      ReadProtection(id, version = id, protectionType = "FP2016", status = "Open"),
-                      ReadProtection(2, version = id, protectionType = "FP2016", status = "Withdrawn")
+                      ReadProtection(protectionId, version = version, protectionType = "FP2016", status = "Open"),
+                      ReadProtection(2, version = version, protectionType = "FP2016", status = "Withdrawn")
                     )
                   )
                 )

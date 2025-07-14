@@ -17,18 +17,25 @@
 package services
 
 import _root_.util.NinoHelper
-import connectors.NpsConnector
-import javax.inject.Inject
+import config.AppConfig
+import connectors.{HipConnector, NpsConnector}
 import model.{HttpResponseDetails, ProtectionModel, ReadProtectionsModel}
 import play.api.libs.json._
 import uk.gov.hmrc.http.HeaderCarrier
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class DefaultProtectionService @Inject() (val npsConnector: NpsConnector) extends ProtectionService
+class DefaultProtectionService @Inject() (
+    val npsConnector: NpsConnector,
+    val hipConnector: HipConnector,
+    val appConfig: AppConfig
+) extends ProtectionService
 
 trait ProtectionService {
   val npsConnector: NpsConnector
+  val hipConnector: HipConnector
+  val appConfig: AppConfig
 
   def amendProtection(nino: String, protectionId: Long, amendmentRequestBody: JsObject)(
       implicit hc: HeaderCarrier,
@@ -43,7 +50,7 @@ trait ProtectionService {
         )
       )
 
-    npsConnector.amendProtection(nino, protectionId, npsRequestBody).map { npsResponse =>
+    performAmendProtectionApiCall(nino, protectionId, npsRequestBody).map { npsResponse =>
       val transformedResponseJs = npsResponse.body.flatMap { json =>
         Json.fromJson[ProtectionModel](json).map(base => base.copy(nino = base.nino + lastNinoCharOpt.getOrElse("")))
       }
@@ -54,12 +61,22 @@ trait ProtectionService {
     }
   }
 
+  private def performAmendProtectionApiCall(nino: String, protectionId: Long, npsRequestBody: JsObject)(
+      implicit hc: HeaderCarrier,
+      ec: ExecutionContext
+  ): Future[HttpResponseDetails] =
+    if (appConfig.isHipApiEnabled) {
+      hipConnector.amendProtection()
+    } else {
+      npsConnector.amendProtection(nino, protectionId, npsRequestBody)
+    }
+
   def readExistingProtections(
       nino: String
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] = {
     val (_, lastNinoCharOpt) = NinoHelper.dropNinoSuffix(nino)
 
-    npsConnector.readExistingProtections(nino).map { npsResponse =>
+    performReadExistingProtectionsApiCall(nino).map { npsResponse =>
       val transformedResponseJs = npsResponse.body.flatMap { json =>
         Json
           .fromJson[ReadProtectionsModel](json)
@@ -71,5 +88,14 @@ trait ProtectionService {
       )
     }
   }
+
+  private def performReadExistingProtectionsApiCall(
+      nino: String
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponseDetails] =
+    if (appConfig.isHipApiEnabled) {
+      hipConnector.readExistingProtections()
+    } else {
+      npsConnector.readExistingProtections(nino)
+    }
 
 }
