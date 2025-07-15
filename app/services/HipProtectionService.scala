@@ -14,35 +14,21 @@
  * limitations under the License.
  */
 
-package connectors
+package services
 
+import connectors.HipConnector
 import model.hip.{AmendProtectionResponse, ReadExistingProtectionsResponse}
-import play.api.Logging
-import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-class HipConnector @Inject() (
-    httpClient: HttpClientV2,
-    servicesConfig: ServicesConfig,
-    auditConnector: AuditConnector
-)(
-    implicit ec: ExecutionContext
-) extends Logging {
-
-  private def baseUrl: String = servicesConfig.baseUrl("hip")
-
-  private def amendProtectionUrl: String         = baseUrl + "/amend"
-  private def readExistingProtectionsUrl: String = baseUrl + "/read"
+class HipProtectionService @Inject() (hipConnector: HipConnector) {
 
   def amendProtection()(implicit hc: HeaderCarrier): Future[AmendProtectionResponse] =
-    httpClient.post(url"$amendProtectionUrl").execute[AmendProtectionResponse]
+    hipConnector.amendProtection()
 
   def readExistingProtections()(implicit hc: HeaderCarrier): Future[ReadExistingProtectionsResponse] =
-    httpClient.get(url"$readExistingProtectionsUrl").execute[ReadExistingProtectionsResponse]
+    hipConnector.readExistingProtections()
 
 }
