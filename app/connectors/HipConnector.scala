@@ -30,9 +30,8 @@ class HipConnector @Inject() (
     httpClient: HttpClientV2,
     servicesConfig: ServicesConfig,
     auditConnector: AuditConnector
-)(
-    implicit ec: ExecutionContext
-) extends Logging {
+)(implicit ec: ExecutionContext)
+    extends Logging {
 
   private def baseUrl: String = servicesConfig.baseUrl("hip")
 
