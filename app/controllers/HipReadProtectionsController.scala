@@ -27,12 +27,12 @@ import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class HipReadProtectionsController @Inject() (
-  val authConnector: AuthClientConnector,
-  val citizenDetailsConnector: CitizenDetailsConnector,
-  hipProtectionService: HipProtectionService,
-  cc: ControllerComponents
+    val authConnector: AuthClientConnector,
+    val citizenDetailsConnector: CitizenDetailsConnector,
+    hipProtectionService: HipProtectionService,
+    cc: ControllerComponents
 )(implicit ec: ExecutionContext)
-  extends BackendController(cc)
+    extends BackendController(cc)
     with AuthorisedActions {
 
   def readExistingProtections(nino: String): Action[AnyContent] = Action.async { implicit request =>

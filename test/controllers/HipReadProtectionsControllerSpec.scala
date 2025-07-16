@@ -37,13 +37,12 @@ import java.util.Random
 import scala.concurrent.{ExecutionContext, Future}
 
 class HipReadProtectionsControllerSpec
-  extends AnyWordSpec
+    extends AnyWordSpec
     with GuiceOneServerPerSuite
     with Matchers
     with ScalaFutures
     with BeforeAndAfterEach
     with AuthMock {
-
 
   private implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
@@ -94,7 +93,6 @@ class HipReadProtectionsControllerSpec
       val request = FakeRequest(method = "POST", path = "/")
 
       val result = controller.readExistingProtections(testNino)(request)
-
 
       status(result) shouldBe OK
       contentAsJson(result).as[ReadExistingProtectionsResponse] shouldBe readExistingProtections
