@@ -38,7 +38,10 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 
-trait WiremockHelperIT extends FakeConfig {
+trait WiremockHelperIT {
+
+  val wiremockPort = 8083
+  val wiremockHost = "localhost"
 
   val url            = s"http://$wiremockHost:$wiremockPort"
   val wmConfig       = wireMockConfig().port(wiremockPort)
@@ -91,12 +94,6 @@ trait WiremockHelperIT extends FakeConfig {
     )
   }
 
-}
-
-trait FakeConfig {
-  val wiremockPort = 8083
-  val wiremockHost = "localhost"
-
   def fakeConfig(additionalConfig: Map[String, String] = Map.empty): Map[String, String] = Map(
     "auditing.consumer.baseUri.host"                      -> s"$wiremockHost",
     "auditing.consumer.baseUri.port"                      -> s"$wiremockPort",
@@ -104,6 +101,8 @@ trait FakeConfig {
     "microservice.services.auth.port"                     -> s"$wiremockPort",
     "microservice.services.nps.host"                      -> s"$wiremockHost",
     "microservice.services.nps.port"                      -> s"$wiremockPort",
+    "microservice.services.hip.host"                      -> s"$wiremockHost",
+    "microservice.services.hip.port"                      -> s"$wiremockPort",
     "microservice.services.citizen-details.host"          -> s"$wiremockHost",
     "microservice.services.citizen-details.port"          -> s"$wiremockPort",
     "microservice.services.citizen-details.checkRequired" -> "true",

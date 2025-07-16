@@ -27,6 +27,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait AuthorisedActions extends AuthProvider with AuthorisedFunctions with Logging {
 
+  val citizenDetailsConnector: CitizenDetailsConnector
+
   def userAuthorised(
       nino: String
   )(body: => Future[Result])(implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
@@ -78,7 +80,5 @@ trait AuthorisedActions extends AuthProvider with AuthorisedFunctions with Loggi
       logger.error("User forbidden", e)
       Forbidden("User forbidden")
   }
-
-  val citizenDetailsConnector: CitizenDetailsConnector
 
 }
