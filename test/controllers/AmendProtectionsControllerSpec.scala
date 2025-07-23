@@ -137,7 +137,7 @@ class AmendProtectionsControllerSpec
     override val npsConnector = mockNpsConnector
   }
 
-  "AmendProtectionController" when {
+  "AmendProtectionController" must {
     "respond to an invalid Amend Protection request with BAD_REQUEST" in {
 
       val fakeRequest = FakeRequest(
