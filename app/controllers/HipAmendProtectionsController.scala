@@ -20,7 +20,6 @@ import auth.{AuthClientConnector, AuthorisedActions}
 import connectors.CitizenDetailsConnector
 import model.Error
 import model.api.AmendProtectionRequest
-import model.hip.AmendProtectionResponse._
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import services.HipProtectionService
@@ -38,19 +37,26 @@ class HipAmendProtectionsController @Inject() (
     extends BackendController(cc)
     with AuthorisedActions {
 
-  def amendProtection(nino: String): Action[JsValue] = Action.async(cc.parsers.json) { implicit request =>
-    userAuthorised(nino) {
-      request.body
-        .validate[AmendProtectionRequest]
-        .fold(
-          errors =>
-            Future.successful(BadRequest(Json.toJson(Error(message = "body failed validation with error: " + errors)))),
-          amendProtectionRequest =>
-            hipProtectionService
-              .amendProtection()
-              .map(amendProtectionResponse => Ok(Json.toJson(amendProtectionResponse)))
-        )
+  def amendProtection(nino: String, protectionId: Int): Action[JsValue] =
+    Action.async(cc.parsers.json) { implicit request =>
+      userAuthorised(nino) {
+        request.body
+          .validate[AmendProtectionRequest]
+          .fold(
+            errors =>
+              Future
+                .successful(BadRequest(Json.toJson(Error(message = "body failed validation with error: " + errors)))),
+            amendProtectionRequest =>
+              hipProtectionService
+                .amendProtection(nino, protectionId, amendProtectionRequest)
+                .map {
+                  case Right(amendProtectionResponse) => Ok(Json.toJson(amendProtectionResponse))
+                  case Left(error) =>
+                    logger.warn(s"An error occurred when amending protection: ${error.getMessage}")
+                    InternalServerError(error.getMessage)
+                }
+          )
+      }
     }
-  }
 
 }

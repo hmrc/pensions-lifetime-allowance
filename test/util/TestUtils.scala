@@ -29,11 +29,13 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.duration._
 
+object TestUtils extends TestUtils
+
 trait TestUtils {
 
   implicit val defaultTimeout: FiniteDuration = 5.seconds
 
-  implicit def extractAwait[A](future: Future[A]): A = await[A](future)
+  def extractAwait[A](future: Future[A]): A = await[A](future)
 
   def status(of: Result): Int = of.header.status
 

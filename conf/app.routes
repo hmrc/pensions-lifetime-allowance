@@ -6,5 +6,5 @@ PUT        /individuals/:nino/protections/:id   @controllers.AmendProtectionsCon
 
 GET        /psalookup/:psaRef/:ltaRef           @controllers.DefaultLookupController.psaLookup(psaRef, ltaRef)
 
-GET        /v2/individuals/:nino/protections    @controllers.HipReadProtectionsController.readExistingProtections(nino: String)
-POST       /v2/individuals/:nino/protections    @controllers.HipAmendProtectionsController.amendProtection(nino: String)
+GET        /v2/individuals/:nino/protections                @controllers.HipReadProtectionsController.readExistingProtections(nino: String)
+POST       /v2/individuals/:nino/protections/:protectionId  @controllers.HipAmendProtectionsController.amendProtection(nino: String, protectionId: Int)

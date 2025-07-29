@@ -16,17 +16,23 @@
 
 package connectors
 
-import model.hip.{AmendProtectionResponse, ReadExistingProtectionsResponse}
+import events.HipAmendLtaEvent
+import model.hip.{HipAmendProtectionRequest, HipAmendProtectionResponse, ReadExistingProtectionsResponse}
 import play.api.Logging
+import play.api.http.Status.OK
+import play.api.libs.json.{JsObject, Json}
+import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import util.IdGenerator
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class HipConnector @Inject() (
+    idGenerator: IdGenerator,
     httpClient: HttpClientV2,
     servicesConfig: ServicesConfig,
     auditConnector: AuditConnector
@@ -35,11 +41,80 @@ class HipConnector @Inject() (
 
   private def baseUrl: String = servicesConfig.baseUrl("hip")
 
-  private def amendProtectionUrl: String         = baseUrl + "/amend"
+  private def amendProtectionUrl(
+      nationalInsuranceNumber: String,
+      lifetimeAllowanceIdentifier: Int,
+      lifetimeAllowanceSequenceNumber: Int
+  ): String =
+    baseUrl + s"/lifetime-allowance/person/$nationalInsuranceNumber/reference/$lifetimeAllowanceIdentifier/sequence-number/$lifetimeAllowanceSequenceNumber"
+
   private def readExistingProtectionsUrl: String = baseUrl + "/read"
 
-  def amendProtection()(implicit hc: HeaderCarrier): Future[AmendProtectionResponse] =
-    httpClient.post(url"$amendProtectionUrl").execute[AmendProtectionResponse]
+  private def buildHeaders: Seq[(String, String)] = {
+    val correlationId: String     = idGenerator.generateUuid.toString
+    val govUkOriginatorId: String = "test-gov-uk-originator-id"
+
+    Seq(
+      "correlationId"        -> correlationId,
+      "gov-uk-originator-id" -> govUkOriginatorId
+    )
+  }
+
+  def amendProtection(
+      nationalInsuranceNumber: String,
+      lifetimeAllowanceIdentifier: Int,
+      lifetimeAllowanceSequenceNumber: Int,
+      request: HipAmendProtectionRequest
+  )(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, HipAmendProtectionResponse]] = {
+
+    val urlString = amendProtectionUrl(
+      nationalInsuranceNumber,
+      lifetimeAllowanceIdentifier = lifetimeAllowanceIdentifier,
+      lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber
+    )
+
+    for {
+      amendProtectionResponseE <- httpClient
+        .post(url"$urlString")
+        .withBody(Json.toJson(request))
+        .setHeader(buildHeaders: _*)
+        .execute[Either[UpstreamErrorResponse, HipAmendProtectionResponse]]
+
+      _ = amendProtectionResponseE.map { amendProtectionResponse =>
+        sendAuditEvent(
+          nino = nationalInsuranceNumber,
+          id = lifetimeAllowanceIdentifier,
+          requestUrl = urlString,
+          requestBody = request,
+          responseStatusCode = OK,
+          responseBody = amendProtectionResponse
+        )
+      }
+
+    } yield amendProtectionResponseE
+  }
+
+  private def sendAuditEvent(
+      nino: String,
+      id: Int,
+      requestUrl: String,
+      requestBody: HipAmendProtectionRequest,
+      responseStatusCode: Int,
+      responseBody: HipAmendProtectionResponse
+  )(implicit hc: HeaderCarrier): Future[AuditResult] = {
+
+    val auditEvent = new HipAmendLtaEvent(
+      nino = nino,
+      id = id,
+      hipRequestBodyJs = Json.toJson(requestBody).as[JsObject],
+      hipResponseBodyJs = Json.toJson(responseBody).as[JsObject],
+      statusCode = responseStatusCode,
+      path = requestUrl
+    )
+
+    logger.debug(s"Sending audit event: $auditEvent")
+    auditConnector.sendEvent(auditEvent)
+  }
 
   def readExistingProtections()(implicit hc: HeaderCarrier): Future[ReadExistingProtectionsResponse] =
     httpClient.get(url"$readExistingProtectionsUrl").execute[ReadExistingProtectionsResponse]
