@@ -20,7 +20,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.Inject
 
-class HipConfig @Inject()(servicesConfig: ServicesConfig) {
+class HipConfig @Inject() (servicesConfig: ServicesConfig) {
 
   def baseUrl: String = servicesConfig.baseUrl("hip")
 

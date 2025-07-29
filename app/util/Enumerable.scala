@@ -39,9 +39,7 @@ object Enumerable {
       Reads {
         case JsString(str) =>
           ev.withName(str)
-            .map { s =>
-              JsSuccess(s)
-            }
+            .map(s => JsSuccess(s))
             .getOrElse(JsError(jsonErrorMessage))
         case _ =>
           JsError(jsonErrorMessage)
@@ -49,7 +47,9 @@ object Enumerable {
 
     implicit def writes[A: Enumerable]: Writes[A] =
       Writes(value => JsString(value.toString))
+
   }
+
 }
 
 class WithName(string: String) {

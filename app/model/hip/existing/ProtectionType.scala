@@ -24,23 +24,23 @@ object ProtectionType extends Enumerable.Implicits {
 
   override val jsonErrorMessage: String = "error.protectionType"
 
-  case object FixedProtection2016 extends WithName("FIXED PROTECTION 2016") with ProtectionType
-  case object IndividualProtection2014 extends WithName("INDIVIDUAL PROTECTION 2014") with ProtectionType
-  case object IndividualProtection2016 extends WithName("INDIVIDUAL PROTECTION 2016") with ProtectionType
-  case object PrimaryProtection extends WithName("PRIMARY PROTECTION") with ProtectionType
-  case object EnhancedProtection extends WithName("ENHANCED PROTECTION") with ProtectionType
-  case object FixedProtection extends WithName("FIXED PROTECTION") with ProtectionType
-  case object FixedProtection2014 extends WithName("FIXED PROTECTION 2014") with ProtectionType
-  case object PensionCreditRights extends WithName("PENSION CREDIT RIGHTS") with ProtectionType
+  case object FixedProtection2016          extends WithName("FIXED PROTECTION 2016") with ProtectionType
+  case object IndividualProtection2014     extends WithName("INDIVIDUAL PROTECTION 2014") with ProtectionType
+  case object IndividualProtection2016     extends WithName("INDIVIDUAL PROTECTION 2016") with ProtectionType
+  case object PrimaryProtection            extends WithName("PRIMARY PROTECTION") with ProtectionType
+  case object EnhancedProtection           extends WithName("ENHANCED PROTECTION") with ProtectionType
+  case object FixedProtection              extends WithName("FIXED PROTECTION") with ProtectionType
+  case object FixedProtection2014          extends WithName("FIXED PROTECTION 2014") with ProtectionType
+  case object PensionCreditRights          extends WithName("PENSION CREDIT RIGHTS") with ProtectionType
   case object InternationalEnhancementS221 extends WithName("INTERNATIONAL ENHANCEMENT (S221)") with ProtectionType
   case object InternationalEnhancementS224 extends WithName("INTERNATIONAL ENHANCEMENT (S224)") with ProtectionType
-  case object FixedProtection2016LTA extends WithName("FIXED PROTECTION 2016 LTA") with ProtectionType
-  case object IndividualProtection2014LTA extends WithName("INDIVIDUAL PROTECTION 2014 LTA") with ProtectionType
-  case object IndividualProtection2016LTA extends WithName("INDIVIDUAL PROTECTION 2016 LTA") with ProtectionType
-  case object PrimaryProtectionLTA extends WithName("PRIMARY PROTECTION LTA") with ProtectionType
-  case object EnhancedProtectionLTA extends WithName("ENHANCED PROTECTION LTA") with ProtectionType
-  case object FixedProtectionLTA extends WithName("FIXED PROTECTION LTA") with ProtectionType
-  case object FixedProtection2014LTA extends WithName("FIXED PROTECTION 2014 LTA") with ProtectionType
+  case object FixedProtection2016LTA       extends WithName("FIXED PROTECTION 2016 LTA") with ProtectionType
+  case object IndividualProtection2014LTA  extends WithName("INDIVIDUAL PROTECTION 2014 LTA") with ProtectionType
+  case object IndividualProtection2016LTA  extends WithName("INDIVIDUAL PROTECTION 2016 LTA") with ProtectionType
+  case object PrimaryProtectionLTA         extends WithName("PRIMARY PROTECTION LTA") with ProtectionType
+  case object EnhancedProtectionLTA        extends WithName("ENHANCED PROTECTION LTA") with ProtectionType
+  case object FixedProtectionLTA           extends WithName("FIXED PROTECTION LTA") with ProtectionType
+  case object FixedProtection2014LTA       extends WithName("FIXED PROTECTION 2014 LTA") with ProtectionType
 
   val values: Seq[ProtectionType] = Seq(
     FixedProtection2016,
@@ -64,4 +64,5 @@ object ProtectionType extends Enumerable.Implicits {
 
   implicit val enumerable: Enumerable[ProtectionType] =
     Enumerable(values.map(v => v.toString -> v): _*)
+
 }
