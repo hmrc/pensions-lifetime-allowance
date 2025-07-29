@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
-package services
+package config
 
-import connectors.HipConnector
-import model.hip.AmendProtectionResponse
-import model.hip.existing.ReadExistingProtectionsResponse
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.Inject
-import scala.concurrent.Future
 
-class HipProtectionService @Inject() (hipConnector: HipConnector) {
+class HipConfig @Inject() (servicesConfig: ServicesConfig) {
 
-  def amendProtection()(implicit hc: HeaderCarrier): Future[AmendProtectionResponse] =
-    hipConnector.amendProtection()
+  def baseUrl: String = servicesConfig.baseUrl("hip")
 
-  def readExistingProtections(nino: String)(
-      implicit hc: HeaderCarrier
-  ): Future[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]] =
-    hipConnector.readExistingProtections(nino)
+  def clientId: String = servicesConfig.getConfString("hip.clientId", "")
 
+  def clientSecret: String = servicesConfig.getConfString("hip.clientSecret", "")
+
+  def originatorId: String = servicesConfig.getConfString("hip.originatorId", "")
 }

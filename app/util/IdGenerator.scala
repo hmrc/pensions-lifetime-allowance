@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package model.hip
+package util
 
-import play.api.libs.json.{Format, Json}
+import java.util.UUID
 
-case class ReadExistingProtectionsResponse(
-    pensionSchemeAdministratorCheckReference: String
-)
+class IdGenerator {
 
-object ReadExistingProtectionsResponse {
-  implicit val format: Format[ReadExistingProtectionsResponse] = Json.format[ReadExistingProtectionsResponse]
+  def generateUuid: UUID = UUID.randomUUID()
+
 }
