@@ -18,6 +18,7 @@ package controllers
 
 import auth.{AuthClientConnector, AuthorisedActions}
 import connectors.CitizenDetailsConnector
+import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import services.HipProtectionService
@@ -33,13 +34,21 @@ class HipReadProtectionsController @Inject() (
     cc: ControllerComponents
 )(implicit ec: ExecutionContext)
     extends BackendController(cc)
-    with AuthorisedActions {
+    with AuthorisedActions
+    with Logging {
 
   def readExistingProtections(nino: String): Action[AnyContent] = Action.async { implicit request =>
     userAuthorised(nino) {
       hipProtectionService
-        .readExistingProtections()
-        .map(readExistingProtectionsResponse => Ok(Json.toJson(readExistingProtectionsResponse)))
+        .readExistingProtections(nino)
+        .map {
+          case Left(error) =>
+            logger.warn(
+              s"An error occurred retrieving existing protections: Status: ${error.statusCode} message: ${error.message}"
+            )
+            InternalServerError(error.message)
+          case Right(response) => Ok(Json.toJson(response))
+        }
     }
   }
 

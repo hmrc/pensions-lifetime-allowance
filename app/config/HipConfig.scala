@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-package model.hip
+package config
 
-import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-case class ReadExistingProtectionsResponse(
-    pensionSchemeAdministratorCheckReference: String
-)
+import javax.inject.Inject
 
-object ReadExistingProtectionsResponse {
-  implicit val format: Format[ReadExistingProtectionsResponse] = Json.format[ReadExistingProtectionsResponse]
+class HipConfig @Inject()(servicesConfig: ServicesConfig) {
+
+  def baseUrl: String = servicesConfig.baseUrl("hip")
+
+  def clientId: String = servicesConfig.getConfString("hip.clientId", "")
+
+  def clientSecret: String = servicesConfig.getConfString("hip.clientSecret", "")
+
+  def originatorId: String = servicesConfig.getConfString("hip.originatorId", "")
 }

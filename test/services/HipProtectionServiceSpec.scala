@@ -17,17 +17,21 @@
 package services
 
 import connectors.HipConnector
-import model.hip.{AmendProtectionResponse, ReadExistingProtectionsResponse, UpdatedLifetimeAllowanceProtectionRecord}
+import model.hip.{AmendProtectionResponse, UpdatedLifetimeAllowanceProtectionRecord}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar.mock
-import uk.gov.hmrc.http.HeaderCarrier
+import play.api.http.Status.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE}
+import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import util.TestObjects.readExistingProtectionsResponse
 
+import java.util.Random
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class HipProtectionServiceSpec extends AnyWordSpec with Matchers with ScalaFutures with BeforeAndAfterEach {
 
@@ -66,23 +70,56 @@ class HipProtectionServiceSpec extends AnyWordSpec with Matchers with ScalaFutur
 
   "HipProtectionService on readExistingProtections" should {
 
-    "call HipConnector" in {
-      when(hipConnector.readExistingProtections())
-        .thenReturn(Future.successful(ReadExistingProtectionsResponse("PSA12345678A")))
+    val rand          = new Random()
+    val ninoGenerator = new Generator(rand)
 
-      hipProtectionService.readExistingProtections().futureValue
+    val nino: String = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
 
-      verify(hipConnector).readExistingProtections()
+    "return ReadExistingProtectionsResponse from HipConnector" when {
+
+      "it receives 200 response" in {
+        when(hipConnector.readExistingProtections(eqTo(nino))(any()))
+          .thenReturn(Future.successful(Right(readExistingProtectionsResponse)))
+
+        val result = hipProtectionService.readExistingProtections(nino).futureValue
+
+        result shouldBe Right(readExistingProtectionsResponse)
+
+        verify(hipConnector).readExistingProtections(eqTo(nino))(any())
+      }
     }
 
-    "return ReadExistingProtectionsResponse from HipConnector" in {
-      when(hipConnector.readExistingProtections())
-        .thenReturn(Future.successful(ReadExistingProtectionsResponse("PSA12345678A")))
+    "return UpstreamErrorResponse from HipConnector" when
+      Seq(BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { statusCode =>
+        s"the connector receives a $statusCode response" in {
 
-      val result = hipProtectionService.readExistingProtections().futureValue
+          val responseBody =
+            """
+              |{
+              |  "origin": "HIP",
+              |  "response": {
+              |    "failures": [
+              |      {
+              |        "type": "string",
+              |        "reason": "string"
+              |      }
+              |    ]
+              |  }
+              |}
+              |""".stripMargin
 
-      result shouldBe ReadExistingProtectionsResponse("PSA12345678A")
-    }
+          val response = Left(UpstreamErrorResponse(responseBody, statusCode))
+
+          when(hipConnector.readExistingProtections(eqTo(nino))(any()))
+            .thenReturn(Future.successful(response))
+
+          val result = hipProtectionService.readExistingProtections(nino).futureValue
+
+          result shouldBe response
+
+          verify(hipConnector).readExistingProtections(eqTo(nino))(any())
+        }
+      }
   }
 
 }
