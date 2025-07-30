@@ -52,7 +52,9 @@ class HipAmendProtectionsController @Inject() (
                 .map {
                   case Right(amendProtectionResponse) => Ok(Json.toJson(amendProtectionResponse))
                   case Left(error) =>
-                    logger.warn(s"An error occurred when amending protection: ${error.getMessage}")
+                    logger.warn(
+                      s"An error occurred when amending protection: Status: ${error.statusCode} Message: ${error.getMessage}"
+                    )
                     InternalServerError(error.getMessage)
                 }
           )

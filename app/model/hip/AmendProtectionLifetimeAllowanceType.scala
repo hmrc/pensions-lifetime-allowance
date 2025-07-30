@@ -27,7 +27,7 @@ object AmendProtectionLifetimeAllowanceType extends Enumerable.Implicits {
   case object IndividualProtection2014Lta extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2014 LTA")
   case object IndividualProtection2016Lta extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2016 LTA")
 
-  private def allValues: Seq[AmendProtectionLifetimeAllowanceType] = Seq(
+  private val allValues: Seq[AmendProtectionLifetimeAllowanceType] = Seq(
     IndividualProtection2014,
     IndividualProtection2016,
     IndividualProtection2014Lta,

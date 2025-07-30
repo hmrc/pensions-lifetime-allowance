@@ -16,30 +16,33 @@
 
 package connectors
 
+import config.HipConfig
 import events.HipAmendLtaEvent
 import model.hip.{HipAmendProtectionRequest, HipAmendProtectionResponse, ReadExistingProtectionsResponse}
 import play.api.Logging
+import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import util.IdGenerator
 
+import java.nio.charset.StandardCharsets
+import java.util.Base64
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class HipConnector @Inject() (
+    hipConfig: HipConfig,
     idGenerator: IdGenerator,
     httpClient: HttpClientV2,
-    servicesConfig: ServicesConfig,
     auditConnector: AuditConnector
 )(implicit ec: ExecutionContext)
     extends Logging {
 
-  private def baseUrl: String = servicesConfig.baseUrl("hip")
+  private def baseUrl: String = hipConfig.baseUrl
 
   private def amendProtectionUrl(
       nationalInsuranceNumber: String,
@@ -50,13 +53,21 @@ class HipConnector @Inject() (
 
   private def readExistingProtectionsUrl: String = baseUrl + "/read"
 
-  private def buildHeaders: Seq[(String, String)] = {
-    val correlationId: String     = idGenerator.generateUuid.toString
-    val govUkOriginatorId: String = "test-gov-uk-originator-id"
+  private def basicHeaders(implicit hc: HeaderCarrier): Seq[(String, String)] = {
+    val token =
+      Base64.getEncoder
+        .encodeToString(
+          s"${hipConfig.clientId}:${hipConfig.clientSecret}"
+            .getBytes(StandardCharsets.UTF_8)
+        )
 
     Seq(
-      "correlationId"        -> correlationId,
-      "gov-uk-originator-id" -> govUkOriginatorId
+      play.api.http.HeaderNames.CONTENT_TYPE -> MimeTypes.JSON,
+      "Gov-Uk-Originator-Id"                 -> hipConfig.originatorId,
+      HeaderNames.xSessionId                 -> hc.sessionId.fold("-")(_.value),
+      HeaderNames.xRequestId                 -> hc.requestId.fold("-")(_.value),
+      "CorrelationId"                        -> idGenerator.generateUuid.toString,
+      HeaderNames.authorisation              -> s"Basic $token"
     )
   }
 
@@ -77,7 +88,7 @@ class HipConnector @Inject() (
       amendProtectionResponseE <- httpClient
         .post(url"$urlString")
         .withBody(Json.toJson(request))
-        .setHeader(buildHeaders: _*)
+        .setHeader(basicHeaders: _*)
         .execute[Either[UpstreamErrorResponse, HipAmendProtectionResponse]]
 
       _ = amendProtectionResponseE.map { amendProtectionResponse =>
