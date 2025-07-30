@@ -16,49 +16,19 @@
 
 package model.hip
 
-import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue, Reads, Writes}
+import util.{Enumerable, EnumerableInstance}
 
-sealed trait AmendProtectionRequestStatus {
-  val value: String
-}
+sealed abstract class AmendProtectionRequestStatus(value: String) extends EnumerableInstance(value)
 
-object AmendProtectionRequestStatus {
+object AmendProtectionRequestStatus extends Enumerable.Implicits {
 
-  case object Open extends AmendProtectionRequestStatus {
-    override val value: String = "OPEN"
-  }
+  case object Open    extends AmendProtectionRequestStatus("OPEN")
+  case object Dormant extends AmendProtectionRequestStatus("DORMANT")
 
-  case object Dormant extends AmendProtectionRequestStatus {
-    override val value: String = "DORMANT"
-  }
-
-  private val allStatuses: Seq[AmendProtectionRequestStatus] =
+  private val allValues: Seq[AmendProtectionRequestStatus] =
     Seq(Open, Dormant)
 
-  implicit val format: Format[AmendProtectionRequestStatus] = {
-    val jsonWrites: Writes[AmendProtectionRequestStatus] = new Writes[AmendProtectionRequestStatus] {
-      override def writes(AmendProtectionRequestStatus: AmendProtectionRequestStatus): JsValue =
-        JsString(AmendProtectionRequestStatus.value)
-    }
-
-    val jsonReads: Reads[AmendProtectionRequestStatus] = new Reads[AmendProtectionRequestStatus] {
-      override def reads(json: JsValue): JsResult[AmendProtectionRequestStatus] =
-        json match {
-          case JsString(str) =>
-            allStatuses
-              .find(_.value == str)
-              .fold[JsResult[AmendProtectionRequestStatus]](
-                JsError(s"Received unknown AmendProtectionRequestStatus: $str")
-              )(
-                JsSuccess(_)
-              )
-
-          case other =>
-            JsError(s"Cannot create AmendProtectionRequestStatus instance from: ${other.toString}")
-        }
-    }
-
-    Format(jsonReads, jsonWrites)
-  }
+  implicit val toEnumerable: Enumerable[AmendProtectionRequestStatus] =
+    Enumerable(allValues.map(v => v.toString -> v): _*)
 
 }

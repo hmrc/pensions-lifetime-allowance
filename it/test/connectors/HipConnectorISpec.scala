@@ -26,7 +26,7 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.Json
 import testdata.HipTestData._
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, JsValidationException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import util.{IdGenerator, TestUtils}
 import utilities.IntegrationSpec
@@ -75,10 +75,10 @@ class HipConnectorISpec extends IntegrationSpec {
                     |  "updatedLifetimeAllowanceProtectionRecord": {
                     |    "identifier": $lifetimeAllowanceIdentifier,
                     |    "sequenceNumber": ${lifetimeAllowanceSequenceNumber + 1},
-                    |    "type": "${AmendProtectionLifetimeAllowanceType.IndividualProtection2014Lta.value}",
+                    |    "type": "${AmendProtectionLifetimeAllowanceType.IndividualProtection2014Lta.toString}",
                     |    "certificateDate": "2025-07-15",
                     |    "certificateTime": "174312",
-                    |    "status": "${AmendProtectionResponseStatus.Open.value}",
+                    |    "status": "${AmendProtectionResponseStatus.Open.toString}",
                     |    "protectionReference": "$protectionReference",
                     |    "relevantAmount": 105000,
                     |    "preADayPensionInPaymentAmount": 1500,
@@ -301,6 +301,36 @@ class HipConnectorISpec extends IntegrationSpec {
         errorResponse.statusCode mustBe SERVICE_UNAVAILABLE
         errorResponse.message must include(responseBody.toString)
       }
+    }
+
+    "return failed Future containing JsValidationException when HIP returns incorrect JSON" in {
+      val incorrectResponseBody =
+        Json.parse(s"""{
+                      |  "updatedLifetimeAllowanceProtectionRecord": {
+                      |    "identifier": $lifetimeAllowanceIdentifier,
+                      |    "sequenceNumber": ${lifetimeAllowanceSequenceNumber + 1},
+                      |    "type": "incorrect-type",
+                      |    "certificateDate": "2025-07-15",
+                      |    "certificateTime": "174312"
+                      |  }
+                      |}""".stripMargin)
+      stubPost(
+        url = url,
+        status = OK,
+        responseBody = incorrectResponseBody.toString
+      )
+
+      val result = hipConnector
+        .amendProtection(
+          nationalInsuranceNumber = testNino,
+          lifetimeAllowanceIdentifier = lifetimeAllowanceIdentifier,
+          lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber,
+          request = hipAmendProtectionRequest
+        )
+        .failed
+        .futureValue
+
+      result mustBe a[JsValidationException]
     }
   }
 

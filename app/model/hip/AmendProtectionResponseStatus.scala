@@ -16,53 +16,20 @@
 
 package model.hip
 
-import play.api.libs.json._
+import util.{Enumerable, EnumerableInstance}
 
-sealed trait AmendProtectionResponseStatus {
-  val value: String
-}
+sealed abstract class AmendProtectionResponseStatus(value: String) extends EnumerableInstance(value)
 
-object AmendProtectionResponseStatus {
+object AmendProtectionResponseStatus extends Enumerable.Implicits {
 
-  case object Open extends AmendProtectionResponseStatus {
-    override val value: String = "OPEN"
-  }
+  case object Open      extends AmendProtectionResponseStatus("OPEN")
+  case object Dormant   extends AmendProtectionResponseStatus("DORMANT")
+  case object Withdrawn extends AmendProtectionResponseStatus("WITHDRAWN")
 
-  case object Dormant extends AmendProtectionResponseStatus {
-    override val value: String = "DORMANT"
-  }
-
-  case object Withdrawn extends AmendProtectionResponseStatus {
-    override val value: String = "WITHDRAWN"
-  }
-
-  private val allStatuses: Seq[AmendProtectionResponseStatus] =
+  private val allValues: Seq[AmendProtectionResponseStatus] =
     Seq(Open, Dormant, Withdrawn)
 
-  implicit val format: Format[AmendProtectionResponseStatus] = {
-    val jsonWrites: Writes[AmendProtectionResponseStatus] = new Writes[AmendProtectionResponseStatus] {
-      override def writes(responseStatus: AmendProtectionResponseStatus): JsValue =
-        JsString(responseStatus.value)
-    }
-
-    val jsonReads: Reads[AmendProtectionResponseStatus] = new Reads[AmendProtectionResponseStatus] {
-      override def reads(json: JsValue): JsResult[AmendProtectionResponseStatus] =
-        json match {
-          case JsString(str) =>
-            allStatuses
-              .find(_.value == str)
-              .fold[JsResult[AmendProtectionResponseStatus]](
-                JsError(s"Received unknown AmendProtectionResponseStatus: $str")
-              )(
-                JsSuccess(_)
-              )
-
-          case other =>
-            JsError(s"Cannot create AmendProtectionResponseStatus instance from: ${other.toString}")
-        }
-    }
-
-    Format(jsonReads, jsonWrites)
-  }
+  implicit val toEnumerable: Enumerable[AmendProtectionResponseStatus] =
+    Enumerable(allValues.map(v => v.toString -> v): _*)
 
 }

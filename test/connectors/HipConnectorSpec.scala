@@ -164,6 +164,7 @@ class HipConnectorSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach
         result shouldBe testException
       }
     }
+
     "HttpClientV2 returns NotFoundException" should {
 
       "NOT call AuditConnector" in {
@@ -202,6 +203,7 @@ class HipConnectorSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach
         result shouldBe testException
       }
     }
+
     "HttpClientV2 returns UpstreamErrorResponse" should {
 
       "NOT call AuditConnector" in {
