@@ -112,7 +112,7 @@ class HipConnectorISpec extends IntegrationSpec {
 
       verify(
         postRequestedFor(urlEqualTo(url))
-          .withHeader("gov-uk-originator-id", equalTo("test-gov-uk-originator-id"))
+          .withHeader("gov-uk-originator-id", equalTo("CYPPE"))
           .withHeader("correlationId", equalTo(correlationId.toString))
           .withRequestBody(equalTo(Json.toJson(hipAmendProtectionRequest).toString))
       )

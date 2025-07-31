@@ -16,6 +16,7 @@
 
 package connectors
 
+import config.HipConfig
 import events.HipAmendLtaEvent
 import model.hip.HipAmendProtectionResponse
 import org.mockito.ArgumentCaptor
@@ -33,7 +34,6 @@ import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.DataEvent
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import util.IdGenerator
 import util.TestUtils.testNino
 
@@ -43,20 +43,23 @@ import scala.concurrent.Future
 
 class HipConnectorSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach with ScalaFutures {
 
+  private val hipConfig      = mock[HipConfig]
   private val idGenerator    = mock[IdGenerator]
   private val httpClient     = mock[HttpClientV2]
-  private val servicesConfig = mock[ServicesConfig]
   private val auditConnector = mock[AuditConnector]
   private val requestBuilder = mock[RequestBuilder]
 
-  private val hipConnector = new HipConnector(idGenerator, httpClient, servicesConfig, auditConnector)
+  private val hipConnector = new HipConnector(hipConfig, idGenerator, httpClient, auditConnector)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(idGenerator, httpClient, servicesConfig, auditConnector, requestBuilder)
+    reset(hipConfig, idGenerator, httpClient, auditConnector, requestBuilder)
 
-    when(servicesConfig.baseUrl(any())).thenReturn("http://localhost:12345/hip")
+    when(hipConfig.baseUrl).thenReturn(urlBase)
+    when(hipConfig.originatorId).thenReturn(originatorId)
+    when(hipConfig.clientId).thenReturn(clientId)
+    when(hipConfig.clientSecret).thenReturn(clientSecret)
     when(httpClient.post(any())(any())).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any())(any(), any(), any())).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any())).thenReturn(requestBuilder)
@@ -66,9 +69,13 @@ class HipConnectorSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach
 
   private val correlationId = UUID.randomUUID()
 
+  private val urlBase      = "http://localhost:12345/hip"
+  private val originatorId = "test-originator-id"
+  private val clientId     = "test-client-id"
+  private val clientSecret = "test-client-secret"
+
   "HipConnector on amendProtection" when {
 
-    val urlBase = "http://localhost:12345/hip"
     val requestUrl =
       urlBase + s"/lifetime-allowance/person/$testNino/reference/$lifetimeAllowanceIdentifier/sequence-number/$lifetimeAllowanceSequenceNumber"
 
