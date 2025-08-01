@@ -17,17 +17,20 @@
 package services
 
 import connectors.HipConnector
-import model.hip.{AmendProtectionResponse, ReadExistingProtectionsResponse, UpdatedLifetimeAllowanceProtectionRecord}
+import model.hip.ReadExistingProtectionsResponse
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar.mock
+import testdata.HipTestData._
 import uk.gov.hmrc.http.HeaderCarrier
+import util.TestUtils
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class HipProtectionServiceSpec extends AnyWordSpec with Matchers with ScalaFutures with BeforeAndAfterEach {
 
@@ -37,6 +40,8 @@ class HipProtectionServiceSpec extends AnyWordSpec with Matchers with ScalaFutur
 
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
+  private val testNino: String = TestUtils.randomNino
+
   override def beforeEach(): Unit = {
     super.beforeEach()
 
@@ -45,22 +50,27 @@ class HipProtectionServiceSpec extends AnyWordSpec with Matchers with ScalaFutur
 
   "HipProtectionService on amendProtection" should {
 
-    "call HipConnector" in {
-      when(hipConnector.amendProtection())
-        .thenReturn(Future.successful(AmendProtectionResponse(UpdatedLifetimeAllowanceProtectionRecord(42))))
+    "call HipConnector providing converted AmendProtectionResponse" in {
+      when(hipConnector.amendProtection(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(Right(hipAmendProtectionResponse)))
 
-      hipProtectionService.amendProtection().futureValue
+      hipProtectionService.amendProtection(testNino, lifetimeAllowanceIdentifier, amendProtectionRequest).futureValue
 
-      verify(hipConnector).amendProtection()
+      verify(hipConnector).amendProtection(
+        eqTo(testNino),
+        eqTo(lifetimeAllowanceIdentifier),
+        eqTo(lifetimeAllowanceSequenceNumber),
+        eqTo(hipAmendProtectionRequest)
+      )(eqTo(hc))
     }
 
-    "return AmendProtectionResponse from HipConnector" in {
-      when(hipConnector.amendProtection())
-        .thenReturn(Future.successful(AmendProtectionResponse(UpdatedLifetimeAllowanceProtectionRecord(42))))
+    "return converted AmendProtectionResponse from HipConnector" in {
+      when(hipConnector.amendProtection(any(), any(), any(), any())(any()))
+        .thenReturn(Future.successful(Right(hipAmendProtectionResponse)))
 
-      val result = hipProtectionService.amendProtection().futureValue
-
-      result shouldBe AmendProtectionResponse(UpdatedLifetimeAllowanceProtectionRecord(42))
+      hipProtectionService
+        .amendProtection(testNino, lifetimeAllowanceIdentifier, amendProtectionRequest)
+        .futureValue shouldBe Right(amendProtectionResponse)
     }
   }
 

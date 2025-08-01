@@ -18,13 +18,11 @@ package model.hip
 
 import play.api.libs.json._
 
-case class UpdatedLifetimeAllowanceProtectionRecord(
-    identifier: Int,
-    sequenceNumber: Int,
+case class HipAmendProtectionRequest(
     `type`: AmendProtectionLifetimeAllowanceType,
     certificateDate: Option[String],
     certificateTime: Option[String],
-    status: AmendProtectionResponseStatus,
+    status: AmendProtectionRequestStatus,
     protectionReference: Option[String],
     relevantAmount: Int,
     preADayPensionInPaymentAmount: Int,
@@ -39,9 +37,6 @@ case class UpdatedLifetimeAllowanceProtectionRecord(
     pensionDebitTotalAmount: Option[Int]
 )
 
-object UpdatedLifetimeAllowanceProtectionRecord {
-
-  implicit val format: Format[UpdatedLifetimeAllowanceProtectionRecord] =
-    Json.format[UpdatedLifetimeAllowanceProtectionRecord]
-
+object HipAmendProtectionRequest {
+  implicit val format: Format[HipAmendProtectionRequest] = Json.format[HipAmendProtectionRequest]
 }

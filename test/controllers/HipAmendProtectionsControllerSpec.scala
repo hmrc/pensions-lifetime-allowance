@@ -18,21 +18,23 @@ package controllers
 
 import connectors.{CitizenDetailsConnector, CitizenRecordOK}
 import mock.AuthMock
-import model.hip.{AmendProtectionResponse, UpdatedLifetimeAllowanceProtectionRecord}
-import org.mockito.ArgumentMatchers.any
+import model.api.AmendProtectionResponse
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.http.Status.{BAD_REQUEST, OK}
+import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
 import play.api.test.Helpers.{contentAsJson, contentAsString, defaultAwaitTimeout, status}
 import play.api.test.{FakeHeaders, FakeRequest}
 import services.HipProtectionService
+import testdata.HipTestData.{amendProtectionRequest, amendProtectionResponse, lifetimeAllowanceIdentifier}
 import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import java.util.Random
 import scala.concurrent.{ExecutionContext, Future}
@@ -72,12 +74,7 @@ class HipAmendProtectionsControllerSpec
 
   private val testNino = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
 
-  private val validAmendRequestBody = Json.parse(
-    s"""{
-       |  "typ": "IP2016"
-       |}
-       |""".stripMargin
-  )
+  private val validAmendRequestBody = Json.toJson(amendProtectionRequest)
 
   private val invalidAmendRequestBody = Json.parse(
     s"""{
@@ -86,14 +83,11 @@ class HipAmendProtectionsControllerSpec
        |""".stripMargin
   )
 
-  private val amendProtectionResponse = AmendProtectionResponse(
-    UpdatedLifetimeAllowanceProtectionRecord(42)
-  )
-
   "HipAmendProtectionsController on amendProtection" should {
 
     "call HipProtectionService" in {
-      when(hipProtectionService.amendProtection()(any())).thenReturn(Future.successful(amendProtectionResponse))
+      when(hipProtectionService.amendProtection(any(), any(), any())(any()))
+        .thenReturn(Future.successful(Right(amendProtectionResponse)))
 
       val request = FakeRequest(
         method = "POST",
@@ -102,13 +96,18 @@ class HipAmendProtectionsControllerSpec
         body = validAmendRequestBody
       )
 
-      controller.amendProtection(testNino)(request).futureValue
+      controller.amendProtection(testNino, lifetimeAllowanceIdentifier)(request).futureValue
 
-      verify(hipProtectionService).amendProtection()(any())
+      verify(hipProtectionService).amendProtection(
+        eqTo(testNino),
+        eqTo(lifetimeAllowanceIdentifier),
+        eqTo(amendProtectionRequest)
+      )(any())
     }
 
     "return Ok when provided with correct request" in {
-      when(hipProtectionService.amendProtection()(any())).thenReturn(Future.successful(amendProtectionResponse))
+      when(hipProtectionService.amendProtection(any(), any(), any())(any()))
+        .thenReturn(Future.successful(Right(amendProtectionResponse)))
 
       val request = FakeRequest(
         method = "POST",
@@ -117,7 +116,7 @@ class HipAmendProtectionsControllerSpec
         body = validAmendRequestBody
       )
 
-      val result = controller.amendProtection(testNino)(request)
+      val result = controller.amendProtection(testNino, lifetimeAllowanceIdentifier)(request)
 
       status(result) shouldBe OK
       contentAsJson(result).as[AmendProtectionResponse] shouldBe amendProtectionResponse
@@ -131,11 +130,32 @@ class HipAmendProtectionsControllerSpec
         body = invalidAmendRequestBody
       )
 
-      val result = controller.amendProtection(testNino)(request)
+      val result = controller.amendProtection(testNino, lifetimeAllowanceIdentifier)(request)
 
       status(result) shouldBe BAD_REQUEST
       contentAsString(result) should include("body failed validation with error: ")
     }
+
+    "return Internal Server Error" when
+      Seq(BAD_REQUEST, FORBIDDEN, NOT_FOUND, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { errorStatus =>
+        s"HipProtectionService returns Left containing UpstreamErrorResponse with status: $errorStatus" in {
+          val testException = UpstreamErrorResponse("Test Exception", errorStatus)
+          when(hipProtectionService.amendProtection(any(), any(), any())(any()))
+            .thenReturn(Future.successful(Left(testException)))
+
+          val request = FakeRequest(
+            method = "POST",
+            uri = "/",
+            headers = FakeHeaders(Seq("content-type" -> "application.json")),
+            body = validAmendRequestBody
+          )
+
+          val result = controller.amendProtection(testNino, lifetimeAllowanceIdentifier)(request)
+
+          status(result) shouldBe INTERNAL_SERVER_ERROR
+          contentAsString(result) should include("Test Exception")
+        }
+      }
   }
 
 }
