@@ -18,7 +18,8 @@ package connectors
 
 import config.HipConfig
 import events.HipAmendLtaEvent
-import model.hip.{HipAmendProtectionRequest, HipAmendProtectionResponse, ReadExistingProtectionsResponse}
+import model.hip.existing.ReadExistingProtectionsResponse
+import model.hip.{HipAmendProtectionRequest, HipAmendProtectionResponse}
 import play.api.Logging
 import play.api.http.MimeTypes
 import play.api.http.Status.OK
@@ -26,6 +27,7 @@ import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import util.IdGenerator
 
@@ -51,7 +53,7 @@ class HipConnector @Inject() (
   ): String =
     baseUrl + s"/lifetime-allowance/person/$nationalInsuranceNumber/reference/$lifetimeAllowanceIdentifier/sequence-number/$lifetimeAllowanceSequenceNumber"
 
-  private def readExistingProtectionsUrl: String = baseUrl + "/read"
+  private def readExistingProtectionsUrl(nino: String): String = hipConfig.baseUrl + s"/lifetime-allowance/person/$nino"
 
   private def basicHeaders(implicit hc: HeaderCarrier): Seq[(String, String)] = {
     val token =
@@ -127,7 +129,12 @@ class HipConnector @Inject() (
     auditConnector.sendEvent(auditEvent)
   }
 
-  def readExistingProtections()(implicit hc: HeaderCarrier): Future[ReadExistingProtectionsResponse] =
-    httpClient.get(url"$readExistingProtectionsUrl").execute[ReadExistingProtectionsResponse]
+  def readExistingProtections(
+      nino: String
+  )(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]] =
+    httpClient
+      .get(url"${readExistingProtectionsUrl(nino)}")
+      .setHeader(basicHeaders: _*)
+      .execute[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]]
 
 }

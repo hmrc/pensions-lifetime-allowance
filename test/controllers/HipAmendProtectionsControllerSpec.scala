@@ -63,7 +63,8 @@ class HipAmendProtectionsControllerSpec
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(citizenDetailsConnector, hipProtectionService)
+    reset(citizenDetailsConnector)
+    reset(hipProtectionService)
     mockAuthConnector(Future.successful {})
     when(citizenDetailsConnector.checkCitizenRecord(any[String])(any(), any()))
       .thenReturn(Future.successful(CitizenRecordOK))

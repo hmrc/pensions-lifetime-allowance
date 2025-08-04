@@ -18,20 +18,23 @@ package controllers
 
 import connectors.{CitizenDetailsConnector, CitizenRecordOK}
 import mock.AuthMock
-import model.hip.ReadExistingProtectionsResponse
-import org.mockito.ArgumentMatchers.any
+import model.hip.existing.ReadExistingProtectionsResponse
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.http.Status.OK
+import play.api.http.Status._
+import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status}
 import services.HipProtectionService
+import testdata.HipTestData.hipReadExistingProtectionsResponse
 import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import java.util.Random
 import scala.concurrent.{ExecutionContext, Future}
@@ -60,8 +63,11 @@ class HipReadProtectionsControllerSpec
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(citizenDetailsConnector, hipProtectionService)
+    reset(citizenDetailsConnector)
+    reset(hipProtectionService)
+
     mockAuthConnector(Future.successful {})
+
     when(citizenDetailsConnector.checkCitizenRecord(any[String])(any(), any()))
       .thenReturn(Future.successful(CitizenRecordOK))
   }
@@ -71,32 +77,55 @@ class HipReadProtectionsControllerSpec
 
   private val testNino = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
 
-  private val readExistingProtections = ReadExistingProtectionsResponse("PSA12345678A")
-
   "HipReadProtectionsController on readExistingProtections" should {
 
-    "call HipProtectionService" in {
-      when(hipProtectionService.readExistingProtections()(any()))
-        .thenReturn(Future.successful(readExistingProtections))
+    "return a successful response obtained from HipProtectionService" in {
 
-      val request = FakeRequest(method = "POST", path = "/")
-
-      controller.readExistingProtections(testNino)(request).futureValue
-
-      verify(hipProtectionService).readExistingProtections()(any())
-    }
-
-    "return the value obtained from HipProtectionService" in {
-      when(hipProtectionService.readExistingProtections()(any()))
-        .thenReturn(Future.successful(readExistingProtections))
+      when(hipProtectionService.readExistingProtections(eqTo(testNino))(any()))
+        .thenReturn(Future.successful(Right(hipReadExistingProtectionsResponse)))
 
       val request = FakeRequest(method = "POST", path = "/")
 
       val result = controller.readExistingProtections(testNino)(request)
 
       status(result) shouldBe OK
-      contentAsJson(result).as[ReadExistingProtectionsResponse] shouldBe readExistingProtections
+      contentAsJson(result).as[ReadExistingProtectionsResponse] shouldBe hipReadExistingProtectionsResponse
+
+      verify(hipProtectionService).readExistingProtections(eqTo(testNino))(any())
     }
+
+    "return a 500 response" when
+      Seq(BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { statusCode =>
+        s"a $statusCode is given by HIP API" in {
+
+          val responseBody =
+            """
+              |{
+              |  "origin": "HIP",
+              |  "response": {
+              |    "failures": [
+              |      {
+              |        "type": "string",
+              |        "reason": "string"
+              |      }
+              |    ]
+              |  }
+              |}
+              |""".stripMargin
+
+          when(hipProtectionService.readExistingProtections(eqTo(testNino))(any()))
+            .thenReturn(Future.successful(Left(UpstreamErrorResponse(responseBody, statusCode))))
+
+          val request = FakeRequest(method = "POST", path = "/")
+
+          val result = controller.readExistingProtections(testNino)(request)
+
+          status(result) shouldBe INTERNAL_SERVER_ERROR
+          contentAsJson(result) shouldBe Json.parse(responseBody)
+
+          verify(hipProtectionService).readExistingProtections(eqTo(testNino))(any())
+        }
+      }
   }
 
 }

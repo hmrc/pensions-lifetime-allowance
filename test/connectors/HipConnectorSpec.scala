@@ -54,7 +54,11 @@ class HipConnectorSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(hipConfig, idGenerator, httpClient, auditConnector, requestBuilder)
+    reset(hipConfig)
+    reset(idGenerator)
+    reset(httpClient)
+    reset(auditConnector)
+    reset(requestBuilder)
 
     when(hipConfig.baseUrl).thenReturn(urlBase)
     when(hipConfig.originatorId).thenReturn(originatorId)

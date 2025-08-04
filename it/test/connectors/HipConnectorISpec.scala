@@ -17,24 +17,30 @@
 package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import model.hip.{AmendProtectionLifetimeAllowanceType, AmendProtectionResponseStatus, ReadExistingProtectionsResponse}
+import config.HipConfig
+import model.hip.existing.ReadExistingProtectionsResponse
+import model.hip.{AmendProtectionLifetimeAllowanceType, AmendProtectionResponseStatus}
 import org.mockito.Mockito.when
 import org.mockito.{ArgumentMatchers, Mockito}
+import org.scalatest.EitherValues
 import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.http.MimeTypes
 import play.api.http.Status._
 import play.api.inject.bind
 import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.Json
 import testdata.HipTestData._
-import uk.gov.hmrc.http.{HeaderCarrier, JsValidationException, UpstreamErrorResponse}
+import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, JsValidationException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import util.{IdGenerator, TestUtils}
 import utilities.IntegrationSpec
 
-import java.util.UUID
+import java.nio.charset.StandardCharsets
+import java.util.{Base64, Random, UUID}
 import scala.concurrent.Future
 
-class HipConnectorISpec extends IntegrationSpec {
+class HipConnectorISpec extends IntegrationSpec with EitherValues {
 
   private val auditConnector = mock[AuditConnector]
   private val idGenerator    = mock[IdGenerator]
@@ -43,7 +49,11 @@ class HipConnectorISpec extends IntegrationSpec {
     bind[IdGenerator].toInstance(idGenerator)
   )
 
-  private val hipConnector = app.injector.instanceOf[HipConnector]
+  private val hipConnector: HipConnector = app.injector.instanceOf[HipConnector]
+
+  private implicit val hipConfig: HipConfig = app.injector.instanceOf[HipConfig]
+
+  private val correlationId: UUID = UUID.randomUUID()
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -57,13 +67,19 @@ class HipConnectorISpec extends IntegrationSpec {
 
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  private val correlationId: UUID = UUID.randomUUID()
-  private val testNino: String    = TestUtils.randomNino
+  val rand          = new Random()
+  val ninoGenerator = new Generator(rand)
 
-  private val readExistingProtectionsResponseJson =
-    Json.parse(s"""{
-                  |  "pensionSchemeAdministratorCheckReference": "PSA12345678A"
-                  |}""".stripMargin)
+  val nino: String = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
+
+  def token: String =
+    Base64.getEncoder
+      .encodeToString(
+        s"${hipConfig.clientId}:${hipConfig.clientSecret}"
+          .getBytes(StandardCharsets.UTF_8)
+      )
+
+  private val testNino: String = TestUtils.randomNino
 
   "HipConnector on amendProtection" must {
 
@@ -336,28 +352,400 @@ class HipConnectorISpec extends IntegrationSpec {
 
   "HipConnector on readExistingProtections" must {
 
-    "call correct HIP endpoint" in {
+    val url = s"/lifetime-allowance/person/$nino"
+
+    "handle a 200 response from HIP with the correct body" in {
+
+      val responseBody =
+        """
+          |{
+          |  "pensionSchemeAdministratorCheckReference": "PSA34728911G",
+          |  "protectionRecordsList": [
+          |    {
+          |      "protectionRecord": {
+          |        "identifier": 20,
+          |        "sequenceNumber": 3,
+          |        "type": "ENHANCED PROTECTION LTA",
+          |        "certificateDate": "2021-02-19",
+          |        "certificateTime": "091732",
+          |        "status": "OPEN",
+          |        "protectionReference": "EPRO1034571625B",
+          |        "lumpSumPercentage": 12
+          |      },
+          |      "historicaldetailsList": [
+          |        {
+          |          "identifier": 21,
+          |          "sequenceNumber": 1,
+          |          "type": "ENHANCED PROTECTION",
+          |          "certificateDate": "2021-02-19",
+          |          "certificateTime": "091732",
+          |          "status": "REJECTED",
+          |          "protectionReference": "EPRO1034571626B",
+          |          "lumpSumPercentage": 99
+          |        },
+          |        {
+          |          "identifier": 21,
+          |          "sequenceNumber": 1,
+          |          "type": "ENHANCED PROTECTION",
+          |          "certificateDate": "2021-02-19",
+          |          "certificateTime": "091732",
+          |          "status": "WITHDRAWN",
+          |          "protectionReference": "EPRO1034571627B",
+          |          "lumpSumPercentage": 99
+          |        }
+          |      ]
+          |    },
+          |    {
+          |      "protectionRecord": {
+          |        "identifier": 1,
+          |        "sequenceNumber": 3,
+          |        "type": "PRIMARY PROTECTION LTA",
+          |        "certificateDate": "2021-02-19",
+          |        "certificateTime": "091732",
+          |        "status": "WITHDRAWN",
+          |        "protectionReference": "PPRO1034571625B",
+          |        "pensionDebitAmount": 25000,
+          |        "pensionDebitEnteredAmount": 25000,
+          |        "pensionDebitStartDate": "2022-07-09",
+          |        "pensionDebitTotalAmount": 40000,
+          |        "lumpSumAmount": 750000,
+          |        "enhancementFactor": 12
+          |      },
+          |      "historicaldetailsList": [
+          |        {
+          |          "identifier": 11,
+          |          "sequenceNumber": 1,
+          |          "type": "PRIMARY PROTECTION",
+          |          "certificateDate": "2021-02-19",
+          |          "certificateTime": "091732",
+          |          "status": "REJECTED",
+          |          "protectionReference": "PPRO1034571625B",
+          |          "pensionDebitAmount": 25000,
+          |          "pensionDebitEnteredAmount": 25000,
+          |          "pensionDebitStartDate": "2022-07-09",
+          |          "pensionDebitTotalAmount": 40000,
+          |          "lumpSumAmount": 750000,
+          |          "enhancementFactor": 12
+          |        }
+          |      ]
+          |    },
+          |    {
+          |      "protectionRecord": {
+          |        "identifier": 2,
+          |        "sequenceNumber": 3,
+          |        "type": "FIXED PROTECTION LTA",
+          |        "certificateDate": "2021-02-19",
+          |        "certificateTime": "091732",
+          |        "status": "WITHDRAWN",
+          |        "protectionReference": "FP121034571625B"
+          |      },
+          |      "historicaldetailsList": [
+          |        {
+          |          "identifier": 12,
+          |          "sequenceNumber": 3,
+          |          "type": "FIXED PROTECTION",
+          |          "certificateDate": "2021-02-19",
+          |          "certificateTime": "091732",
+          |          "status": "WITHDRAWN",
+          |          "protectionReference": "FP121034571625B"
+          |        }
+          |      ]
+          |    },
+          |    {
+          |      "protectionRecord": {
+          |        "identifier": 3,
+          |        "sequenceNumber": 3,
+          |        "type": "FIXED PROTECTION 2014 LTA",
+          |        "certificateDate": "2021-02-19",
+          |        "certificateTime": "091732",
+          |        "status": "WITHDRAWN",
+          |        "protectionReference": "FP141034571625B"
+          |      },
+          |      "historicaldetailsList": [
+          |        {
+          |          "identifier": 13,
+          |          "sequenceNumber": 3,
+          |          "type": "FIXED PROTECTION 2014",
+          |          "certificateDate": "2021-02-19",
+          |          "certificateTime": "091732",
+          |          "status": "WITHDRAWN",
+          |          "protectionReference": "FP141034571625B"
+          |        }
+          |      ]
+          |    },
+          |    {
+          |      "protectionRecord": {
+          |        "identifier": 4,
+          |        "sequenceNumber": 3,
+          |        "type": "INDIVIDUAL PROTECTION 2014 LTA",
+          |        "certificateDate": "2021-02-19",
+          |        "certificateTime": "091732",
+          |        "status": "DORMANT",
+          |        "relevantAmount": 105000,
+          |        "preADayPensionInPaymentAmount": 1500,
+          |        "postADayBenefitCrystallisationEventAmount": 2500,
+          |        "uncrystallisedRightsAmount": 75500,
+          |        "nonUKRightsAmount": 0,
+          |        "pensionDebitAmount": 25000,
+          |        "pensionDebitEnteredAmount": 25000,
+          |        "protectedAmount": 120000,
+          |        "pensionDebitStartDate": "2022-07-09",
+          |        "pensionDebitTotalAmount": 40000
+          |      },
+          |      "historicaldetailsList": [
+          |        {
+          |          "identifier": 14,
+          |          "sequenceNumber": 3,
+          |          "type": "INDIVIDUAL PROTECTION 2014",
+          |          "certificateDate": "2021-02-19",
+          |          "certificateTime": "091732",
+          |          "status": "WITHDRAWN",
+          |          "protectionReference": "IP141034571625B",
+          |          "relevantAmount": 105000,
+          |          "preADayPensionInPaymentAmount": 1500,
+          |          "postADayBenefitCrystallisationEventAmount": 2500,
+          |          "uncrystallisedRightsAmount": 75500,
+          |          "nonUKRightsAmount": 0,
+          |          "pensionDebitAmount": 25000,
+          |          "pensionDebitEnteredAmount": 25000,
+          |          "protectedAmount": 120000,
+          |          "pensionDebitStartDate": "2022-07-09",
+          |          "pensionDebitTotalAmount": 40000
+          |        }
+          |      ]
+          |    },
+          |    {
+          |      "protectionRecord": {
+          |        "identifier": 5,
+          |        "sequenceNumber": 3,
+          |        "type": "FIXED PROTECTION 2016 LTA",
+          |        "certificateDate": "2021-02-19",
+          |        "certificateTime": "091732",
+          |        "status": "WITHDRAWN",
+          |        "protectionReference": "FP161034571625B"
+          |      },
+          |      "historicaldetailsList": [
+          |        {
+          |          "identifier": 15,
+          |          "sequenceNumber": 3,
+          |          "type": "FIXED PROTECTION 2016",
+          |          "certificateDate": "2021-02-19",
+          |          "certificateTime": "091732",
+          |          "status": "WITHDRAWN",
+          |          "protectionReference": "FP161034571625B"
+          |        }
+          |      ]
+          |    },
+          |    {
+          |      "protectionRecord": {
+          |        "identifier": 6,
+          |        "sequenceNumber": 3,
+          |        "type": "INDIVIDUAL PROTECTION 2016 LTA",
+          |        "certificateDate": "2021-02-19",
+          |        "certificateTime": "091732",
+          |        "status": "DORMANT",
+          |        "relevantAmount": 105000,
+          |        "preADayPensionInPaymentAmount": 1500,
+          |        "postADayBenefitCrystallisationEventAmount": 2500,
+          |        "uncrystallisedRightsAmount": 75500,
+          |        "nonUKRightsAmount": 0,
+          |        "pensionDebitAmount": 25000,
+          |        "pensionDebitEnteredAmount": 25000,
+          |        "protectedAmount": 120000,
+          |        "pensionDebitStartDate": "2022-07-09",
+          |        "pensionDebitTotalAmount": 40000
+          |      },
+          |      "historicaldetailsList": [
+          |        {
+          |          "identifier": 16,
+          |          "sequenceNumber": 3,
+          |          "type": "INDIVIDUAL PROTECTION 2016",
+          |          "certificateDate": "2021-02-19",
+          |          "certificateTime": "091732",
+          |          "status": "WITHDRAWN",
+          |          "protectionReference": "IP161034571625B",
+          |          "relevantAmount": 105000,
+          |          "preADayPensionInPaymentAmount": 1500,
+          |          "postADayBenefitCrystallisationEventAmount": 2500,
+          |          "uncrystallisedRightsAmount": 75500,
+          |          "nonUKRightsAmount": 0,
+          |          "pensionDebitAmount": 25000,
+          |          "pensionDebitEnteredAmount": 25000,
+          |          "protectedAmount": 120000,
+          |          "pensionDebitStartDate": "2022-07-09",
+          |          "pensionDebitTotalAmount": 40000
+          |        }
+          |      ]
+          |    },
+          |    {
+          |      "protectionRecord": {
+          |        "identifier": 7,
+          |        "sequenceNumber": 1,
+          |        "type": "INTERNATIONAL ENHANCEMENT (S221)",
+          |        "certificateDate": "2021-02-19",
+          |        "certificateTime": "091732",
+          |        "status": "WITHDRAWN",
+          |        "protectionReference": "IE211034571625B",
+          |        "enhancementFactor": 12
+          |      }
+          |    },
+          |    {
+          |      "protectionRecord": {
+          |        "identifier": 8,
+          |        "sequenceNumber": 1,
+          |        "type": "INTERNATIONAL ENHANCEMENT (S224)",
+          |        "certificateDate": "2021-02-19",
+          |        "certificateTime": "091732",
+          |        "status": "WITHDRAWN",
+          |        "protectionReference": "IE241034571625B",
+          |        "enhancementFactor": 12
+          |      }
+          |    },
+          |    {
+          |      "protectionRecord": {
+          |        "identifier": 9,
+          |        "sequenceNumber": 1,
+          |        "type": "PENSION CREDIT RIGHTS",
+          |        "certificateDate": "2021-02-19",
+          |        "certificateTime": "091732",
+          |        "status": "WITHDRAWN",
+          |        "protectionReference": "PCRD1034571625B",
+          |        "enhancementFactor": 12
+          |      }
+          |    }
+          |  ]
+          |}""".stripMargin
+
       stubGet(
-        url = "/read",
-        status = 200,
-        body = readExistingProtectionsResponseJson.toString
+        url,
+        OK,
+        responseBody
       )
 
-      hipConnector.readExistingProtections().futureValue
+      val result = hipConnector.readExistingProtections(nino).futureValue
 
-      verify(getRequestedFor(urlEqualTo("/read")))
+      result mustBe Right(Json.parse(responseBody).as[ReadExistingProtectionsResponse])
+
+      verify(
+        getRequestedFor(urlEqualTo(url))
+          .withHeader(play.api.http.HeaderNames.CONTENT_TYPE, equalTo(MimeTypes.JSON))
+          .withHeader("Gov-Uk-Originator-Id", equalTo(hipConfig.originatorId))
+          .withHeader(HeaderNames.xSessionId, equalTo(hc.sessionId.fold("-")(_.value)))
+          .withHeader(HeaderNames.xRequestId, equalTo(hc.requestId.fold("-")(_.value)))
+          .withHeader("CorrelationId", equalTo(correlationId.toString))
+          .withHeader(HeaderNames.authorisation, equalTo(s"Basic $token"))
+      )
     }
 
-    "return response from HIP" in {
+    "handle a 400 response" in {
+
+      val responseBody = """
+                           |{
+                           |  "origin": "HoD",
+                           |  "response": {
+                           |    "failures": [
+                           |      {
+                           |        "reason": "HTTP message not readable",
+                           |        "code": "400.2"
+                           |      },
+                           |      {
+                           |        "reason": "Constraint violation - Invalid/Missing input parameter : <parameter>",
+                           |        "code": "400.1"
+                           |      }
+                           |    ]
+                           |  }
+                           |}""".stripMargin
+
       stubGet(
-        url = "/read",
-        status = 200,
-        body = readExistingProtectionsResponseJson.toString
+        url,
+        BAD_REQUEST,
+        responseBody
       )
 
-      val result = hipConnector.readExistingProtections().futureValue
+      val result = hipConnector.readExistingProtections(nino).futureValue.left.value
 
-      result mustBe ReadExistingProtectionsResponse("PSA12345678A")
+      result.message must include(responseBody)
+      result.statusCode mustBe BAD_REQUEST
+    }
+
+    "handle a 403 response" in {
+
+      val responseBody =
+        """
+          |{
+          |  "reason": "Forbidden",
+          |  "code": "403.2"
+          |}
+          |""".stripMargin
+
+      stubGet(
+        url,
+        FORBIDDEN,
+        responseBody
+      )
+
+      val result = hipConnector.readExistingProtections(nino).futureValue.left.value
+
+      result.message must include(responseBody)
+      result.statusCode mustBe FORBIDDEN
+    }
+
+    "handle a 500 response" in {
+
+      val responseBody =
+        """
+          |{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "string",
+          |        "reason": "string"
+          |      }
+          |    ]
+          |  }
+          |}
+          |""".stripMargin
+
+      stubGet(
+        url,
+        INTERNAL_SERVER_ERROR,
+        responseBody
+      )
+
+      val result = hipConnector.readExistingProtections(nino).futureValue.left.value
+
+      result.message must include(responseBody)
+      result.statusCode mustBe INTERNAL_SERVER_ERROR
+    }
+
+    "handle a 503 response" in {
+
+      val responseBody =
+        """
+          |{
+          |  "origin": "HIP",
+          |  "response": {
+          |    "failures": [
+          |      {
+          |        "type": "string",
+          |        "reason": "string"
+          |      }
+          |    ]
+          |  }
+          |}
+          |""".stripMargin
+
+      stubGet(
+        url,
+        SERVICE_UNAVAILABLE,
+        responseBody
+      )
+
+      val result = hipConnector.readExistingProtections(nino).futureValue.left.value
+
+      result.message must include(responseBody)
+      result.statusCode mustBe SERVICE_UNAVAILABLE
     }
   }
 

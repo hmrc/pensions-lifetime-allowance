@@ -18,7 +18,7 @@ package services
 
 import connectors.HipConnector
 import model.api.{AmendProtectionRequest, AmendProtectionResponse}
-import model.hip.{HipAmendProtectionResponse, ReadExistingProtectionsResponse}
+import model.hip.existing.ReadExistingProtectionsResponse
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import javax.inject.Inject
@@ -43,7 +43,9 @@ class HipProtectionService @Inject() (hipConnector: HipConnector)(implicit ec: E
       responseE = hipResponseE.map(_.toAmendProtectionResponse)
     } yield responseE
 
-  def readExistingProtections()(implicit hc: HeaderCarrier): Future[ReadExistingProtectionsResponse] =
-    hipConnector.readExistingProtections()
+  def readExistingProtections(nino: String)(
+      implicit hc: HeaderCarrier
+  ): Future[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]] =
+    hipConnector.readExistingProtections(nino)
 
 }
