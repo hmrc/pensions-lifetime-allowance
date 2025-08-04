@@ -16,15 +16,16 @@
 
 package model.api
 
-import model.hip.{AmendProtectionLifetimeAllowanceType, AmendProtectionRequestStatus, HipAmendProtectionRequest}
-import play.api.libs.json._
+import model.hip.{AmendProtectionLifetimeAllowanceType, AmendProtectionResponseStatus}
+import play.api.libs.json.{Format, Json}
 
-case class AmendProtectionRequest(
+case class AmendProtectionResponse(
+    lifetimeAllowanceIdentifier: Int,
     lifetimeAllowanceSequenceNumber: Int,
     lifetimeAllowanceType: AmendProtectionLifetimeAllowanceType,
     certificateDate: Option[String],
     certificateTime: Option[String],
-    status: AmendProtectionRequestStatus,
+    status: AmendProtectionResponseStatus,
     protectionReference: Option[String],
     relevantAmount: Int,
     preADayPensionInPaymentAmount: Int,
@@ -37,29 +38,8 @@ case class AmendProtectionRequest(
     protectedAmount: Option[Int],
     pensionDebitStartDate: Option[String],
     pensionDebitTotalAmount: Option[Int]
-) {
+)
 
-  def toHipAmendProtectionRequest: HipAmendProtectionRequest = HipAmendProtectionRequest(
-    `type` = lifetimeAllowanceType,
-    certificateDate = certificateDate,
-    certificateTime = certificateTime,
-    status = status,
-    protectionReference = protectionReference,
-    relevantAmount = relevantAmount,
-    preADayPensionInPaymentAmount = preADayPensionInPaymentAmount,
-    postADayBenefitCrystallisationEventAmount = postADayBenefitCrystallisationEventAmount,
-    uncrystallisedRightsAmount = uncrystallisedRightsAmount,
-    nonUKRightsAmount = nonUKRightsAmount,
-    pensionDebitAmount = pensionDebitAmount,
-    pensionDebitEnteredAmount = pensionDebitEnteredAmount,
-    notificationIdentifier = notificationIdentifier,
-    protectedAmount = protectedAmount,
-    pensionDebitStartDate = pensionDebitStartDate,
-    pensionDebitTotalAmount = pensionDebitTotalAmount
-  )
-
-}
-
-object AmendProtectionRequest {
-  implicit val format: Format[AmendProtectionRequest] = Json.format[AmendProtectionRequest]
+object AmendProtectionResponse {
+  implicit val format: Format[AmendProtectionResponse] = Json.format[AmendProtectionResponse]
 }

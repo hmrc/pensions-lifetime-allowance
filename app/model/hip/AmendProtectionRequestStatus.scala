@@ -16,12 +16,19 @@
 
 package model.hip
 
-import play.api.libs.json.{Format, Json}
+import util.{Enumerable, EnumerableInstance}
 
-case class AmendProtectionResponse(
-    updatedLifetimeAllowanceProtectionRecord: UpdatedLifetimeAllowanceProtectionRecord
-)
+sealed abstract class AmendProtectionRequestStatus(value: String) extends EnumerableInstance(value)
 
-object AmendProtectionResponse {
-  implicit val format: Format[AmendProtectionResponse] = Json.format[AmendProtectionResponse]
+object AmendProtectionRequestStatus extends Enumerable.Implicits {
+
+  case object Open    extends AmendProtectionRequestStatus("OPEN")
+  case object Dormant extends AmendProtectionRequestStatus("DORMANT")
+
+  private val allValues: Seq[AmendProtectionRequestStatus] =
+    Seq(Open, Dormant)
+
+  implicit val toEnumerable: Enumerable[AmendProtectionRequestStatus] =
+    Enumerable(allValues.map(v => v.toString -> v): _*)
+
 }

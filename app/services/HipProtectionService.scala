@@ -17,17 +17,31 @@
 package services
 
 import connectors.HipConnector
-import model.hip.AmendProtectionResponse
+import model.api.{AmendProtectionRequest, AmendProtectionResponse}
 import model.hip.existing.ReadExistingProtectionsResponse
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import javax.inject.Inject
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class HipProtectionService @Inject() (hipConnector: HipConnector) {
+class HipProtectionService @Inject() (hipConnector: HipConnector)(implicit ec: ExecutionContext) {
 
-  def amendProtection()(implicit hc: HeaderCarrier): Future[AmendProtectionResponse] =
-    hipConnector.amendProtection()
+  def amendProtection(
+      nino: String,
+      protectionId: Int,
+      request: AmendProtectionRequest
+  )(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, AmendProtectionResponse]] =
+    for {
+      hipResponseE <- hipConnector
+        .amendProtection(
+          nationalInsuranceNumber = nino,
+          lifetimeAllowanceIdentifier = protectionId,
+          lifetimeAllowanceSequenceNumber = request.lifetimeAllowanceSequenceNumber,
+          request = request.toHipAmendProtectionRequest
+        )
+
+      responseE = hipResponseE.map(_.toAmendProtectionResponse)
+    } yield responseE
 
   def readExistingProtections(nino: String)(
       implicit hc: HeaderCarrier

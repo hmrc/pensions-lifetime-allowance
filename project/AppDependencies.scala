@@ -1,8 +1,8 @@
-import sbt._
+import sbt.*
 
 object AppDependencies {
 
-  import play.sbt.PlayImport._
+  import play.sbt.PlayImport.*
 
   val boostrapVersion = "9.11.0"
 

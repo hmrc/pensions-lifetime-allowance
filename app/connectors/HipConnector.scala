@@ -17,14 +17,18 @@
 package connectors
 
 import config.HipConfig
-import model.hip.AmendProtectionResponse
+import events.HipAmendLtaEvent
 import model.hip.existing.ReadExistingProtectionsResponse
+import model.hip.{HipAmendProtectionRequest, HipAmendProtectionResponse}
 import play.api.Logging
 import play.api.http.MimeTypes
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import play.api.http.Status.OK
+import play.api.libs.json.{JsObject, Json}
+import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, StringContextOps, UpstreamErrorResponse}
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import util.IdGenerator
 
 import java.nio.charset.StandardCharsets
@@ -33,14 +37,22 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class HipConnector @Inject() (
-    httpClient: HttpClientV2,
     hipConfig: HipConfig,
     idGenerator: IdGenerator,
+    httpClient: HttpClientV2,
     auditConnector: AuditConnector
 )(implicit ec: ExecutionContext)
     extends Logging {
 
-  private def amendProtectionUrl: String                       = hipConfig.baseUrl + "/amend"
+  private def baseUrl: String = hipConfig.baseUrl
+
+  private def amendProtectionUrl(
+      nationalInsuranceNumber: String,
+      lifetimeAllowanceIdentifier: Int,
+      lifetimeAllowanceSequenceNumber: Int
+  ): String =
+    baseUrl + s"/lifetime-allowance/person/$nationalInsuranceNumber/reference/$lifetimeAllowanceIdentifier/sequence-number/$lifetimeAllowanceSequenceNumber"
+
   private def readExistingProtectionsUrl(nino: String): String = hipConfig.baseUrl + s"/lifetime-allowance/person/$nino"
 
   private def basicHeaders(implicit hc: HeaderCarrier): Seq[(String, String)] = {
@@ -61,8 +73,61 @@ class HipConnector @Inject() (
     )
   }
 
-  def amendProtection()(implicit hc: HeaderCarrier): Future[AmendProtectionResponse] =
-    httpClient.post(url"$amendProtectionUrl").execute[AmendProtectionResponse]
+  def amendProtection(
+      nationalInsuranceNumber: String,
+      lifetimeAllowanceIdentifier: Int,
+      lifetimeAllowanceSequenceNumber: Int,
+      request: HipAmendProtectionRequest
+  )(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, HipAmendProtectionResponse]] = {
+
+    val urlString = amendProtectionUrl(
+      nationalInsuranceNumber,
+      lifetimeAllowanceIdentifier = lifetimeAllowanceIdentifier,
+      lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber
+    )
+
+    for {
+      amendProtectionResponseE <- httpClient
+        .post(url"$urlString")
+        .withBody(Json.toJson(request))
+        .setHeader(basicHeaders: _*)
+        .execute[Either[UpstreamErrorResponse, HipAmendProtectionResponse]]
+
+      _ = amendProtectionResponseE.map { amendProtectionResponse =>
+        sendAuditEvent(
+          nino = nationalInsuranceNumber,
+          id = lifetimeAllowanceIdentifier,
+          requestUrl = urlString,
+          requestBody = request,
+          responseStatusCode = OK,
+          responseBody = amendProtectionResponse
+        )
+      }
+
+    } yield amendProtectionResponseE
+  }
+
+  private def sendAuditEvent(
+      nino: String,
+      id: Int,
+      requestUrl: String,
+      requestBody: HipAmendProtectionRequest,
+      responseStatusCode: Int,
+      responseBody: HipAmendProtectionResponse
+  )(implicit hc: HeaderCarrier): Future[AuditResult] = {
+
+    val auditEvent = new HipAmendLtaEvent(
+      nino = nino,
+      id = id,
+      hipRequestBodyJs = Json.toJson(requestBody).as[JsObject],
+      hipResponseBodyJs = Json.toJson(responseBody).as[JsObject],
+      statusCode = responseStatusCode,
+      path = requestUrl
+    )
+
+    logger.debug(s"Sending audit event: $auditEvent")
+    auditConnector.sendEvent(auditEvent)
+  }
 
   def readExistingProtections(
       nino: String

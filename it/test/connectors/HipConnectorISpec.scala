@@ -19,9 +19,9 @@ package connectors
 import com.github.tomakehurst.wiremock.client.WireMock._
 import config.HipConfig
 import model.hip.existing.ReadExistingProtectionsResponse
-import model.hip.{AmendProtectionResponse, UpdatedLifetimeAllowanceProtectionRecord}
-import org.mockito.Mockito
+import model.hip.{AmendProtectionLifetimeAllowanceType, AmendProtectionResponseStatus}
 import org.mockito.Mockito.when
+import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.EitherValues
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.MimeTypes
@@ -29,17 +29,21 @@ import play.api.http.Status._
 import play.api.inject.bind
 import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.Json
+import testdata.HipTestData._
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
-import util.IdGenerator
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, JsValidationException, UpstreamErrorResponse}
+import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
+import util.{IdGenerator, TestUtils}
 import utilities.IntegrationSpec
 
 import java.nio.charset.StandardCharsets
 import java.util.{Base64, Random, UUID}
+import scala.concurrent.Future
 
 class HipConnectorISpec extends IntegrationSpec with EitherValues {
 
-  private val idGenerator = mock[IdGenerator]
+  private val auditConnector = mock[AuditConnector]
+  private val idGenerator    = mock[IdGenerator]
 
   override def overrideModules: Seq[GuiceableModule] = Seq(
     bind[IdGenerator].toInstance(idGenerator)
@@ -54,8 +58,10 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
   override def beforeEach(): Unit = {
     super.beforeEach()
 
+    Mockito.reset(auditConnector)
     Mockito.reset(idGenerator)
-
+    when(auditConnector.sendEvent(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+      .thenReturn(Future.successful(AuditResult.Success))
     when(idGenerator.generateUuid).thenReturn(correlationId)
   }
 
@@ -73,37 +79,274 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
           .getBytes(StandardCharsets.UTF_8)
       )
 
-  private val amendProtectionResponseJson =
-    Json.parse(s"""{
-                  |  "updatedLifetimeAllowanceProtectionRecord": {
-                  |    "identifier": 42
-                  |  }
-                  |}""".stripMargin)
+  private val testNino: String = TestUtils.randomNino
 
   "HipConnector on amendProtection" must {
 
+    val url =
+      s"/lifetime-allowance/person/$testNino/reference/$lifetimeAllowanceIdentifier/sequence-number/$lifetimeAllowanceSequenceNumber"
+
+    val amendProtectionResponseJson =
+      Json.parse(s"""{
+                    |  "updatedLifetimeAllowanceProtectionRecord": {
+                    |    "identifier": $lifetimeAllowanceIdentifier,
+                    |    "sequenceNumber": ${lifetimeAllowanceSequenceNumber + 1},
+                    |    "type": "${AmendProtectionLifetimeAllowanceType.IndividualProtection2014Lta.toString}",
+                    |    "certificateDate": "2025-07-15",
+                    |    "certificateTime": "174312",
+                    |    "status": "${AmendProtectionResponseStatus.Open.toString}",
+                    |    "protectionReference": "$protectionReference",
+                    |    "relevantAmount": 105000,
+                    |    "preADayPensionInPaymentAmount": 1500,
+                    |    "postADayBenefitCrystallisationEventAmount": 2500,
+                    |    "uncrystallisedRightsAmount": 75500,
+                    |    "nonUKRightsAmount": 0,
+                    |    "pensionDebitAmount": 25000,
+                    |    "pensionDebitEnteredAmount": 25000,
+                    |    "notificationIdentifier": 3,
+                    |    "protectedAmount": 120000,
+                    |    "pensionDebitStartDate": "2026-07-09",
+                    |    "pensionDebitTotalAmount": 40000
+                    |  }
+                    |}""".stripMargin)
+
     "call correct HIP endpoint" in {
       stubPost(
-        url = "/amend",
-        status = 200,
+        url = url,
+        status = OK,
         responseBody = amendProtectionResponseJson.toString
       )
 
-      hipConnector.amendProtection().futureValue
+      hipConnector
+        .amendProtection(
+          nationalInsuranceNumber = testNino,
+          lifetimeAllowanceIdentifier = lifetimeAllowanceIdentifier,
+          lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber,
+          request = hipAmendProtectionRequest
+        )
+        .futureValue
 
-      verify(postRequestedFor(urlEqualTo("/amend")))
+      verify(
+        postRequestedFor(urlEqualTo(url))
+          .withHeader("gov-uk-originator-id", equalTo("CYPPE"))
+          .withHeader("correlationId", equalTo(correlationId.toString))
+          .withRequestBody(equalTo(Json.toJson(hipAmendProtectionRequest).toString))
+      )
     }
 
-    "return response from HIP" in {
+    "return response from HIP" when {
+
+      "HIP returns Ok (200)" in {
+        stubPost(
+          url = url,
+          status = OK,
+          responseBody = amendProtectionResponseJson.toString
+        )
+
+        val result = hipConnector
+          .amendProtection(
+            nationalInsuranceNumber = testNino,
+            lifetimeAllowanceIdentifier = lifetimeAllowanceIdentifier,
+            lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber,
+            request = hipAmendProtectionRequest
+          )
+          .futureValue
+
+        result mustBe Right(hipAmendProtectionResponse)
+      }
+    }
+
+    "return Left containing an UpstreamErrorResponse" when {
+
+      "HIP returns BadRequest (400)" in {
+        val responseBody =
+          Json.parse(s"""{
+                        |  "origin": "HIP",
+                        |  "response": {
+                        |     "failures": [
+                        |       {
+                        |         "reason": "HTTP message not readable",
+                        |         "code": "400.2"
+                        |       },
+                        |       {
+                        |         "reason": "Constraint violation - Invalid/Missing input parameter : <parameter>",
+                        |         "code": "400.1"
+                        |       }
+                        |     ]
+                        |  }
+                        |}""".stripMargin)
+        stubPost(
+          url = url,
+          status = BAD_REQUEST,
+          responseBody = responseBody.toString
+        )
+
+        val result = hipConnector
+          .amendProtection(
+            nationalInsuranceNumber = testNino,
+            lifetimeAllowanceIdentifier = lifetimeAllowanceIdentifier,
+            lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber,
+            request = hipAmendProtectionRequest
+          )
+          .futureValue
+
+        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
+
+        errorResponse.statusCode mustBe BAD_REQUEST
+        errorResponse.message must include(responseBody.toString)
+      }
+
+      "HIP returns Forbidden (403)" in {
+        val responseBody =
+          Json.parse(s"""{
+                        |  "code": "403.2",
+                        |  "reason": "Forbidden"
+                        |}""".stripMargin)
+        stubPost(
+          url = url,
+          status = FORBIDDEN,
+          responseBody = responseBody.toString
+        )
+
+        val result = hipConnector
+          .amendProtection(
+            nationalInsuranceNumber = testNino,
+            lifetimeAllowanceIdentifier = lifetimeAllowanceIdentifier,
+            lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber,
+            request = hipAmendProtectionRequest
+          )
+          .futureValue
+
+        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
+
+        errorResponse.statusCode mustBe FORBIDDEN
+        errorResponse.message must include(responseBody.toString)
+      }
+
+      "HIP returns NotFound (404)" in {
+        val responseBody =
+          Json.parse(s"""{
+                        |  "code": "404",
+                        |  "reason": "Not Found"
+                        |}""".stripMargin)
+        stubPost(
+          url = url,
+          status = NOT_FOUND,
+          responseBody = responseBody.toString
+        )
+
+        val result = hipConnector
+          .amendProtection(
+            nationalInsuranceNumber = testNino,
+            lifetimeAllowanceIdentifier = lifetimeAllowanceIdentifier,
+            lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber,
+            request = hipAmendProtectionRequest
+          )
+          .futureValue
+
+        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
+
+        errorResponse.statusCode mustBe NOT_FOUND
+        errorResponse.message must include(responseBody.toString)
+      }
+
+      "HIP returns InternalServerError (500)" in {
+        val responseBody =
+          Json.parse(s"""{
+                        |  "origin": "HIP",
+                        |  "response": {
+                        |     "failures": [
+                        |       {
+                        |         "type": "Test Failure Type",
+                        |         "reason": "Test Reason"
+                        |       }
+                        |     ]
+                        |  }
+                        |}""".stripMargin)
+        stubPost(
+          url = url,
+          status = INTERNAL_SERVER_ERROR,
+          responseBody = responseBody.toString
+        )
+
+        val result = hipConnector
+          .amendProtection(
+            nationalInsuranceNumber = testNino,
+            lifetimeAllowanceIdentifier = lifetimeAllowanceIdentifier,
+            lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber,
+            request = hipAmendProtectionRequest
+          )
+          .futureValue
+
+        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
+
+        errorResponse.statusCode mustBe INTERNAL_SERVER_ERROR
+        errorResponse.message must include(responseBody.toString)
+      }
+
+      "HIP returns ServiceUnavailable (503)" in {
+        val responseBody =
+          Json.parse(s"""{
+                        |  "origin": "HIP",
+                        |  "response": {
+                        |     "failures": [
+                        |       {
+                        |         "type": "Test Failure Type",
+                        |         "reason": "Test Reason"
+                        |       }
+                        |     ]
+                        |  }
+                        |}""".stripMargin)
+        stubPost(
+          url = url,
+          status = SERVICE_UNAVAILABLE,
+          responseBody = responseBody.toString
+        )
+
+        val result = hipConnector
+          .amendProtection(
+            nationalInsuranceNumber = testNino,
+            lifetimeAllowanceIdentifier = lifetimeAllowanceIdentifier,
+            lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber,
+            request = hipAmendProtectionRequest
+          )
+          .futureValue
+
+        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
+
+        errorResponse.statusCode mustBe SERVICE_UNAVAILABLE
+        errorResponse.message must include(responseBody.toString)
+      }
+    }
+
+    "return failed Future containing JsValidationException when HIP returns incorrect JSON" in {
+      val incorrectResponseBody =
+        Json.parse(s"""{
+                      |  "updatedLifetimeAllowanceProtectionRecord": {
+                      |    "identifier": $lifetimeAllowanceIdentifier,
+                      |    "sequenceNumber": ${lifetimeAllowanceSequenceNumber + 1},
+                      |    "type": "incorrect-type",
+                      |    "certificateDate": "2025-07-15",
+                      |    "certificateTime": "174312"
+                      |  }
+                      |}""".stripMargin)
       stubPost(
-        url = "/amend",
-        status = 200,
-        responseBody = amendProtectionResponseJson.toString
+        url = url,
+        status = OK,
+        responseBody = incorrectResponseBody.toString
       )
 
-      val result = hipConnector.amendProtection().futureValue
+      val result = hipConnector
+        .amendProtection(
+          nationalInsuranceNumber = testNino,
+          lifetimeAllowanceIdentifier = lifetimeAllowanceIdentifier,
+          lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber,
+          request = hipAmendProtectionRequest
+        )
+        .failed
+        .futureValue
 
-      result mustBe AmendProtectionResponse(UpdatedLifetimeAllowanceProtectionRecord(42))
+      result mustBe a[JsValidationException]
     }
   }
 

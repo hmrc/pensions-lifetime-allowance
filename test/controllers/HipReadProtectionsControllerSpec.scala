@@ -32,9 +32,9 @@ import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status}
 import services.HipProtectionService
+import testdata.HipTestData.hipReadExistingProtectionsResponse
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.UpstreamErrorResponse
-import util.TestObjects.readExistingProtectionsResponse
 
 import java.util.Random
 import scala.concurrent.{ExecutionContext, Future}
@@ -82,14 +82,14 @@ class HipReadProtectionsControllerSpec
     "return a successful response obtained from HipProtectionService" in {
 
       when(hipProtectionService.readExistingProtections(eqTo(testNino))(any()))
-        .thenReturn(Future.successful(Right(readExistingProtectionsResponse)))
+        .thenReturn(Future.successful(Right(hipReadExistingProtectionsResponse)))
 
       val request = FakeRequest(method = "POST", path = "/")
 
       val result = controller.readExistingProtections(testNino)(request)
 
       status(result) shouldBe OK
-      contentAsJson(result).as[ReadExistingProtectionsResponse] shouldBe readExistingProtectionsResponse
+      contentAsJson(result).as[ReadExistingProtectionsResponse] shouldBe hipReadExistingProtectionsResponse
 
       verify(hipProtectionService).readExistingProtections(eqTo(testNino))(any())
     }
