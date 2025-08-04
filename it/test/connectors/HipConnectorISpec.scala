@@ -68,7 +68,7 @@ class HipConnectorISpec extends IntegrationSpec {
   "HipConnector on amendProtection" must {
 
     val url =
-      s"/lifetime-allowance/person/$testNino/reference/$lifetimeAllowanceIdentifier/sequence-number/$lifetimeAllowanceSequenceNumber"
+      s"/paye/lifetime-allowance/person/$testNino/reference/$lifetimeAllowanceIdentifier/sequence-number/$lifetimeAllowanceSequenceNumber"
 
     val amendProtectionResponseJson =
       Json.parse(s"""{
@@ -338,19 +338,19 @@ class HipConnectorISpec extends IntegrationSpec {
 
     "call correct HIP endpoint" in {
       stubGet(
-        url = "/read",
+        url = "/paye/read",
         status = 200,
         body = readExistingProtectionsResponseJson.toString
       )
 
       hipConnector.readExistingProtections().futureValue
 
-      verify(getRequestedFor(urlEqualTo("/read")))
+      verify(getRequestedFor(urlEqualTo("/paye/read")))
     }
 
     "return response from HIP" in {
       stubGet(
-        url = "/read",
+        url = "/paye/read",
         status = 200,
         body = readExistingProtectionsResponseJson.toString
       )
