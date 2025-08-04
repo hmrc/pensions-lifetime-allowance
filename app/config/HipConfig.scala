@@ -22,7 +22,9 @@ import javax.inject.Inject
 
 class HipConfig @Inject() (servicesConfig: ServicesConfig) {
 
-  def baseUrl: String = servicesConfig.baseUrl("hip")
+  lazy val path: String = servicesConfig.getConfString("hip.path", "")
+
+  def baseUrl: String = s"${servicesConfig.baseUrl("hip")}$path"
 
   def clientId: String = servicesConfig.getConfString("hip.clientId", "")
 
