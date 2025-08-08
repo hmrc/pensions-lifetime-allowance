@@ -39,9 +39,6 @@ lazy val root = Project(appName, file("."))
   )
   .settings(PlayKeys.playDefaultPort := 9011)
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
-  .settings(
-    resolvers += Resolver.jcenterRepo
-  )
 
 lazy val it = project
   .in(file("it"))

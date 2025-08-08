@@ -21,8 +21,9 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import javax.inject.Inject
 
 class HipConfig @Inject() (servicesConfig: ServicesConfig) {
+  lazy val path: String = servicesConfig.getConfString("hip.path", "")
 
-  def baseUrl: String = servicesConfig.baseUrl("hip")
+  def baseUrl: String = s"${servicesConfig.baseUrl("hip")}$path"
 
   def clientId: String = servicesConfig.getConfString("hip.clientId", "")
 

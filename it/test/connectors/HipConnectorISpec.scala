@@ -84,7 +84,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
   "HipConnector on amendProtection" must {
 
     val url =
-      s"/lifetime-allowance/person/$testNino/reference/$lifetimeAllowanceIdentifier/sequence-number/$lifetimeAllowanceSequenceNumber"
+      s"/paye/lifetime-allowance/person/$testNino/reference/$lifetimeAllowanceIdentifier/sequence-number/$lifetimeAllowanceSequenceNumber"
 
     val amendProtectionResponseJson =
       Json.parse(s"""{
@@ -352,7 +352,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
 
   "HipConnector on readExistingProtections" must {
 
-    val url = s"/lifetime-allowance/person/$nino"
+    val url = s"/paye/lifetime-allowance/person/$nino"
 
     "handle a 200 response from HIP with the correct body" in {
 
