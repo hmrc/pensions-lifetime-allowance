@@ -128,7 +128,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
 
       verify(
         postRequestedFor(urlEqualTo(url))
-          .withHeader("gov-uk-originator-id", equalTo("CYPPE"))
+          .withHeader("gov-uk-originator-id", equalTo("MDTP-LTA-PYLA-2"))
           .withHeader("correlationId", equalTo(correlationId.toString))
           .withRequestBody(equalTo(Json.toJson(hipAmendProtectionRequest).toString))
       )
