@@ -19,12 +19,13 @@ package services
 import connectors.HipConnector
 import model.api.{AmendProtectionRequest, AmendProtectionResponse}
 import model.hip.existing.ReadExistingProtectionsResponse
+import play.api.Logging
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class HipProtectionService @Inject() (hipConnector: HipConnector)(implicit ec: ExecutionContext) {
+class HipProtectionService @Inject() (hipConnector: HipConnector)(implicit ec: ExecutionContext) extends Logging {
 
   def amendProtection(
       nino: String,
@@ -39,8 +40,9 @@ class HipProtectionService @Inject() (hipConnector: HipConnector)(implicit ec: E
           lifetimeAllowanceSequenceNumber = request.lifetimeAllowanceSequenceNumber,
           request = request.toHipAmendProtectionRequest
         )
-
-      responseE = hipResponseE.map(_.toAmendProtectionResponse)
+      responseE         = hipResponseE.map(_.toAmendProtectionResponse)
+      notificationIdOpt = responseE.toOption.flatMap(_.notificationIdentifier)
+      _                 = notificationIdOpt.foreach(id => logger.info(s"Received Notification ID: $id"))
     } yield responseE
 
   def readExistingProtections(nino: String)(
