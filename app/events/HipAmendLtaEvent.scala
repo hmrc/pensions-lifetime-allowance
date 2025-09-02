@@ -34,7 +34,7 @@ class HipAmendLtaEvent(
       auditType = "AmendAllowance",
       detail = Map[String, String](
         "nino"           -> nino,
-        "protectionType" -> (hipRequestBodyJs \ "type").as[JsString].value,
+        "protectionType" -> (hipRequestBodyJs \ "lifetimeAllowanceProtectionRecord" \ "type").as[JsString].value,
         "statusCode"     -> statusCode.toString,
         "protectionStatus" -> (hipResponseBodyJs \ "updatedLifetimeAllowanceProtectionRecord" \ "type")
           .as[JsString]

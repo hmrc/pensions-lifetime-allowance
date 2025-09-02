@@ -16,25 +16,10 @@
 
 package model.hip
 
-import play.api.libs.json._
+import play.api.libs.json.{Format, Json}
 
 case class HipAmendProtectionRequest(
-    `type`: AmendProtectionLifetimeAllowanceType,
-    certificateDate: Option[String],
-    certificateTime: Option[String],
-    status: AmendProtectionRequestStatus,
-    protectionReference: Option[String],
-    relevantAmount: Int,
-    preADayPensionInPaymentAmount: Int,
-    postADayBenefitCrystallisationEventAmount: Int,
-    uncrystallisedRightsAmount: Int,
-    nonUKRightsAmount: Int,
-    pensionDebitAmount: Option[Int],
-    pensionDebitEnteredAmount: Option[Int],
-    notificationIdentifier: Option[Int],
-    protectedAmount: Option[Int],
-    pensionDebitStartDate: Option[String],
-    pensionDebitTotalAmount: Option[Int]
+    lifetimeAllowanceProtectionRecord: LifetimeAllowanceProtectionRecord
 )
 
 object HipAmendProtectionRequest {
