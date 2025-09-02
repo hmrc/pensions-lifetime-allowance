@@ -16,7 +16,12 @@
 
 package model.api
 
-import model.hip.{AmendProtectionLifetimeAllowanceType, AmendProtectionRequestStatus, HipAmendProtectionRequest}
+import model.hip.{
+  AmendProtectionLifetimeAllowanceType,
+  AmendProtectionRequestStatus,
+  HipAmendProtectionRequest,
+  LifetimeAllowanceProtectionRecord
+}
 import play.api.libs.json._
 
 case class AmendProtectionRequest(
@@ -40,22 +45,24 @@ case class AmendProtectionRequest(
 ) {
 
   def toHipAmendProtectionRequest: HipAmendProtectionRequest = HipAmendProtectionRequest(
-    `type` = lifetimeAllowanceType,
-    certificateDate = certificateDate,
-    certificateTime = certificateTime,
-    status = status,
-    protectionReference = protectionReference,
-    relevantAmount = relevantAmount,
-    preADayPensionInPaymentAmount = preADayPensionInPaymentAmount,
-    postADayBenefitCrystallisationEventAmount = postADayBenefitCrystallisationEventAmount,
-    uncrystallisedRightsAmount = uncrystallisedRightsAmount,
-    nonUKRightsAmount = nonUKRightsAmount,
-    pensionDebitAmount = pensionDebitAmount,
-    pensionDebitEnteredAmount = pensionDebitEnteredAmount,
-    notificationIdentifier = notificationIdentifier,
-    protectedAmount = protectedAmount,
-    pensionDebitStartDate = pensionDebitStartDate,
-    pensionDebitTotalAmount = pensionDebitTotalAmount
+    LifetimeAllowanceProtectionRecord(
+      `type` = lifetimeAllowanceType,
+      certificateDate = certificateDate,
+      certificateTime = certificateTime,
+      status = status,
+      protectionReference = protectionReference,
+      relevantAmount = relevantAmount,
+      preADayPensionInPaymentAmount = preADayPensionInPaymentAmount,
+      postADayBenefitCrystallisationEventAmount = postADayBenefitCrystallisationEventAmount,
+      uncrystallisedRightsAmount = uncrystallisedRightsAmount,
+      nonUKRightsAmount = nonUKRightsAmount,
+      pensionDebitAmount = pensionDebitAmount,
+      pensionDebitEnteredAmount = pensionDebitEnteredAmount,
+      notificationIdentifier = notificationIdentifier,
+      protectedAmount = protectedAmount,
+      pensionDebitStartDate = pensionDebitStartDate,
+      pensionDebitTotalAmount = pensionDebitTotalAmount
+    )
   )
 
 }

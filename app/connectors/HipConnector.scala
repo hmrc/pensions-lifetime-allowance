@@ -24,10 +24,10 @@ import play.api.Logging
 import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.{JsObject, Json}
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, StringContextOps, UpstreamErrorResponse}
-import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import util.IdGenerator
 

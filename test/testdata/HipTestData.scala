@@ -70,22 +70,24 @@ object HipTestData {
   )
 
   val hipAmendProtectionRequest: HipAmendProtectionRequest = HipAmendProtectionRequest(
-    `type` = AmendProtectionLifetimeAllowanceType.IndividualProtection2014Lta,
-    certificateDate = Some("2025-07-15"),
-    certificateTime = Some("174312"),
-    status = AmendProtectionRequestStatus.Open,
-    protectionReference = Some(protectionReference),
-    relevantAmount = 105000,
-    preADayPensionInPaymentAmount = 1500,
-    postADayBenefitCrystallisationEventAmount = 2500,
-    uncrystallisedRightsAmount = 75500,
-    nonUKRightsAmount = 0,
-    pensionDebitAmount = Some(25000),
-    pensionDebitEnteredAmount = Some(25000),
-    notificationIdentifier = Some(3),
-    protectedAmount = Some(120000),
-    pensionDebitStartDate = Some("2026-07-09"),
-    pensionDebitTotalAmount = Some(40000)
+    LifetimeAllowanceProtectionRecord(
+      `type` = AmendProtectionLifetimeAllowanceType.IndividualProtection2014Lta,
+      certificateDate = Some("2025-07-15"),
+      certificateTime = Some("174312"),
+      status = AmendProtectionRequestStatus.Open,
+      protectionReference = Some(protectionReference),
+      relevantAmount = 105000,
+      preADayPensionInPaymentAmount = 1500,
+      postADayBenefitCrystallisationEventAmount = 2500,
+      uncrystallisedRightsAmount = 75500,
+      nonUKRightsAmount = 0,
+      pensionDebitAmount = Some(25000),
+      pensionDebitEnteredAmount = Some(25000),
+      notificationIdentifier = Some(3),
+      protectedAmount = Some(120000),
+      pensionDebitStartDate = Some("2026-07-09"),
+      pensionDebitTotalAmount = Some(40000)
+    )
   )
 
   val hipAmendProtectionResponse: HipAmendProtectionResponse = HipAmendProtectionResponse(
