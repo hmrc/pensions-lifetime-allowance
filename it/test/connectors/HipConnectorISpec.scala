@@ -637,6 +637,25 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
       )
     }
 
+    "handle missing protectionRecordList in response from HIP" in {
+
+      val responseBody =
+        """
+          |{
+          |  "pensionSchemeAdministratorCheckReference": "PSA34728911G"
+          |}""".stripMargin
+
+      stubGet(
+        url,
+        OK,
+        responseBody
+      )
+
+      val result = hipConnector.readExistingProtections(nino).futureValue
+
+      result mustBe Right(Json.parse(responseBody).as[ReadExistingProtectionsResponse])
+    }
+
     "handle a 400 response" in {
 
       val responseBody = """
