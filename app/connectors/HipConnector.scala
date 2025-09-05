@@ -25,9 +25,8 @@ import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import util.IdGenerator
 
@@ -91,7 +90,17 @@ class HipConnector @Inject() (
         .post(url"$urlString")
         .withBody(Json.toJson(request))
         .setHeader(basicHeaders: _*)
-        .execute[Either[UpstreamErrorResponse, HipAmendProtectionResponse]]
+        .execute[HttpResponse]
+        .map { httpResponse =>
+          val responseStatus = httpResponse.status
+          val responseBody   = httpResponse.json
+
+          logger.info(
+            s"Called HIP API POST $urlString endpoint with NINo: $nationalInsuranceNumber. Response status: $responseStatus, body: $responseBody"
+          )
+
+          readEitherOf[HipAmendProtectionResponse].read("POST", urlString, httpResponse)
+        }
 
       _ = amendProtectionResponseE.map { amendProtectionResponse =>
         sendAuditEvent(
@@ -131,10 +140,23 @@ class HipConnector @Inject() (
 
   def readExistingProtections(
       nino: String
-  )(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]] =
+  )(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]] = {
+    val urlString = readExistingProtectionsUrl(nino)
+
     httpClient
-      .get(url"${readExistingProtectionsUrl(nino)}")
+      .get(url"$urlString")
       .setHeader(basicHeaders: _*)
-      .execute[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]]
+      .execute[HttpResponse]
+      .map { httpResponse =>
+        val responseStatus = httpResponse.status
+        val responseBody   = httpResponse.json
+
+        logger.info(
+          s"Called HIP API GET $urlString endpoint with NINo: $nino. Response status: $responseStatus, body: $responseBody"
+        )
+
+        readEitherOf[ReadExistingProtectionsResponse].read("GET", urlString, httpResponse)
+      }
+  }
 
 }

@@ -21,6 +21,8 @@ import model.hip._
 import model.hip.existing.ProtectionStatus.{Open, Withdrawn}
 import model.hip.existing.ProtectionType.{FixedProtection2016LTA, PensionCreditRights}
 import model.hip.existing.{ProtectionRecord, ProtectionRecordsList, ReadExistingProtectionsResponse}
+import play.api.libs.json.Json
+import uk.gov.hmrc.http.HttpResponse
 
 object HipTestData {
 
@@ -111,6 +113,12 @@ object HipTestData {
       pensionDebitStartDate = Some("2026-07-09"),
       pensionDebitTotalAmount = Some(40000)
     )
+  )
+
+  val hipAmendProtectionHttpResponse: HttpResponse = HttpResponse(
+    status = 200,
+    headers = Map.empty,
+    json = Json.toJson(hipAmendProtectionResponse)
   )
 
   val hipReadExistingProtectionsResponse: ReadExistingProtectionsResponse = ReadExistingProtectionsResponse(
