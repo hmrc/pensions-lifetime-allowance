@@ -20,7 +20,7 @@ import model.hip.{AmendProtectionLifetimeAllowanceType, AmendProtectionResponseS
 import play.api.libs.json.{Format, Json}
 
 case class AmendProtectionResponse(
-    lifetimeAllowanceIdentifier: Int,
+    lifetimeAllowanceIdentifier: Long,
     lifetimeAllowanceSequenceNumber: Int,
     lifetimeAllowanceType: AmendProtectionLifetimeAllowanceType,
     certificateDate: Option[String],

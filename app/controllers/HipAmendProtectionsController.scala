@@ -37,7 +37,7 @@ class HipAmendProtectionsController @Inject() (
     extends BackendController(cc)
     with AuthorisedActions {
 
-  def amendProtection(nino: String, protectionId: Int): Action[JsValue] =
+  def amendProtection(nino: String, protectionId: Long): Action[JsValue] =
     Action.async(cc.parsers.json) { implicit request =>
       userAuthorised(nino) {
         request.body

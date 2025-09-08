@@ -29,7 +29,7 @@ class HipProtectionService @Inject() (hipConnector: HipConnector)(implicit ec: E
 
   def amendProtection(
       nino: String,
-      protectionId: Int,
+      protectionId: Long,
       request: AmendProtectionRequest
   )(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, AmendProtectionResponse]] =
     for {
