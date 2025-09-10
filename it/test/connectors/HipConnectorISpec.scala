@@ -250,7 +250,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
         errorResponse.message must include(responseBody.toString)
       }
 
-      "handle a 422 response" in {
+      "HIP returns UNPROCESSABLE_ENTITY (422)" in {
 
         val responseBody =
           """
