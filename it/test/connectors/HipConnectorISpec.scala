@@ -250,6 +250,42 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
         errorResponse.message must include(responseBody.toString)
       }
 
+      "handle a 422 response" in {
+
+        val responseBody =
+          """
+            |{
+            |  "failures": [
+            |    {
+            |      "reason": "Relevant Amount Invalid",
+            |      "code": "63169"
+            |    }
+            |  ]
+            |}
+            |""".stripMargin
+
+        val UNPROCESSABLE_ENTITY = 422
+
+        stubPost(
+          url,
+          UNPROCESSABLE_ENTITY,
+          responseBody
+        )
+
+        val result = hipConnector
+          .amendProtection(
+            nationalInsuranceNumber = testNino,
+            lifetimeAllowanceIdentifier = lifetimeAllowanceIdentifier,
+            lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber,
+            request = hipAmendProtectionRequest
+          )
+          .futureValue
+
+        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
+        errorResponse.statusCode mustBe UNPROCESSABLE_ENTITY
+        errorResponse.message must include(responseBody)
+      }
+
       "HIP returns InternalServerError (500)" in {
         val responseBody =
           Json.parse(s"""{
@@ -707,33 +743,6 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
 
       result.message must include(responseBody)
       result.statusCode mustBe FORBIDDEN
-    }
-
-    "handle a 422 response" in {
-
-      val responseBody =
-        """
-          |{
-          |  "failures": [
-          |    {
-          |      "reason": "Relevant Amount Invalid",
-          |      "code": "63169"
-          |    }
-          |  ]
-          |}
-          |""".stripMargin
-
-      val UNPROCESSABLE_ENTITY = 422
-
-      stubGet(
-        url,
-        UNPROCESSABLE_ENTITY,
-        responseBody
-      )
-
-      val result = hipConnector.readExistingProtections(nino).futureValue.left.value
-      result.message must include(responseBody)
-      result.statusCode mustBe UNPROCESSABLE_ENTITY
     }
 
     "handle a 500 response" in {
