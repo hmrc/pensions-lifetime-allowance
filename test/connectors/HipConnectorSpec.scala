@@ -18,6 +18,7 @@ package connectors
 
 import config.HipConfig
 import events.HipAmendLtaEvent
+import model.hip.HipAmendProtectionResponse
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, verify, verifyNoInteractions, when}
@@ -30,7 +31,7 @@ import play.api.http.Status.OK
 import play.api.libs.json.{JsObject, Json}
 import testdata.HipTestData._
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpResponse, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.DataEvent
 import util.IdGenerator
@@ -86,8 +87,8 @@ class HipConnectorSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach
 
       "call AuditConnector" in {
         when(idGenerator.generateUuid).thenReturn(correlationId)
-        when(requestBuilder.execute[HttpResponse](any(), any()))
-          .thenReturn(Future.successful(hipAmendProtectionHttpResponse))
+        when(requestBuilder.execute[Either[UpstreamErrorResponse, HipAmendProtectionResponse]](any(), any()))
+          .thenReturn(Future.successful(Right(hipAmendProtectionResponse)))
         when(auditConnector.sendEvent(any())(any(), any()))
           .thenReturn(Future.successful(AuditResult.Success))
 
@@ -118,8 +119,8 @@ class HipConnectorSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach
 
       "return the value obtained from HttpClientV2.execute" in {
         when(idGenerator.generateUuid).thenReturn(correlationId)
-        when(requestBuilder.execute[HttpResponse](any(), any()))
-          .thenReturn(Future.successful(hipAmendProtectionHttpResponse))
+        when(requestBuilder.execute[Either[UpstreamErrorResponse, HipAmendProtectionResponse]](any(), any()))
+          .thenReturn(Future.successful(Right(hipAmendProtectionResponse)))
         when(auditConnector.sendEvent(any())(any(), any()))
           .thenReturn(Future.successful(AuditResult.Success))
 
