@@ -48,7 +48,7 @@ class HipConnector @Inject() (
 
   private def amendProtectionUrl(
       nationalInsuranceNumber: String,
-      lifetimeAllowanceIdentifier: Int,
+      lifetimeAllowanceIdentifier: Long,
       lifetimeAllowanceSequenceNumber: Int
   ): String =
     baseUrl + s"/lifetime-allowance/person/$nationalInsuranceNumber/reference/$lifetimeAllowanceIdentifier/sequence-number/$lifetimeAllowanceSequenceNumber"
@@ -75,7 +75,7 @@ class HipConnector @Inject() (
 
   def amendProtection(
       nationalInsuranceNumber: String,
-      lifetimeAllowanceIdentifier: Int,
+      lifetimeAllowanceIdentifier: Long,
       lifetimeAllowanceSequenceNumber: Int,
       request: HipAmendProtectionRequest
   )(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, HipAmendProtectionResponse]] = {
@@ -109,7 +109,7 @@ class HipConnector @Inject() (
 
   private def sendAuditEvent(
       nino: String,
-      id: Int,
+      id: Long,
       requestUrl: String,
       requestBody: HipAmendProtectionRequest,
       responseStatusCode: Int,
