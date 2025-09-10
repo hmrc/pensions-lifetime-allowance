@@ -709,6 +709,33 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
       result.statusCode mustBe FORBIDDEN
     }
 
+    "handle a 422 response" in {
+
+      val responseBody =
+        """
+          |{
+          |  "failures": [
+          |    {
+          |      "reason": "Relevant Amount Invalid",
+          |      "code": "63169"
+          |    }
+          |  ]
+          |}
+          |""".stripMargin
+
+      val UNPROCESSABLE_ENTITY = 422
+
+      stubGet(
+        url,
+        UNPROCESSABLE_ENTITY,
+        responseBody
+      )
+
+      val result = hipConnector.readExistingProtections(nino).futureValue.left.value
+      result.message must include(responseBody)
+      result.statusCode mustBe UNPROCESSABLE_ENTITY
+    }
+
     "handle a 500 response" in {
 
       val responseBody =
@@ -760,7 +787,6 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
         SERVICE_UNAVAILABLE,
         responseBody
       )
-
       val result = hipConnector.readExistingProtections(nino).futureValue.left.value
 
       result.message must include(responseBody)
