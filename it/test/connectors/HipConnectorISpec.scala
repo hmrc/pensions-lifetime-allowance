@@ -190,8 +190,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
           )
           .futureValue
 
-        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
-
+        val errorResponse = result.left.value
         errorResponse.statusCode mustBe BAD_REQUEST
         errorResponse.message must include(responseBody.toString)
       }
@@ -217,10 +216,10 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
           )
           .futureValue
 
-        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
-
+        val errorResponse = result.left.value
         errorResponse.statusCode mustBe FORBIDDEN
         errorResponse.message must include(responseBody.toString)
+
       }
 
       "HIP returns NotFound (404)" in {
@@ -244,8 +243,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
           )
           .futureValue
 
-        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
-
+        val errorResponse = result.left.value
         errorResponse.statusCode mustBe NOT_FOUND
         errorResponse.message must include(responseBody.toString)
       }
@@ -281,7 +279,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
           )
           .futureValue
 
-        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
+        val errorResponse = result.left.value
         errorResponse.statusCode mustBe UNPROCESSABLE_ENTITY
         errorResponse.message must include(responseBody)
       }
@@ -314,8 +312,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
           )
           .futureValue
 
-        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
-
+        val errorResponse = result.left.value
         errorResponse.statusCode mustBe INTERNAL_SERVER_ERROR
         errorResponse.message must include(responseBody.toString)
       }
@@ -348,8 +345,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
           )
           .futureValue
 
-        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
-
+        val errorResponse = result.left.value
         errorResponse.statusCode mustBe SERVICE_UNAVAILABLE
         errorResponse.message must include(responseBody.toString)
       }
