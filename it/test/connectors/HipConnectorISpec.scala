@@ -190,8 +190,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
           )
           .futureValue
 
-        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
-
+        val errorResponse = result.left.value
         errorResponse.statusCode mustBe BAD_REQUEST
         errorResponse.message must include(responseBody.toString)
       }
@@ -217,10 +216,10 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
           )
           .futureValue
 
-        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
-
+        val errorResponse = result.left.value
         errorResponse.statusCode mustBe FORBIDDEN
         errorResponse.message must include(responseBody.toString)
+
       }
 
       "HIP returns NotFound (404)" in {
@@ -244,10 +243,45 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
           )
           .futureValue
 
-        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
-
+        val errorResponse = result.left.value
         errorResponse.statusCode mustBe NOT_FOUND
         errorResponse.message must include(responseBody.toString)
+      }
+
+      "HIP returns UNPROCESSABLE_ENTITY (422)" in {
+
+        val responseBody =
+          """
+            |{
+            |  "failures": [
+            |    {
+            |      "reason": "Relevant Amount Invalid",
+            |      "code": "63169"
+            |    }
+            |  ]
+            |}
+            |""".stripMargin
+
+        val UNPROCESSABLE_ENTITY = 422
+
+        stubPost(
+          url,
+          UNPROCESSABLE_ENTITY,
+          responseBody
+        )
+
+        val result = hipConnector
+          .amendProtection(
+            nationalInsuranceNumber = testNino,
+            lifetimeAllowanceIdentifier = lifetimeAllowanceIdentifier,
+            lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber,
+            request = hipAmendProtectionRequest
+          )
+          .futureValue
+
+        val errorResponse = result.left.value
+        errorResponse.statusCode mustBe UNPROCESSABLE_ENTITY
+        errorResponse.message must include(responseBody)
       }
 
       "HIP returns InternalServerError (500)" in {
@@ -278,8 +312,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
           )
           .futureValue
 
-        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
-
+        val errorResponse = result.left.value
         errorResponse.statusCode mustBe INTERNAL_SERVER_ERROR
         errorResponse.message must include(responseBody.toString)
       }
@@ -312,8 +345,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
           )
           .futureValue
 
-        val errorResponse = result.swap.getOrElse(UpstreamErrorResponse("msg", 123))
-
+        val errorResponse = result.left.value
         errorResponse.statusCode mustBe SERVICE_UNAVAILABLE
         errorResponse.message must include(responseBody.toString)
       }
@@ -760,7 +792,6 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
         SERVICE_UNAVAILABLE,
         responseBody
       )
-
       val result = hipConnector.readExistingProtections(nino).futureValue.left.value
 
       result.message must include(responseBody)
