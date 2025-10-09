@@ -61,5 +61,4 @@ case class ProtectionRecord(
 
 object ProtectionRecord {
   implicit val format: Format[ProtectionRecord] = Json.format[ProtectionRecord]
-
 }
