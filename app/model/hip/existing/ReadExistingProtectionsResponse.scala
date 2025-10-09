@@ -21,12 +21,7 @@ import play.api.libs.json.{Format, Json}
 case class ReadExistingProtectionsResponse(
     pensionSchemeAdministratorCheckReference: String,
     protectionRecordsList: Option[Seq[ProtectionRecordsList]]
-) {
-
-  def padCertificateTime: ReadExistingProtectionsResponse =
-    copy(protectionRecordsList = protectionRecordsList.map(_.map(_.padCertificateTime)))
-
-}
+)
 
 object ReadExistingProtectionsResponse {
   implicit val format: Format[ReadExistingProtectionsResponse] = Json.format[ReadExistingProtectionsResponse]
@@ -35,14 +30,7 @@ object ReadExistingProtectionsResponse {
 case class ProtectionRecordsList(
     protectionRecord: ProtectionRecord,
     historicaldetailsList: Option[Seq[ProtectionRecord]]
-) {
-
-  def padCertificateTime: ProtectionRecordsList = copy(
-    protectionRecord = protectionRecord.padCertificateTime,
-    historicaldetailsList = historicaldetailsList.map(_.map(_.padCertificateTime))
-  )
-
-}
+)
 
 object ProtectionRecordsList {
   implicit val format: Format[ProtectionRecordsList] = Json.format[ProtectionRecordsList]
@@ -69,23 +57,9 @@ case class ProtectionRecord(
     lumpSumAmount: Option[Int],
     lumpSumPercentage: Option[Int],
     enhancementFactor: Option[Double]
-) {
-
-  def padCertificateTime: ProtectionRecord = copy(
-    certificateTime = ProtectionRecord.padCertificateTime(certificateTime)
-  )
-
-}
+)
 
 object ProtectionRecord {
   implicit val format: Format[ProtectionRecord] = Json.format[ProtectionRecord]
-
-  private val MIN_CERTIFICATE_TIME_LENGTH = 6
-
-  private[hip] def padCertificateTime(certificateTimeString: String): String = {
-    val padding = "0" * (MIN_CERTIFICATE_TIME_LENGTH - certificateTimeString.length).max(0)
-
-    s"$padding$certificateTimeString"
-  }
 
 }
