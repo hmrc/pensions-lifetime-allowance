@@ -45,6 +45,9 @@ case class HipAmendProtectionResponse(
     pensionDebitTotalAmount = updatedLifetimeAllowanceProtectionRecord.pensionDebitTotalAmount
   )
 
+  def padCertificateTime: HipAmendProtectionResponse =
+    copy(updatedLifetimeAllowanceProtectionRecord = updatedLifetimeAllowanceProtectionRecord.padCertificateTime)
+
 }
 
 object HipAmendProtectionResponse {

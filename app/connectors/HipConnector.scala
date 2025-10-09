@@ -92,6 +92,7 @@ class HipConnector @Inject() (
         .withBody(Json.toJson(request))
         .setHeader(basicHeaders: _*)
         .execute[Either[UpstreamErrorResponse, HipAmendProtectionResponse]]
+        .map(_.map(_.padCertificateTime))
 
       _ = amendProtectionResponseE.map { amendProtectionResponse =>
         sendAuditEvent(
@@ -136,5 +137,6 @@ class HipConnector @Inject() (
       .get(url"${readExistingProtectionsUrl(nino)}")
       .setHeader(basicHeaders: _*)
       .execute[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]]
+      .map(_.map(_.padCertificateTime))
 
 }

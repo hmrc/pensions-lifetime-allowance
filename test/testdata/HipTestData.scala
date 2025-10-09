@@ -32,7 +32,7 @@ object HipTestData {
 
   val amendProtectionRequest: AmendProtectionRequest = AmendProtectionRequest(
     lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber,
-    lifetimeAllowanceType = AmendProtectionLifetimeAllowanceType.IndividualProtection2014Lta,
+    lifetimeAllowanceType = AmendProtectionLifetimeAllowanceType.IndividualProtection2014LTA,
     certificateDate = Some("2025-07-15"),
     certificateTime = Some("174312"),
     status = AmendProtectionRequestStatus.Open,
@@ -53,7 +53,7 @@ object HipTestData {
   val amendProtectionResponse: AmendProtectionResponse = AmendProtectionResponse(
     lifetimeAllowanceIdentifier = lifetimeAllowanceIdentifier,
     lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber + 1,
-    lifetimeAllowanceType = AmendProtectionLifetimeAllowanceType.IndividualProtection2014Lta,
+    lifetimeAllowanceType = AmendProtectionLifetimeAllowanceType.IndividualProtection2014LTA,
     certificateDate = Some("2025-07-15"),
     certificateTime = Some("174312"),
     status = AmendProtectionResponseStatus.Open,
@@ -73,7 +73,7 @@ object HipTestData {
 
   val hipAmendProtectionRequest: HipAmendProtectionRequest = HipAmendProtectionRequest(
     LifetimeAllowanceProtectionRecord(
-      `type` = AmendProtectionLifetimeAllowanceType.IndividualProtection2014Lta,
+      `type` = AmendProtectionLifetimeAllowanceType.IndividualProtection2014LTA,
       certificateDate = Some("2025-07-15"),
       certificateTime = Some("174312"),
       status = AmendProtectionRequestStatus.Open,
@@ -96,7 +96,7 @@ object HipTestData {
     UpdatedLifetimeAllowanceProtectionRecord(
       identifier = lifetimeAllowanceIdentifier,
       sequenceNumber = lifetimeAllowanceSequenceNumber + 1,
-      `type` = AmendProtectionLifetimeAllowanceType.IndividualProtection2014Lta,
+      `type` = AmendProtectionLifetimeAllowanceType.IndividualProtection2014LTA,
       certificateDate = Some("2025-07-15"),
       certificateTime = Some("174312"),
       status = AmendProtectionResponseStatus.Open,

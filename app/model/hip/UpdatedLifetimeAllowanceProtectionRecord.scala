@@ -16,6 +16,7 @@
 
 package model.hip
 
+import model.hip.existing.ProtectionRecord
 import play.api.libs.json._
 
 case class UpdatedLifetimeAllowanceProtectionRecord(
@@ -37,7 +38,12 @@ case class UpdatedLifetimeAllowanceProtectionRecord(
     protectedAmount: Option[Int],
     pensionDebitStartDate: Option[String],
     pensionDebitTotalAmount: Option[Int]
-)
+) {
+
+  def padCertificateTime: UpdatedLifetimeAllowanceProtectionRecord =
+    copy(certificateTime = certificateTime.map(ProtectionRecord.padCertificateTime))
+
+}
 
 object UpdatedLifetimeAllowanceProtectionRecord {
 
