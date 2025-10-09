@@ -92,7 +92,7 @@ class HipConnector @Inject() (
         .withBody(Json.toJson(request))
         .setHeader(basicHeaders: _*)
         .execute[Either[UpstreamErrorResponse, HipAmendProtectionResponse]]
-        .map(_.map(HipConnector.padCertificateTimeInHipAmendProtectionResponse))
+        .map(_.map(padCertificateTime))
 
       _ = amendProtectionResponseE.map { amendProtectionResponse =>
         sendAuditEvent(
@@ -137,20 +137,17 @@ class HipConnector @Inject() (
       .get(url"${readExistingProtectionsUrl(nino)}")
       .setHeader(basicHeaders: _*)
       .execute[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]]
-      .map(_.map(HipConnector.padCertificateTimeInReadExistingProtectionsResponse))
+      .map(_.map(padCertificateTime))
 
-}
-
-object HipConnector {
-  private val MIN_CERTIFICATE_TIME_LENGTH = 6
+  private val CertificateTimeLength = 6
 
   private[connectors] def padCertificateTime(certificateTimeString: String): String = {
-    val padding = "0" * (MIN_CERTIFICATE_TIME_LENGTH - certificateTimeString.length).max(0)
+    val padding = "0" * (CertificateTimeLength - certificateTimeString.length).max(0)
 
     s"$padding$certificateTimeString"
   }
 
-  private[connectors] def padCertificateTimeInReadExistingProtectionsResponse(
+  private[connectors] def padCertificateTime(
       readExistingProtectionsResponse: ReadExistingProtectionsResponse
   ): ReadExistingProtectionsResponse = {
     def padCertificateTimeInProtectionRecord(protectionRecord: ProtectionRecord): ProtectionRecord =
@@ -171,7 +168,7 @@ object HipConnector {
     )
   }
 
-  private[connectors] def padCertificateTimeInHipAmendProtectionResponse(
+  private[connectors] def padCertificateTime(
       hipAmendProtectionResponse: HipAmendProtectionResponse
   ): HipAmendProtectionResponse = {
     def padCertificateTimeInUpdatedLifetimeAllowanceProtectionRecord(

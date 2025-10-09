@@ -270,23 +270,23 @@ class HipConnectorSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach
   "HipConnector on padCertificateTime" should {
     "pad with leading zeros up to a length of 6" when {
       "certificateTime is 1" in {
-        HipConnector.padCertificateTime("1") shouldBe "000001"
+        hipConnector.padCertificateTime("1") shouldBe "000001"
       }
 
       "certificateTime is 11" in {
-        HipConnector.padCertificateTime("11") shouldBe "000011"
+        hipConnector.padCertificateTime("11") shouldBe "000011"
       }
 
       "certificateTime is 111" in {
-        HipConnector.padCertificateTime("111") shouldBe "000111"
+        hipConnector.padCertificateTime("111") shouldBe "000111"
       }
 
       "certificateTime is 1111" in {
-        HipConnector.padCertificateTime("1111") shouldBe "001111"
+        hipConnector.padCertificateTime("1111") shouldBe "001111"
       }
 
       "certificateTime is 11111" in {
-        HipConnector.padCertificateTime("11111") shouldBe "011111"
+        hipConnector.padCertificateTime("11111") shouldBe "011111"
       }
     }
   }
@@ -344,7 +344,7 @@ class HipConnectorSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach
         )
       )
 
-      HipConnector.padCertificateTimeInReadExistingProtectionsResponse(
+      hipConnector.padCertificateTime(
         readExistingProtectionsResponse
       ) shouldBe paddedReadExistingProtectionsResponse
     }
@@ -385,7 +385,7 @@ class HipConnectorSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach
         )
       )
 
-      HipConnector.padCertificateTimeInHipAmendProtectionResponse(
+      hipConnector.padCertificateTime(
         hipAmendProtectionResponse
       ) shouldBe paddedHipAmendProtectionResponse
     }
