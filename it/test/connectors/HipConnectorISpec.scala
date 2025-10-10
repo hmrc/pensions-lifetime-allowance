@@ -91,7 +91,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
                     |  "updatedLifetimeAllowanceProtectionRecord": {
                     |    "identifier": $lifetimeAllowanceIdentifier,
                     |    "sequenceNumber": ${lifetimeAllowanceSequenceNumber + 1},
-                    |    "type": "${AmendProtectionLifetimeAllowanceType.IndividualProtection2014Lta.toString}",
+                    |    "type": "${AmendProtectionLifetimeAllowanceType.IndividualProtection2014LTA.toString}",
                     |    "certificateDate": "2025-07-15",
                     |    "certificateTime": "174312",
                     |    "status": "${AmendProtectionResponseStatus.Open.toString}",

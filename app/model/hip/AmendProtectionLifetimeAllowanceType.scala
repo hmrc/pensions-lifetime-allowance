@@ -24,14 +24,14 @@ object AmendProtectionLifetimeAllowanceType extends Enumerable.Implicits {
 
   case object IndividualProtection2014    extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2014")
   case object IndividualProtection2016    extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2016")
-  case object IndividualProtection2014Lta extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2014 LTA")
-  case object IndividualProtection2016Lta extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2016 LTA")
+  case object IndividualProtection2014LTA extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2014 LTA")
+  case object IndividualProtection2016LTA extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2016 LTA")
 
   private val allValues: Seq[AmendProtectionLifetimeAllowanceType] = Seq(
     IndividualProtection2014,
     IndividualProtection2016,
-    IndividualProtection2014Lta,
-    IndividualProtection2016Lta
+    IndividualProtection2014LTA,
+    IndividualProtection2016LTA
   )
 
   implicit val toEnumerable: Enumerable[AmendProtectionLifetimeAllowanceType] =

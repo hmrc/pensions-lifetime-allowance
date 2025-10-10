@@ -18,8 +18,8 @@ package connectors
 
 import config.HipConfig
 import events.HipAmendLtaEvent
-import model.hip.existing.ReadExistingProtectionsResponse
-import model.hip.{HipAmendProtectionRequest, HipAmendProtectionResponse}
+import model.hip.existing.{ProtectionRecord, ProtectionRecordsList, ReadExistingProtectionsResponse}
+import model.hip.{HipAmendProtectionRequest, HipAmendProtectionResponse, UpdatedLifetimeAllowanceProtectionRecord}
 import play.api.Logging
 import play.api.http.MimeTypes
 import play.api.http.Status.OK
@@ -92,6 +92,7 @@ class HipConnector @Inject() (
         .withBody(Json.toJson(request))
         .setHeader(basicHeaders: _*)
         .execute[Either[UpstreamErrorResponse, HipAmendProtectionResponse]]
+        .map(_.map(padCertificateTime))
 
       _ = amendProtectionResponseE.map { amendProtectionResponse =>
         sendAuditEvent(
@@ -136,5 +137,52 @@ class HipConnector @Inject() (
       .get(url"${readExistingProtectionsUrl(nino)}")
       .setHeader(basicHeaders: _*)
       .execute[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]]
+      .map(_.map(padCertificateTime))
+
+  private val CertificateTimeLength = 6
+
+  private[connectors] def padCertificateTime(certificateTimeString: String): String = {
+    val padding = "0" * (CertificateTimeLength - certificateTimeString.length).max(0)
+
+    s"$padding$certificateTimeString"
+  }
+
+  private[connectors] def padCertificateTime(
+      readExistingProtectionsResponse: ReadExistingProtectionsResponse
+  ): ReadExistingProtectionsResponse = {
+    def padCertificateTimeInProtectionRecord(protectionRecord: ProtectionRecord): ProtectionRecord =
+      protectionRecord.copy(
+        certificateTime = padCertificateTime(protectionRecord.certificateTime)
+      )
+
+    def padCertificateTimeInProtectionRecordsList(protectionRecordsList: ProtectionRecordsList): ProtectionRecordsList =
+      protectionRecordsList.copy(
+        protectionRecord = padCertificateTimeInProtectionRecord(protectionRecordsList.protectionRecord),
+        historicaldetailsList =
+          protectionRecordsList.historicaldetailsList.map(_.map(padCertificateTimeInProtectionRecord))
+      )
+
+    readExistingProtectionsResponse.copy(
+      protectionRecordsList =
+        readExistingProtectionsResponse.protectionRecordsList.map(_.map(padCertificateTimeInProtectionRecordsList))
+    )
+  }
+
+  private[connectors] def padCertificateTime(
+      hipAmendProtectionResponse: HipAmendProtectionResponse
+  ): HipAmendProtectionResponse = {
+    def padCertificateTimeInUpdatedLifetimeAllowanceProtectionRecord(
+        protectionRecord: UpdatedLifetimeAllowanceProtectionRecord
+    ): UpdatedLifetimeAllowanceProtectionRecord =
+      protectionRecord.copy(
+        certificateTime = protectionRecord.certificateTime.map(padCertificateTime)
+      )
+
+    hipAmendProtectionResponse.copy(
+      updatedLifetimeAllowanceProtectionRecord = padCertificateTimeInUpdatedLifetimeAllowanceProtectionRecord(
+        hipAmendProtectionResponse.updatedLifetimeAllowanceProtectionRecord
+      )
+    )
+  }
 
 }

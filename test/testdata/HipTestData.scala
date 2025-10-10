@@ -26,13 +26,14 @@ import uk.gov.hmrc.http.HttpResponse
 
 object HipTestData {
 
-  val lifetimeAllowanceIdentifier: Long    = 12960000000123L
-  val lifetimeAllowanceSequenceNumber: Int = 13
-  val protectionReference: String          = "IP141034571625B"
+  val lifetimeAllowanceIdentifier: Long        = 12960000000123L
+  val lifetimeAllowanceSequenceNumber: Int     = 13
+  val protectionReference: String              = "IP141034571625B"
+  val pensionSchemeAdministratorCheckReference = "PSA34728911G"
 
   val amendProtectionRequest: AmendProtectionRequest = AmendProtectionRequest(
     lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber,
-    lifetimeAllowanceType = AmendProtectionLifetimeAllowanceType.IndividualProtection2014Lta,
+    lifetimeAllowanceType = AmendProtectionLifetimeAllowanceType.IndividualProtection2014LTA,
     certificateDate = Some("2025-07-15"),
     certificateTime = Some("174312"),
     status = AmendProtectionRequestStatus.Open,
@@ -53,7 +54,7 @@ object HipTestData {
   val amendProtectionResponse: AmendProtectionResponse = AmendProtectionResponse(
     lifetimeAllowanceIdentifier = lifetimeAllowanceIdentifier,
     lifetimeAllowanceSequenceNumber = lifetimeAllowanceSequenceNumber + 1,
-    lifetimeAllowanceType = AmendProtectionLifetimeAllowanceType.IndividualProtection2014Lta,
+    lifetimeAllowanceType = AmendProtectionLifetimeAllowanceType.IndividualProtection2014LTA,
     certificateDate = Some("2025-07-15"),
     certificateTime = Some("174312"),
     status = AmendProtectionResponseStatus.Open,
@@ -73,7 +74,7 @@ object HipTestData {
 
   val hipAmendProtectionRequest: HipAmendProtectionRequest = HipAmendProtectionRequest(
     LifetimeAllowanceProtectionRecord(
-      `type` = AmendProtectionLifetimeAllowanceType.IndividualProtection2014Lta,
+      `type` = AmendProtectionLifetimeAllowanceType.IndividualProtection2014LTA,
       certificateDate = Some("2025-07-15"),
       certificateTime = Some("174312"),
       status = AmendProtectionRequestStatus.Open,
@@ -96,7 +97,7 @@ object HipTestData {
     UpdatedLifetimeAllowanceProtectionRecord(
       identifier = lifetimeAllowanceIdentifier,
       sequenceNumber = lifetimeAllowanceSequenceNumber + 1,
-      `type` = AmendProtectionLifetimeAllowanceType.IndividualProtection2014Lta,
+      `type` = AmendProtectionLifetimeAllowanceType.IndividualProtection2014LTA,
       certificateDate = Some("2025-07-15"),
       certificateTime = Some("174312"),
       status = AmendProtectionResponseStatus.Open,
@@ -122,7 +123,7 @@ object HipTestData {
   )
 
   val hipReadExistingProtectionsResponse: ReadExistingProtectionsResponse = ReadExistingProtectionsResponse(
-    pensionSchemeAdministratorCheckReference = "PSA34728911G",
+    pensionSchemeAdministratorCheckReference = pensionSchemeAdministratorCheckReference,
     protectionRecordsList = Some(
       Seq(
         ProtectionRecordsList(

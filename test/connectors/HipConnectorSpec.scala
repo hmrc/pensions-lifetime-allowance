@@ -19,6 +19,7 @@ package connectors
 import config.HipConfig
 import events.HipAmendLtaEvent
 import model.hip.HipAmendProtectionResponse
+import model.hip.existing.{ProtectionRecordsList, ReadExistingProtectionsResponse}
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, verify, verifyNoInteractions, when}
@@ -252,6 +253,98 @@ class HipConnectorSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach
 
         result shouldBe testException
       }
+    }
+  }
+
+  "HipConnector on padCertificateTime" should {
+    "pad with leading zeros up to a length of 6" when {
+      "certificateTime is 1" in {
+        hipConnector.padCertificateTime("1") shouldBe "000001"
+      }
+
+      "certificateTime is 11" in {
+        hipConnector.padCertificateTime("11") shouldBe "000011"
+      }
+
+      "certificateTime is 111" in {
+        hipConnector.padCertificateTime("111") shouldBe "000111"
+      }
+
+      "certificateTime is 1111" in {
+        hipConnector.padCertificateTime("1111") shouldBe "001111"
+      }
+
+      "certificateTime is 11111" in {
+        hipConnector.padCertificateTime("11111") shouldBe "011111"
+      }
+
+      "certificateTime is 111111" in {
+        hipConnector.padCertificateTime("111111") shouldBe "111111"
+      }
+    }
+  }
+
+  "HipConnector on padCertificateTimeInReadExistingProtectionsResponse" should {
+    "pad certificate time with leading zeros up to a length of 6" in {
+      val unpaddedProtectionRecord =
+        hipReadExistingProtectionsResponse.protectionRecordsList.get.head.protectionRecord.copy(
+          certificateTime = "93010"
+        )
+
+      val unpaddedReadExistingProtectionsResponse = ReadExistingProtectionsResponse(
+        pensionSchemeAdministratorCheckReference,
+        Some(
+          Seq(
+            ProtectionRecordsList(
+              unpaddedProtectionRecord,
+              Some(List(unpaddedProtectionRecord))
+            )
+          )
+        )
+      )
+
+      val paddedProtectionRecord = unpaddedProtectionRecord.copy(
+        certificateTime = "093010"
+      )
+
+      val paddedReadExistingProtectionsResponse = ReadExistingProtectionsResponse(
+        pensionSchemeAdministratorCheckReference,
+        Some(
+          Seq(
+            ProtectionRecordsList(
+              paddedProtectionRecord,
+              Some(List(paddedProtectionRecord))
+            )
+          )
+        )
+      )
+
+      hipConnector.padCertificateTime(
+        unpaddedReadExistingProtectionsResponse
+      ) shouldBe paddedReadExistingProtectionsResponse
+    }
+
+  }
+
+  "HipController on padCertificateTimeInHipAmendProtectionResponse" should {
+    "pad certificate time with leading zeros up to a length of 6" in {
+      val updatedLifetimeAllowanceProtectionRecord = hipAmendProtectionResponse.updatedLifetimeAllowanceProtectionRecord
+
+      val unpaddedHipAmendProtectionResponse = HipAmendProtectionResponse(
+        updatedLifetimeAllowanceProtectionRecord.copy(
+          certificateTime = Some("93010")
+        )
+      )
+
+      val paddedHipAmendProtectionResponse = HipAmendProtectionResponse(
+        updatedLifetimeAllowanceProtectionRecord.copy(
+          certificateTime = Some("093010")
+        )
+      )
+
+      hipConnector.padCertificateTime(
+        unpaddedHipAmendProtectionResponse
+      ) shouldBe paddedHipAmendProtectionResponse
     }
   }
 
