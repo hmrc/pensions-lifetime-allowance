@@ -137,7 +137,7 @@ class HipConnector @Inject() (
       .get(url"${readExistingProtectionsUrl(nino)}")
       .setHeader(basicHeaders: _*)
       .execute[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]]
-      .map(_.map(padCertificateTime))
+      .map(_.map(transformedExistingProtections))
 
   private val CertificateTimeLength = 6
 
@@ -146,6 +146,11 @@ class HipConnector @Inject() (
 
     s"$padding$certificateTimeString"
   }
+
+  private[connectors] def transformedExistingProtections(
+      readExistingProtectionsResponse: ReadExistingProtectionsResponse
+  ): ReadExistingProtectionsResponse =
+    resetPensionDebitEnteredAmount(padCertificateTime(readExistingProtectionsResponse))
 
   private[connectors] def padCertificateTime(
       readExistingProtectionsResponse: ReadExistingProtectionsResponse
@@ -165,6 +170,31 @@ class HipConnector @Inject() (
     readExistingProtectionsResponse.copy(
       protectionRecordsList =
         readExistingProtectionsResponse.protectionRecordsList.map(_.map(padCertificateTimeInProtectionRecordsList))
+    )
+  }
+
+  private[connectors] def resetPensionDebitEnteredAmount(
+      readExistingProtectionsResponse: ReadExistingProtectionsResponse
+  ): ReadExistingProtectionsResponse = {
+    def resetPensionDebitEnteredAmountInProtectionRecord(protectionRecord: ProtectionRecord): ProtectionRecord =
+      protectionRecord.copy(
+        pensionDebitEnteredAmount = None,
+        pensionDebitStartDate = None
+      )
+
+    def resetPensionDebitEnteredAmountInProtectionRecordsList(
+        protectionRecordsList: ProtectionRecordsList
+    ): ProtectionRecordsList =
+      protectionRecordsList.copy(
+        protectionRecord = resetPensionDebitEnteredAmountInProtectionRecord(protectionRecordsList.protectionRecord),
+        historicaldetailsList =
+          protectionRecordsList.historicaldetailsList.map(_.map(resetPensionDebitEnteredAmountInProtectionRecord))
+      )
+
+    readExistingProtectionsResponse.copy(
+      protectionRecordsList = readExistingProtectionsResponse.protectionRecordsList.map(
+        _.map(resetPensionDebitEnteredAmountInProtectionRecordsList)
+      )
     )
   }
 
