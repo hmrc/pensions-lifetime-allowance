@@ -326,6 +326,50 @@ class HipConnectorSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach
 
   }
 
+  "HipConnector on resetPensionDebitEnteredAmount" should {
+    "reset pensionDebitEnteredAmount and pensionDebitStartDate to None" in {
+      val originalProtectionRecord =
+        hipReadExistingProtectionsResponse.protectionRecordsList.get.head.protectionRecord.copy(
+          pensionDebitEnteredAmount = Some(100),
+          pensionDebitStartDate = Some("2025-09-02")
+        )
+
+      val originalReadExistingProtectionsResponse = ReadExistingProtectionsResponse(
+        pensionSchemeAdministratorCheckReference,
+        Some(
+          Seq(
+            ProtectionRecordsList(
+              originalProtectionRecord,
+              Some(List(originalProtectionRecord))
+            )
+          )
+        )
+      )
+
+      val transformedProtectionRecord = originalProtectionRecord.copy(
+        pensionDebitEnteredAmount = None,
+        pensionDebitStartDate = None
+      )
+
+      val transformedReadExistingProtectionsResponse = ReadExistingProtectionsResponse(
+        pensionSchemeAdministratorCheckReference,
+        Some(
+          Seq(
+            ProtectionRecordsList(
+              transformedProtectionRecord,
+              Some(List(transformedProtectionRecord))
+            )
+          )
+        )
+      )
+
+      hipConnector.resetPensionDebitEnteredAmount(
+        originalReadExistingProtectionsResponse
+      ) shouldBe transformedReadExistingProtectionsResponse
+    }
+
+  }
+
   "HipController on padCertificateTimeInHipAmendProtectionResponse" should {
     "pad certificate time with leading zeros up to a length of 6" in {
       val updatedLifetimeAllowanceProtectionRecord = hipAmendProtectionResponse.updatedLifetimeAllowanceProtectionRecord

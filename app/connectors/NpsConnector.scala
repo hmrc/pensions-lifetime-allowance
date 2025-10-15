@@ -16,7 +16,7 @@
 
 package connectors
 
-import events.{NPSAmendLTAEvent, NPSBaseLTAEvent, NPSCreateLTAEvent}
+import events.{NPSAmendLTAEvent, NPSBaseLTAEvent}
 import model.{Error, HttpResponseDetails}
 import play.api.{Environment, Logging, Mode}
 import util.NinoHelper
@@ -73,10 +73,8 @@ trait NpsConnector extends Logging {
     serviceUrl + s"/pensions-lifetime-allowance/individual/$ninoWithoutSuffix/protections"
   }
 
-  implicit val readApiResponse: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
-    override def read(method: String, url: String, response: HttpResponse): HttpResponse =
-      NpsResponseHandler.handleNpsResponse(method, url, response)
-  }
+  implicit val readApiResponse: HttpReads[HttpResponse] = (method: String, url: String, response: HttpResponse) =>
+    NpsResponseHandler.handleNpsResponse(method, url, response)
 
   def amendProtection(nino: String, id: Long, body: JsObject)(
       implicit hc: HeaderCarrier,
