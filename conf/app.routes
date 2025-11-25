@@ -1,10 +1,4 @@
 # microservice specific routes
 
-GET        /individuals/:nino/protections/count @controllers.ReadProtectionsController.readExistingProtectionsCount(nino: String)
-GET        /individuals/:nino/protections       @controllers.ReadProtectionsController.readExistingProtections(nino: String)
-PUT        /individuals/:nino/protections/:id   @controllers.AmendProtectionsController.amendProtection(nino: String, id: String)
-
-GET        /psalookup/:psaRef/:ltaRef           @controllers.DefaultLookupController.psaLookup(psaRef, ltaRef)
-
-GET        /v2/individuals/:nino/protections                @controllers.HipReadProtectionsController.readExistingProtections(nino: String)
-POST       /v2/individuals/:nino/protections/:protectionId  @controllers.HipAmendProtectionsController.amendProtection(nino: String, protectionId: Long)
+GET        /v2/individuals/:nino/protections                @controllers.ReadProtectionsController.readExistingProtections(nino: String)
+POST       /v2/individuals/:nino/protections/:protectionId  @controllers.AmendProtectionsController.amendProtection(nino: String, protectionId: Long)

@@ -99,8 +99,6 @@ trait WiremockHelperIT {
     "auditing.consumer.baseUri.port"                      -> s"$wiremockPort",
     "microservice.services.auth.host"                     -> s"$wiremockHost",
     "microservice.services.auth.port"                     -> s"$wiremockPort",
-    "microservice.services.nps.host"                      -> s"$wiremockHost",
-    "microservice.services.nps.port"                      -> s"$wiremockPort",
     "microservice.services.hip.host"                      -> s"$wiremockHost",
     "microservice.services.hip.port"                      -> s"$wiremockPort",
     "microservice.services.citizen-details.host"          -> s"$wiremockHost",

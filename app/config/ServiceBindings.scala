@@ -17,10 +17,10 @@
 package config
 
 import auth.{AuthClientConnector, DefaultAuthClientConnector}
-import connectors.{CitizenDetailsConnector, DefaultCitizenDetailsConnector, DefaultNpsConnector, NpsConnector}
+import connectors.{CitizenDetailsConnector, DefaultCitizenDetailsConnector, HipConnector}
 import play.api.{Configuration, Environment}
 import play.api.inject.{Binding, Module}
-import services.{DefaultProtectionService, ProtectionService}
+import services.HipProtectionService
 
 class ServiceBindings extends Module {
 
@@ -28,13 +28,13 @@ class ServiceBindings extends Module {
     bindServices() ++ bindConnectors()
 
   private def bindServices(): Seq[Binding[_]] = Seq(
-    play.api.inject.bind(classOf[ProtectionService]).to(classOf[DefaultProtectionService]).eagerly()
+    play.api.inject.bind(classOf[HipProtectionService]).toSelf.eagerly()
   )
 
   private def bindConnectors(): Seq[Binding[_]] = Seq(
     play.api.inject.bind(classOf[AuthClientConnector]).to(classOf[DefaultAuthClientConnector]).eagerly(),
     play.api.inject.bind(classOf[CitizenDetailsConnector]).to(classOf[DefaultCitizenDetailsConnector]).eagerly(),
-    play.api.inject.bind(classOf[NpsConnector]).to(classOf[DefaultNpsConnector]).eagerly()
+    play.api.inject.bind(classOf[HipConnector]).toSelf.eagerly()
   )
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,85 +18,38 @@ package controllers
 
 import auth.{AuthClientConnector, AuthorisedActions}
 import connectors.CitizenDetailsConnector
-
-import javax.inject.Inject
-import model.Error
-import play.api.libs.json._
+import play.api.Logging
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import services.ProtectionService
-import uk.gov.hmrc.http.HeaderCarrier
+import services.HipProtectionService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
 class ReadProtectionsController @Inject() (
     val authConnector: AuthClientConnector,
     val citizenDetailsConnector: CitizenDetailsConnector,
-    val protectionService: ProtectionService,
-    val cc: ControllerComponents
+    hipProtectionService: HipProtectionService,
+    cc: ControllerComponents
 )(implicit ec: ExecutionContext)
     extends BackendController(cc)
     with AuthorisedActions
-    with NPSResponseHandler {
+    with Logging {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-
-  /** Return the full details of current versions of all protections held by the individual
-    *
-    * @param nino
-    *   national insurance number of the individual
-    * @return
-    *   json object full details of the existing protections held fby the individual
-    */
   def readExistingProtections(nino: String): Action[AnyContent] = Action.async { implicit request =>
     userAuthorised(nino) {
-      protectionService
+      hipProtectionService
         .readExistingProtections(nino)
-        .map { response =>
-          response.status match {
-            case OK if response.body.isSuccess => Ok(response.body.get)
-            case _ =>
-              val error = Json.toJson(
-                Error(
-                  s"NPS request resulted in a response with: HTTP status = ${response.status} body = ${response.body}"
-                )
-              )
-              logger.error(error.toString)
-              InternalServerError(error)
-          }
-        }
-        .recover { case error => handleNPSError(error, "[ReadProtectionsController.readExistingProtections]") }
-    }
-  }
-
-  /*
-   * Returns a count of the existing protections for the individual
-   * @param nino
-   * @return a json object with a single field 'count' set to the number of existing protections
-   */
-  def readExistingProtectionsCount(nino: String): Action[AnyContent] = Action.async {
-    protectionService
-      .readExistingProtections(nino)
-      .map { response =>
-        response.status match {
-          case OK if response.body.isSuccess =>
-            val protectionsArrayJsValue = (response.body.get \ "lifetimeAllowanceProtections").getOrElse(JsNumber(0))
-            val count = protectionsArrayJsValue match {
-              case protectionsJsArray: JsArray => protectionsJsArray.value.size
-              case _                           => 0
-            }
-            Ok(JsObject(Seq("count" -> JsNumber(count))))
-          case _ =>
-            val error = Json.toJson(
-              Error(
-                s"NPS request resulted in a response with: HTTP status = ${response.status} body = ${response.body}"
-              )
+        .map {
+          case Left(error) =>
+            logger.warn(
+              s"An error occurred retrieving existing protections: Status: ${error.statusCode} message: ${error.message}"
             )
-            logger.error(error.toString)
-            InternalServerError(error)
+            InternalServerError(error.message)
+          case Right(response) => Ok(Json.toJson(response))
         }
-      }
-      .recover { case error => handleNPSError(error, "[ReadProtectionsController.readExistingProtectionsCount]") }
+    }
   }
 
 }

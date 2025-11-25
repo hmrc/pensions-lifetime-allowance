@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,234 +16,115 @@
 
 package controllers
 
-import _root_.mock.AuthMock
-import com.codahale.metrics.SharedMetricRegistries
 import connectors.{CitizenDetailsConnector, CitizenRecordOK}
-import model.HttpResponseDetails
-import org.apache.pekko.stream.Materializer
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito.when
-import org.scalatest.BeforeAndAfter
-import org.scalatestplus.play.PlaySpec
+import mock.AuthMock
+import model.hip.existing.ReadExistingProtectionsResponse
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.{reset, verify, when}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.libs.json._
-import play.api.mvc._
+import play.api.http.Status._
+import play.api.libs.json.Json
+import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import services.ProtectionService
-import uk.gov.hmrc.http.BadRequestException
-import _root_.util.{TestUtils, WithFakeApplication}
+import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status}
+import services.HipProtectionService
+import testdata.HipTestData.hipReadExistingProtectionsResponse
+import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.http.UpstreamErrorResponse
 
+import java.util.Random
 import scala.concurrent.{ExecutionContext, Future}
 
 class ReadProtectionsControllerSpec
-    extends PlaySpec
+    extends AnyWordSpec
     with GuiceOneServerPerSuite
-    with WithFakeApplication
-    with BeforeAndAfter
-    with AuthMock
-    with TestUtils {
+    with Matchers
+    with ScalaFutures
+    with BeforeAndAfterEach
+    with AuthMock {
 
-  SharedMetricRegistries.clear()
+  private implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
-  val mockCitizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
-  val mockProtectionService: ProtectionService             = mock[ProtectionService]
+  private val citizenDetailsConnector = mock[CitizenDetailsConnector]
+  private val hipProtectionService    = mock[HipProtectionService]
+  private val cc                      = app.injector.instanceOf[ControllerComponents]
 
-  when(
-    mockCitizenDetailsConnector
-      .checkCitizenRecord(ArgumentMatchers.any[String])(ArgumentMatchers.any(), ArgumentMatchers.any())
+  private val controller = new ReadProtectionsController(
+    mockAuthConnector,
+    citizenDetailsConnector,
+    hipProtectionService,
+    cc
   )
-    .thenReturn(Future.successful(CitizenRecordOK))
 
-  mockAuthConnector(Future.successful {})
+  override def beforeEach(): Unit = {
+    super.beforeEach()
 
-  implicit val cc: ControllerComponents   = app.injector.instanceOf[ControllerComponents]
-  implicit val materializer: Materializer = app.materializer
-  implicit val ec: ExecutionContext       = app.injector.instanceOf[ExecutionContext]
+    reset(citizenDetailsConnector)
+    reset(hipProtectionService)
 
-  val controller =
-    new ReadProtectionsController(mockAuthConnector, mockCitizenDetailsConnector, mockProtectionService, cc)
+    mockAuthConnector(Future.successful {})
 
-  val successfulReadResponseBody: JsObject = Json
-    .parse(s"""
-              |  {
-              |      "pensionSchemeAdministratorCheckReference" : "PSA123456789",
-              |      "nino": "$testNinoWithoutSuffix",
-              |      "lifetimeAllowanceProtections": [
+    when(citizenDetailsConnector.checkCitizenRecord(any[String])(any(), any()))
+      .thenReturn(Future.successful(CitizenRecordOK))
+  }
+
+  private val rand          = new Random()
+  private val ninoGenerator = new Generator(rand)
+
+  private val testNino = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
+
+  "HipReadProtectionsController on readExistingProtections" should {
+
+    "return a successful response obtained from HipProtectionService" in {
+
+      when(hipProtectionService.readExistingProtections(eqTo(testNino))(any()))
+        .thenReturn(Future.successful(Right(hipReadExistingProtectionsResponse)))
+
+      val request = FakeRequest(method = "POST", path = "/")
+
+      val result = controller.readExistingProtections(testNino)(request)
+
+      status(result) shouldBe OK
+      contentAsJson(result).as[ReadExistingProtectionsResponse] shouldBe hipReadExistingProtectionsResponse
+
+      verify(hipProtectionService).readExistingProtections(eqTo(testNino))(any())
+    }
+
+    "return a 500 response" when
+      Seq(BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { statusCode =>
+        s"a $statusCode is given by HIP API" in {
+
+          val responseBody =
+            """
+              |{
+              |  "origin": "HIP",
+              |  "response": {
+              |    "failures": [
               |      {
-              |        "id": 1,
-              |        "version": 1,
-              |        "type": 1,
-              |        "certificateDate": "2015-05-22",
-              |        "certificateTime": "12:22:59",
-              |        "status": 1,
-              |        "protectionReference": "FP161234567890C",
-              |        "relevantAmount": 1250000.00,
-              |        "preADayPensionInPayment": 250000,
-              |        "postADayBCE": 250000,
-              |        "uncrystallisedRights": 500000,
-              |        "nonUKRights": 250000,
-              |        "pensionDebitAmount": 0,
-              |        "notificationID": 5,
-              |        "protectedAmount": 600000,
-              |        "pensionDebitEnteredAmount": 300,
-              |        "pensionDebitStartDate": "2015-01-29",
-              |        "pensionDebitTotalAmount": 800,
-              |        "previousVersions": []
+              |        "type": "string",
+              |        "reason": "string"
               |      }
-              |      ]
-              |    }
-              |
-    """.stripMargin)
-    .as[JsObject]
-
-  val successfulReadResponseBodyEmptyProtections: JsObject = Json
-    .parse(s"""
-              |  {
-              |      "pensionSchemeAdministratorCheckReference" : "PSA123456789",
-              |      "nino": "$testNinoWithoutSuffix",
-              |      "protections": [
-              |      ]
-              |    }
-              |
-    """.stripMargin)
-    .as[JsObject]
-
-  val successfulReadResponseBodyNoProtections: JsObject = Json
-    .parse(s"""
-              |  {
-              |      "pensionSchemeAdministratorCheckReference" : "PSA123456789",
-              |      "nino": "$testNinoWithoutSuffix"
+              |    ]
               |  }
-              |
-    """.stripMargin)
-    .as[JsObject]
+              |}
+              |""".stripMargin
 
-  val unsuccessfulReadResponseBody: JsObject = Json
-    .parse(s"""
-              |  {
-              |      "nino": "$testNinoWithoutSuffix",
-              |      "protection": {
-              |        "id": 1,
-              |        "version": 1,
-              |        "type": 2,
-              |        "status": 5,
-              |        "notificationID": 10
-              |      }
-              |  }
-    """.stripMargin)
-    .as[JsObject]
+          when(hipProtectionService.readExistingProtections(eqTo(testNino))(any()))
+            .thenReturn(Future.successful(Left(UpstreamErrorResponse(responseBody, statusCode))))
 
-  val standardHeaders: ((String, String), (String, String), (String, String)) = (
-    "Content-type"  -> "application/json",
-    "Environment"   -> "local",
-    "Authorisation" -> "Bearer abcdef12345678901234567890"
-  )
+          val request = FakeRequest(method = "POST", path = "/")
 
-  def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] =
-    block(request)
+          val result = controller.readExistingProtections(testNino)(request)
 
-  "ReadProtectionsController" when {
-    "respond to a valid Read Protections request with OK" in {
+          status(result) shouldBe INTERNAL_SERVER_ERROR
+          contentAsJson(result) shouldBe Json.parse(responseBody)
 
-      when(
-        mockProtectionService
-          .readExistingProtections(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-      )
-        .thenReturn(Future.successful(HttpResponseDetails(OK, JsSuccess(successfulReadResponseBody))))
-
-      lazy val result =
-        controller.readExistingProtections(testNino)(FakeRequest().withHeaders("Content-Type" -> "application/json"))
-      status(result) must be(OK)
-    }
-
-    "respond to an invalid Read Protections request with BAD_REQUEST" in {
-      when(
-        mockProtectionService
-          .readExistingProtections(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-      )
-        .thenReturn(Future.failed(new BadRequestException("bad request")))
-
-      lazy val result = controller.readExistingProtections(testNino)(FakeRequest())
-      status(result) must be(BAD_REQUEST)
-    }
-
-    "handle a 202 (INTERNAL_SERVER_ERROR) response from NPS service to a read protections request by passing it back to the caller" in {
-      when(
-        mockProtectionService
-          .readExistingProtections(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-      )
-        .thenReturn(Future.successful(model.HttpResponseDetails(ACCEPTED, JsSuccess(successfulReadResponseBody))))
-
-      lazy val result = controller.readExistingProtections(testNino).apply(FakeRequest())
-      status(result) must be(INTERNAL_SERVER_ERROR)
-    }
-
-    "handle an OK status but non-parseable response body from NPS service to a read protections request " +
-      "by passing an INTERNAL_SERVER_ERROR back to the caller" in {
-        when(
-          mockProtectionService
-            .readExistingProtections(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-        )
-          .thenReturn(Future.successful(model.HttpResponseDetails(OK, JsError())))
-
-        lazy val result = controller.readExistingProtections(testNino).apply(FakeRequest())
-        info(status(result).toString)
-        status(result) must be(INTERNAL_SERVER_ERROR)
-      }
-
-    "return a count of zero to a read protections count request when an empty protections array is returned from NPS" in {
-      when(
-        mockProtectionService
-          .readExistingProtections(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-      )
-        .thenReturn(
-          Future.successful(model.HttpResponseDetails(OK, JsSuccess(successfulReadResponseBodyEmptyProtections)))
-        )
-
-      lazy val result = controller.readExistingProtectionsCount(testNino).apply(FakeRequest())
-
-      status(result) must be(OK)
-      (contentAsJson(result) \ "count").get must be(JsNumber(0))
-    }
-
-    "return a count of zero to a read protections count request when no protections array is returned from NPS" in {
-      when(
-        mockProtectionService
-          .readExistingProtections(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-      )
-        .thenReturn(
-          Future.successful(model.HttpResponseDetails(OK, JsSuccess(successfulReadResponseBodyNoProtections)))
-        )
-
-      lazy val result: Future[Result] = controller.readExistingProtectionsCount(testNino).apply(FakeRequest())
-
-      status(result) must be(OK)
-      (contentAsJson(result) \ "count").get must be(JsNumber(0))
-    }
-
-    "return a count of one to a read protections count request when a protections array with a single protection is returned from NPS" in {
-      when(
-        mockProtectionService
-          .readExistingProtections(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-      )
-        .thenReturn(Future.successful(model.HttpResponseDetails(OK, JsSuccess(successfulReadResponseBody))))
-
-      lazy val result: Future[Result] = controller.readExistingProtectionsCount(testNino).apply(FakeRequest())
-      status(result) must be(OK)
-      (contentAsJson(result) \ "count").get must be(JsNumber(1))
-    }
-
-    "handle an OK status but non-parseable response body from NPS service to a read protections " +
-      "count request by passing an INTERNAL_SERVER_ERROR back to the caller" in {
-        when(
-          mockProtectionService
-            .readExistingProtections(ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any())
-        )
-          .thenReturn(Future.successful(model.HttpResponseDetails(OK, JsError())))
-
-        lazy val result = controller.readExistingProtectionsCount(testNino).apply(FakeRequest())
-        status(result) must be(INTERNAL_SERVER_ERROR)
+          verify(hipProtectionService).readExistingProtections(eqTo(testNino))(any())
+        }
       }
   }
 
