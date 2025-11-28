@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,192 +16,147 @@
 
 package controllers
 
-import java.util.Random
-import connectors.{CitizenDetailsConnector, CitizenRecordOK, NpsConnector}
-import org.mockito.ArgumentMatchers
-import _root_.mock.AuthMock
-import org.mockito.Mockito.when
+import connectors.{CitizenDetailsConnector, CitizenRecordOK}
+import mock.AuthMock
+import model.api.AmendProtectionResponse
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.{reset, verify, when}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import org.scalatestplus.play.PlaySpec
-import play.api.mvc.{ControllerComponents, Result}
-import util.NinoHelper
-import util.WithFakeApplication
-import play.api.libs.json._
-import play.api.test.Helpers._
+import play.api.http.Status._
+import play.api.libs.json.Json
+import play.api.mvc.ControllerComponents
+import play.api.test.Helpers.{contentAsJson, contentAsString, defaultAwaitTimeout, status}
 import play.api.test.{FakeHeaders, FakeRequest}
+import services.HipProtectionService
+import testdata.HipTestData.{amendProtectionRequest, amendProtectionResponse, lifetimeAllowanceIdentifier}
 import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.http.UpstreamErrorResponse
 
+import java.util.Random
 import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 class AmendProtectionsControllerSpec
-    extends PlaySpec
+    extends AnyWordSpec
     with GuiceOneServerPerSuite
-    with WithFakeApplication
+    with Matchers
+    with ScalaFutures
+    with BeforeAndAfterEach
     with AuthMock {
 
-  val rand                                                 = new Random()
-  val ninoGenerator                                        = new Generator(rand)
-  val mockCitizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
+  private implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
-  when(
-    mockCitizenDetailsConnector
-      .checkCitizenRecord(ArgumentMatchers.any[String])(ArgumentMatchers.any(), ArgumentMatchers.any())
-  )
-    .thenReturn(Future.successful(CitizenRecordOK))
+  private val citizenDetailsConnector = mock[CitizenDetailsConnector]
+  private val hipProtectionService    = mock[HipProtectionService]
+  private val cc                      = app.injector.instanceOf[ControllerComponents]
 
-  mockAuthConnector(Future.successful {})
-
-  def randomNino: String = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
-
-  val testNino                        = randomNino
-  val (testNinoWithoutSuffix, _)      = NinoHelper.dropNinoSuffix(testNino)
-  val testProtectionId                = 1
-  val testProtectionVersion           = 1
-  val mockNpsConnector                = mock[NpsConnector]
-  implicit lazy val hc: HeaderCarrier = mock[HeaderCarrier]
-  implicit val ec: ExecutionContext   = app.injector.instanceOf[ExecutionContext]
-
-  lazy val cc = app.injector.instanceOf[ControllerComponents]
-
-  lazy val controller = new AmendProtectionsController(
+  private val controller = new AmendProtectionsController(
     mockAuthConnector,
-    citizenDetailsConnector = mockCitizenDetailsConnector,
-    testProtectionService,
+    citizenDetailsConnector,
+    hipProtectionService,
     cc
   )
 
-  val validAmendBody = Json.parse(
-    s"""
-       |{
-       | "protectionType": "IP2016",
-       | "status": "Open",
-       | "version": $testProtectionVersion,
-       | "relevantAmount": 1250000.00,
-       | "postADayBenefitCrystallisationEvents": 250000.00,
-       | "preADayPensionInPayment": 250000.00,
-       | "nonUKRights": 250000.00,
-       | "uncrystallisedRights": 500000.00
-       |}
-    """.stripMargin
-  )
+  override def beforeEach(): Unit = {
+    super.beforeEach()
 
-  val invalidAmendBody = Json.parse("""
-                                      |{
-                                      |  "type" : 100000
-                                      |}
-    """.stripMargin)
-
-  val successfulAmendIP2016NPSResponseBody = Json
-    .parse(s"""
-              |  {
-              |      "nino": "$testNinoWithoutSuffix",
-              |      "pensionSchemeAdministratorCheckReference" : "PSA123456789",
-              |      "protection": {
-              |        "id": $testProtectionId,
-              |        "version": $testProtectionVersion,
-              |        "type": 1,
-              |        "certificateDate": "2015-05-22",
-              |        "certificateTime": "12:22:59",
-              |        "status": 1,
-              |        "protectionReference": "IP161234567890C",
-              |        "relevantAmount": 1250000.00,
-              |        "notificationID": 12
-              |      }
-              |    }
-              |
-    """.stripMargin)
-    .as[JsObject]
-
-  val unsuccessfulAmendIP2016NPSResponseBody = Json
-    .parse(s"""
-              |  {
-              |      "nino": "$testNinoWithoutSuffix",
-              |      "protection": {
-              |        "id": $testProtectionId,
-              |        "version": ${testProtectionVersion + 1},
-              |        "type": 2,
-              |        "status": 5,
-              |        "notificationID": 10
-              |      }
-              |  }
-    """.stripMargin)
-    .as[JsObject]
-
-  val standardHeaders = Seq("Content-type" -> Seq("application/json"))
-
-  val validExtraHOutboundHeaders =
-    Seq("Environment" -> Seq("local"), "Authorisation" -> Seq("Bearer abcdef12345678901234567890"))
-
-  object testProtectionService extends services.ProtectionService {
-    override val npsConnector = mockNpsConnector
+    reset(citizenDetailsConnector)
+    reset(hipProtectionService)
+    mockAuthConnector(Future.successful {})
+    when(citizenDetailsConnector.checkCitizenRecord(any[String])(any(), any()))
+      .thenReturn(Future.successful(CitizenRecordOK))
   }
 
-  "AmendProtectionController" must {
-    "respond to an invalid Amend Protection request with BAD_REQUEST" in {
+  private val rand          = new Random()
+  private val ninoGenerator = new Generator(rand)
 
-      val fakeRequest = FakeRequest(
-        method = "PUT",
-        uri = "",
+  private val testNino = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
+
+  private val validAmendRequestBody = Json.toJson(amendProtectionRequest)
+
+  private val invalidAmendRequestBody = Json.parse(
+    s"""{
+       |  "incorrectField": "IP2016"
+       |}
+       |""".stripMargin
+  )
+
+  "HipAmendProtectionsController on amendProtection" should {
+
+    "call HipProtectionService" in {
+      when(hipProtectionService.amendProtection(any(), any(), any())(any()))
+        .thenReturn(Future.successful(Right(amendProtectionResponse)))
+
+      val request = FakeRequest(
+        method = "POST",
+        uri = "/",
         headers = FakeHeaders(Seq("content-type" -> "application.json")),
-        body = invalidAmendBody
+        body = validAmendRequestBody
       )
 
-      val result = controller.amendProtection(testNino, testProtectionId.toString)(fakeRequest)
-      status(result) must be(BAD_REQUEST)
+      controller.amendProtection(testNino, lifetimeAllowanceIdentifier)(request).futureValue
+
+      verify(hipProtectionService).amendProtection(
+        eqTo(testNino),
+        eqTo(lifetimeAllowanceIdentifier),
+        eqTo(amendProtectionRequest)
+      )(any())
     }
 
-    "respond to a valid Amend Protection request with OK" in {
-      when(
-        mockNpsConnector.amendProtection(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()
-        )
-      )
-        .thenReturn(Future.successful(model.HttpResponseDetails(200, JsSuccess(successfulAmendIP2016NPSResponseBody))))
+    "return Ok when provided with correct request" in {
+      when(hipProtectionService.amendProtection(any(), any(), any())(any()))
+        .thenReturn(Future.successful(Right(amendProtectionResponse)))
 
-      val fakeRequest: FakeRequest[JsValue] = FakeRequest(
-        method = "PUT",
-        uri = "",
+      val request = FakeRequest(
+        method = "POST",
+        uri = "/",
         headers = FakeHeaders(Seq("content-type" -> "application.json")),
-        body = validAmendBody
+        body = validAmendRequestBody
       )
 
-      val result: Future[Result] = controller.amendProtection(testNino, testProtectionId.toString).apply(fakeRequest)
-      status(result) must be(OK)
+      val result = controller.amendProtection(testNino, lifetimeAllowanceIdentifier)(request)
+
+      status(result) shouldBe OK
+      contentAsJson(result).as[AmendProtectionResponse] shouldBe amendProtectionResponse
     }
 
-    "handle a 500 (INTERNAL_SERVER_ERROR) response from NPS service by passing it back to the caller" in {
-      when(
-        mockNpsConnector.amendProtection(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any())(
-          ArgumentMatchers.any(),
-          ArgumentMatchers.any()
-        )
-      )
-        .thenReturn(Future.failed(UpstreamErrorResponse("test", INTERNAL_SERVER_ERROR, BAD_GATEWAY)))
-
-      val fakeRequest = FakeRequest(
-        method = "PUT",
-        uri = "",
+    "return Bad Request when provided with incorrect request" in {
+      val request = FakeRequest(
+        method = "POST",
+        uri = "/",
         headers = FakeHeaders(Seq("content-type" -> "application.json")),
-        body = validAmendBody
+        body = invalidAmendRequestBody
       )
 
-      val result = controller.amendProtection(testNino, testProtectionId.toString).apply(fakeRequest)
-      status(result) must be(INTERNAL_SERVER_ERROR)
+      val result = controller.amendProtection(testNino, lifetimeAllowanceIdentifier)(request)
+
+      status(result) shouldBe BAD_REQUEST
+      contentAsString(result) should include("body failed validation with error: ")
     }
 
-    "return a 400 when an invalid ID is provided" in {
-      val fakeRequest = FakeRequest(
-        method = "PUT",
-        uri = "",
-        headers = FakeHeaders(Seq("content-type" -> "application.json")),
-        body = validAmendBody
-      )
+    "return Internal Server Error" when
+      Seq(BAD_REQUEST, FORBIDDEN, NOT_FOUND, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { errorStatus =>
+        s"HipProtectionService returns Left containing UpstreamErrorResponse with status: $errorStatus" in {
+          val testException = UpstreamErrorResponse("Test Exception", errorStatus)
+          when(hipProtectionService.amendProtection(any(), any(), any())(any()))
+            .thenReturn(Future.successful(Left(testException)))
 
-      val result = controller.amendProtection(testNino, "not a long").apply(fakeRequest)
-      status(result) must be(BAD_REQUEST)
-    }
+          val request = FakeRequest(
+            method = "POST",
+            uri = "/",
+            headers = FakeHeaders(Seq("content-type" -> "application.json")),
+            body = validAmendRequestBody
+          )
+
+          val result = controller.amendProtection(testNino, lifetimeAllowanceIdentifier)(request)
+
+          status(result) shouldBe INTERNAL_SERVER_ERROR
+          contentAsString(result) should include("Test Exception")
+        }
+      }
   }
 
 }

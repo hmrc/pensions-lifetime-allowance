@@ -32,57 +32,6 @@ class NPSResponseHandlerSpec extends PlaySpec with TestUtils {
   private implicit val system: ActorSystem = ActorSystem("test-sys")
 
   "NPSResponseHandler" when {
-    "process a NPS response" when {
-      "NPS returns an OK" in {
-        val fakeResponse = HttpResponseDetails(OK, JsSuccess(Json.obj("result" -> JsString("success"))))
-        status(testResponseHandler.handleNPSSuccess(fakeResponse)) shouldBe OK
-      }
-      "NPS returns a CONFLICT" in {
-        val fakeResponse = HttpResponseDetails(CONFLICT, JsSuccess(Json.obj("result" -> JsString("conflict"))))
-        status(testResponseHandler.handleNPSSuccess(fakeResponse)) shouldBe CONFLICT
-      }
-      "NPS returns an OK with an invalid body" in {
-        val fakeResponse = HttpResponseDetails(OK, JsError("error message"))
-        val result       = testResponseHandler.handleNPSSuccess(fakeResponse)
-        status(result) shouldBe INTERNAL_SERVER_ERROR
-        jsonBodyOf(result) shouldBe Json.obj(
-          "message" -> JsString(
-            "NPS request resulted in a response with: HTTP status=" + fakeResponse.status + ", but unable to parse the NPS response body"
-          )
-        )
-      }
-      "NPS returns a CONFLICT with an invalid body" in {
-        val fakeResponse = HttpResponseDetails(CONFLICT, JsError("error message"))
-        val result       = testResponseHandler.handleNPSSuccess(fakeResponse)
-        status(result) shouldBe INTERNAL_SERVER_ERROR
-        jsonBodyOf(result) shouldBe Json.obj(
-          "message" -> JsString(
-            "NPS request resulted in a response with: HTTP status=" + fakeResponse.status + ", but unable to parse the NPS response body"
-          )
-        )
-      }
-      "NPS returns a NOT_ACCEPTABLE with a valid body" in {
-        val fakeResponse = HttpResponseDetails(NOT_ACCEPTABLE, JsSuccess(Json.obj("result" -> JsString("success"))))
-        val result       = testResponseHandler.handleNPSSuccess(fakeResponse)
-        status(result) shouldBe INTERNAL_SERVER_ERROR
-        jsonBodyOf(result) shouldBe Json.obj(
-          "message" -> JsString(
-            "NPS request resulted in a response with: HTTP status=" + fakeResponse.status + ", body=" + Json
-              .asciiStringify(fakeResponse.body.get)
-          )
-        )
-      }
-      "NPS returns a NOT_ACCEPTABLE with an invalid body" in {
-        val fakeResponse = HttpResponseDetails(NOT_ACCEPTABLE, JsError("error message"))
-        val result       = testResponseHandler.handleNPSSuccess(fakeResponse)
-        status(result) shouldBe INTERNAL_SERVER_ERROR
-        jsonBodyOf(result) shouldBe Json.obj(
-          "message" -> JsString(
-            "NPS request resulted in a response with: HTTP status=" + fakeResponse.status + ", but unable to parse the NPS response body"
-          )
-        )
-      }
-    }
 
     "handle a NPS error" when {
       "a Service unavailable response is received" in {
