@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,55 +18,47 @@ package controllers
 
 import auth.{AuthClientConnector, AuthorisedActions}
 import connectors.CitizenDetailsConnector
-
-import javax.inject.Inject
-import model.ProtectionAmendment
-import play.api.mvc._
-import services.ProtectionService
-import play.api.libs.json._
 import model.Error
-import uk.gov.hmrc.http.HeaderCarrier
+import model.api.AmendProtectionRequest
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.{Action, ControllerComponents}
+import services.HipProtectionService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 class AmendProtectionsController @Inject() (
     val authConnector: AuthClientConnector,
     val citizenDetailsConnector: CitizenDetailsConnector,
-    val protectionService: ProtectionService,
+    hipProtectionService: HipProtectionService,
     cc: ControllerComponents
 )(implicit ec: ExecutionContext)
     extends BackendController(cc)
-    with NPSResponseHandler
     with AuthorisedActions {
 
-  implicit lazy val hc: HeaderCarrier = HeaderCarrier()
-
-  def amendProtection(nino: String, id: String): Action[JsValue] = Action.async(cc.parsers.json) { implicit request =>
-    userAuthorised(nino) {
-
-      Try {
-        id.toLong
-      }.map { protectionId =>
+  def amendProtection(nino: String, protectionId: Long): Action[JsValue] =
+    Action.async(cc.parsers.json) { implicit request =>
+      userAuthorised(nino) {
         request.body
-          .validate[ProtectionAmendment]
+          .validate[AmendProtectionRequest]
           .fold(
             errors =>
               Future
-                .successful(BadRequest(Json.toJson(Error(message = "body failed validation with errors: " + errors)))),
-            amendment =>
-              protectionService
-                .amendProtection(nino, protectionId, Json.toJson(amendment).as[JsObject])
-                .map(response => handleNPSSuccess(response))
-                .recover { case downstreamError =>
-                  handleNPSError(downstreamError, "[AmendProtectionsController.amendProtection]")
+                .successful(BadRequest(Json.toJson(Error(message = "body failed validation with error: " + errors)))),
+            amendProtectionRequest =>
+              hipProtectionService
+                .amendProtection(nino, protectionId, amendProtectionRequest)
+                .map {
+                  case Right(amendProtectionResponse) => Ok(Json.toJson(amendProtectionResponse))
+                  case Left(error) =>
+                    logger.warn(
+                      s"An error occurred when amending protection: Status: ${error.statusCode} Message: ${error.getMessage}"
+                    )
+                    InternalServerError(error.getMessage)
                 }
           )
-      }.getOrElse {
-        Future.successful(BadRequest(Json.toJson(Error(message = "path parameter 'id' is not an integer: " + id))))
       }
     }
-  }
 
 }
