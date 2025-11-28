@@ -50,20 +50,4 @@ trait NPSResponseHandler extends Logging {
       case e => throw e
     }
 
-  private[controllers] def handleNPSSuccess(response: HttpResponseDetails): Result =
-    response.status match {
-      case OK if response.body.isSuccess       => Ok(response.body.get)
-      case CONFLICT if response.body.isSuccess => Conflict(response.body.get)
-      case _ =>
-        val responseErrorDetails = if (!response.body.isSuccess) {
-          ", but unable to parse the NPS response body"
-        } else {
-          ", body=" + Json.asciiStringify(response.body.get)
-        }
-        val error = Json.toJson(
-          Error("NPS request resulted in a response with: HTTP status=" + response.status + responseErrorDetails)
-        )
-        InternalServerError(error)
-    }
-
 }
