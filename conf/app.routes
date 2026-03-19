@@ -1,5 +1,4 @@
 # microservice specific routes
-GET        /psalookup/:psaRef/:ltaRef           @controllers.DefaultLookupController.psaLookup(psaRef, ltaRef)
 
 GET        /v2/individuals/:nino/protections                @controllers.ReadProtectionsController.readExistingProtections(nino: String)
 POST       /v2/individuals/:nino/protections/:protectionId  @controllers.AmendProtectionsController.amendProtection(nino: String, protectionId: Long)
