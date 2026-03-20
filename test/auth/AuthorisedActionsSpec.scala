@@ -16,8 +16,6 @@
 
 package auth
 
-package auth
-
 import connectors.CitizenDetailsConnector
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
@@ -26,7 +24,7 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Results.Status
 import play.api.mvc.{Result, Results}
 import play.api.test.Helpers._
-import uk.gov.hmrc.auth.core.{InsufficientEnrolments, InvalidBearerToken, NoActiveSession}
+import uk.gov.hmrc.auth.core.{InsufficientEnrolments, InvalidBearerToken}
 
 import scala.concurrent.Future
 
