@@ -1,5 +1,5 @@
 import uk.gov.hmrc.DefaultBuildSettings
-import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, itSettings, scalaSettings, targetJvm}
+import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
@@ -8,7 +8,7 @@ val appName = "pensions-lifetime-allowance"
 lazy val plugins: Seq[Plugins]         = Seq.empty
 lazy val playSettings: Seq[Setting[_]] = Seq.empty
 ThisBuild / majorVersion := 2
-ThisBuild / scalaVersion := "2.13.16"
+ThisBuild / scalaVersion := "2.13.18"
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
@@ -28,14 +28,17 @@ lazy val root = Project(appName, file("."))
   .settings(scalaSettings: _*)
   .settings(defaultSettings(): _*)
   .settings(
-    scalacOptions += "-Wconf:cat=unused-imports&src=routes/.*:s"
+    scalacOptions ++= Seq(
+      "-Wconf:cat=unused-imports&src=routes/.*:s",
+      "-Wconf:cat=unused&src=routes/.*:s"
+    )
   )
   .settings(
     libraryDependencies ++= AppDependencies(),
-    parallelExecution in Test        := false,
-    fork in Test                     := false,
+    Test / parallelExecution := false,
+    Test / fork := false,
     retrieveManaged                  := true,
-    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
+    update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
   )
   .settings(PlayKeys.playDefaultPort := 9011)
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
