@@ -21,7 +21,7 @@ import connectors.CitizenDetailsConnector
 import model.Error
 import model.api.AmendProtectionRequest
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, ControllerComponents}
+import play.api.mvc.{Action, ControllerComponents, Request}
 import services.HipProtectionService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -33,12 +33,13 @@ class AmendProtectionsController @Inject() (
     val citizenDetailsConnector: CitizenDetailsConnector,
     hipProtectionService: HipProtectionService,
     cc: ControllerComponents
-)(implicit ec: ExecutionContext)
+)(using ExecutionContext)
     extends BackendController(cc)
     with AuthorisedActions {
 
   def amendProtection(nino: String, protectionId: Long): Action[JsValue] =
-    Action.async(cc.parsers.json) { implicit request =>
+    Action.async(cc.parsers.json) { r =>
+      given request: Request[JsValue] = r
       userAuthorised(nino) {
         request.body
           .validate[AmendProtectionRequest]

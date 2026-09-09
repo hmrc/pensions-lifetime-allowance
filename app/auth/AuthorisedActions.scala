@@ -31,8 +31,8 @@ trait AuthorisedActions extends AuthProvider with AuthorisedFunctions with Loggi
 
   def userAuthorised(
       nino: String
-  )(body: => Future[Result])(implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
-    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
+  )(body: => Future[Result])(using request: RequestHeader)(using ExecutionContext): Future[Result] = {
+    given HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
     authorised(Nino(hasNino = true, nino = Some(nino)).and(ConfidenceLevel.L200)) {
       citizenDetailsConnector.checkCitizenRecord(nino).flatMap {

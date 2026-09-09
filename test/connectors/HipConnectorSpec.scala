@@ -70,7 +70,7 @@ class HipConnectorSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach
     when(requestBuilder.setHeader(any())).thenReturn(requestBuilder)
   }
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
+  private given HeaderCarrier = HeaderCarrier()
 
   private val correlationId = UUID.randomUUID()
 

@@ -24,7 +24,7 @@ case class ReadExistingProtectionsResponse(
 )
 
 object ReadExistingProtectionsResponse {
-  implicit val format: Format[ReadExistingProtectionsResponse] = Json.format[ReadExistingProtectionsResponse]
+  given Format[ReadExistingProtectionsResponse] = Json.format[ReadExistingProtectionsResponse]
 }
 
 case class ProtectionRecordsList(
@@ -33,7 +33,7 @@ case class ProtectionRecordsList(
 )
 
 object ProtectionRecordsList {
-  implicit val format: Format[ProtectionRecordsList] = Json.format[ProtectionRecordsList]
+  given Format[ProtectionRecordsList] = Json.format[ProtectionRecordsList]
 }
 
 case class ProtectionRecord(
@@ -60,5 +60,5 @@ case class ProtectionRecord(
 )
 
 object ProtectionRecord {
-  implicit val format: Format[ProtectionRecord] = Json.format[ProtectionRecord]
+  given Format[ProtectionRecord] = Json.format[ProtectionRecord]
 }

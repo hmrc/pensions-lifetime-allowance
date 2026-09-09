@@ -51,7 +51,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
 
   private val hipConnector: HipConnector = app.injector.instanceOf[HipConnector]
 
-  private implicit val hipConfig: HipConfig = app.injector.instanceOf[HipConfig]
+  private given hipConfig: HipConfig = app.injector.instanceOf[HipConfig]
 
   private val correlationId: UUID = UUID.randomUUID()
 
@@ -65,7 +65,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
     when(idGenerator.generateUuid).thenReturn(correlationId)
   }
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
+  private given hc: HeaderCarrier = HeaderCarrier()
 
   val rand          = new Random()
   val ninoGenerator = new Generator(rand)

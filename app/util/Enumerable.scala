@@ -32,7 +32,7 @@ object Enumerable {
 
   trait Implicits { self =>
 
-    implicit def reads[A](implicit ev: Enumerable[A]): Reads[A] =
+    given reads[A](using ev: Enumerable[A]): Reads[A] =
       Reads {
         case JsString(str) =>
           ev.findByName(str)
@@ -42,7 +42,7 @@ object Enumerable {
           JsError(s"Cannot create ${self.getClass.getSimpleName} instance from: ${other.toString}")
       }
 
-    implicit def writes[A: Enumerable]: Writes[A] =
+    given writes[A: Enumerable]: Writes[A] =
       Writes(value => JsString(value.toString))
 
   }

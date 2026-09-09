@@ -34,7 +34,7 @@ object AmendProtectionLifetimeAllowanceType extends Enumerable.Implicits {
     IndividualProtection2016LTA
   )
 
-  implicit val toEnumerable: Enumerable[AmendProtectionLifetimeAllowanceType] =
+  given Enumerable[AmendProtectionLifetimeAllowanceType] =
     Enumerable(allValues.map(v => v.toString -> v): _*)
 
 }

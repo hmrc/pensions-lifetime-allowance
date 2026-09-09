@@ -29,7 +29,7 @@ object AmendProtectionResponseStatus extends Enumerable.Implicits {
   private val allValues: Seq[AmendProtectionResponseStatus] =
     Seq(Open, Dormant, Withdrawn)
 
-  implicit val toEnumerable: Enumerable[AmendProtectionResponseStatus] =
+  given Enumerable[AmendProtectionResponseStatus] =
     Enumerable(allValues.map(v => v.toString -> v): _*)
 
 }

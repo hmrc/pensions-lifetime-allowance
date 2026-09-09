@@ -38,7 +38,7 @@ object ProtectionStatus extends Enumerable.Implicits {
     Rejected
   )
 
-  implicit val enumerable: Enumerable[ProtectionStatus] =
+  given Enumerable[ProtectionStatus] =
     Enumerable(values.map(v => v.toString -> v): _*)
 
 }

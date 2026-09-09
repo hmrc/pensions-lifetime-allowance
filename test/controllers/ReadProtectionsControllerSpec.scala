@@ -47,7 +47,7 @@ class ReadProtectionsControllerSpec
     with BeforeAndAfterEach
     with AuthMock {
 
-  private implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+  private given ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   private val citizenDetailsConnector = mock[CitizenDetailsConnector]
   private val hipProtectionService    = mock[HipProtectionService]
@@ -68,7 +68,7 @@ class ReadProtectionsControllerSpec
 
     mockAuthConnector(Future.successful {})
 
-    when(citizenDetailsConnector.checkCitizenRecord(any[String])(any(), any()))
+    when(citizenDetailsConnector.checkCitizenRecord(any[String])(using any(), any()))
       .thenReturn(Future.successful(CitizenRecordOK))
   }
 
@@ -81,7 +81,7 @@ class ReadProtectionsControllerSpec
 
     "return a successful response obtained from HipProtectionService" in {
 
-      when(hipProtectionService.readExistingProtections(eqTo(testNino))(any()))
+      when(hipProtectionService.readExistingProtections(eqTo(testNino))(using any()))
         .thenReturn(Future.successful(Right(hipReadExistingProtectionsResponse)))
 
       val request = FakeRequest(method = "POST", path = "/")
@@ -91,7 +91,7 @@ class ReadProtectionsControllerSpec
       status(result) shouldBe OK
       contentAsJson(result).as[ReadExistingProtectionsResponse] shouldBe hipReadExistingProtectionsResponse
 
-      verify(hipProtectionService).readExistingProtections(eqTo(testNino))(any())
+      verify(hipProtectionService).readExistingProtections(eqTo(testNino))(using any())
     }
 
     "return a 500 response" when
@@ -113,7 +113,7 @@ class ReadProtectionsControllerSpec
               |}
               |""".stripMargin
 
-          when(hipProtectionService.readExistingProtections(eqTo(testNino))(any()))
+          when(hipProtectionService.readExistingProtections(eqTo(testNino))(using any()))
             .thenReturn(Future.successful(Left(UpstreamErrorResponse(responseBody, statusCode))))
 
           val request = FakeRequest(method = "POST", path = "/")
@@ -123,7 +123,7 @@ class ReadProtectionsControllerSpec
           status(result) shouldBe INTERNAL_SERVER_ERROR
           contentAsJson(result) shouldBe Json.parse(responseBody)
 
-          verify(hipProtectionService).readExistingProtections(eqTo(testNino))(any())
+          verify(hipProtectionService).readExistingProtections(eqTo(testNino))(using any())
         }
       }
   }

@@ -33,23 +33,23 @@ object TestUtils extends TestUtils
 
 trait TestUtils {
 
-  implicit val defaultTimeout: FiniteDuration = 5.seconds
+  given FiniteDuration = 5.seconds
 
   def extractAwait[A](future: Future[A]): A = await[A](future)
 
   def status(of: Result): Int = of.header.status
 
-  def status(of: Future[Result])(implicit timeout: Duration): Int = status(Await.result(of, timeout))
+  def status(of: Future[Result])(using timeout: Duration): Int = status(Await.result(of, timeout))
 
-  def jsonBodyOf(result: Result)(implicit mat: Materializer): JsValue =
+  def jsonBodyOf(result: Result)(using Materializer): JsValue =
     Json.parse(bodyOf(result))
 
   def jsonBodyOf(
       resultF: Future[Result]
-  )(implicit mat: Materializer, executionContext: ExecutionContext): Future[JsValue] =
+  )(using Materializer, ExecutionContext): Future[JsValue] =
     resultF.map(jsonBodyOf)
 
-  def bodyOf(result: Result)(implicit mat: Materializer): String = {
+  def bodyOf(result: Result)(using Materializer): String = {
     val bodyBytes: ByteString = await(result.body.consumeData)
     // We use the default charset to preserve the behaviour of a previous
     // version of this code, which used new String(Array[Byte]).
@@ -59,7 +59,7 @@ trait TestUtils {
     bodyBytes.decodeString(Charset.defaultCharset().name)
   }
 
-  def await[A](future: Future[A])(implicit timeout: Duration): A = Await.result(future, timeout)
+  def await[A](future: Future[A])(using timeout: Duration): A = Await.result(future, timeout)
 
   val rand               = new Random()
   val ninoGenerator      = new Generator(rand)
@@ -68,5 +68,5 @@ trait TestUtils {
   val testNino: String           = randomNino
   val (testNinoWithoutSuffix, _) = NinoHelper.dropNinoSuffix(testNino)
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  given HeaderCarrier = HeaderCarrier()
 }

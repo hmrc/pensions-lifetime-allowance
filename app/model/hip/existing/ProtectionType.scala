@@ -60,7 +60,7 @@ object ProtectionType extends Enumerable.Implicits {
     FixedProtection2014LTA
   )
 
-  implicit val enumerable: Enumerable[ProtectionType] =
+  given Enumerable[ProtectionType] =
     Enumerable(values.map(v => v.toString -> v): _*)
 
 }

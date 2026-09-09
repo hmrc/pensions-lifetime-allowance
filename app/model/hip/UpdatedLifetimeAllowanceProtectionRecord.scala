@@ -41,7 +41,7 @@ case class UpdatedLifetimeAllowanceProtectionRecord(
 
 object UpdatedLifetimeAllowanceProtectionRecord {
 
-  implicit val format: Format[UpdatedLifetimeAllowanceProtectionRecord] =
+  given Format[UpdatedLifetimeAllowanceProtectionRecord] =
     Json.format[UpdatedLifetimeAllowanceProtectionRecord]
 
 }

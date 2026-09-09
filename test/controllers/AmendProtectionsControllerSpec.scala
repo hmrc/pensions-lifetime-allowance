@@ -47,7 +47,7 @@ class AmendProtectionsControllerSpec
     with BeforeAndAfterEach
     with AuthMock {
 
-  private implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+  private given ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   private val citizenDetailsConnector = mock[CitizenDetailsConnector]
   private val hipProtectionService    = mock[HipProtectionService]
@@ -66,7 +66,7 @@ class AmendProtectionsControllerSpec
     reset(citizenDetailsConnector)
     reset(hipProtectionService)
     mockAuthConnector(Future.successful {})
-    when(citizenDetailsConnector.checkCitizenRecord(any[String])(any(), any()))
+    when(citizenDetailsConnector.checkCitizenRecord(any[String])(using any(), any()))
       .thenReturn(Future.successful(CitizenRecordOK))
   }
 
@@ -87,7 +87,7 @@ class AmendProtectionsControllerSpec
   "HipAmendProtectionsController on amendProtection" should {
 
     "call HipProtectionService" in {
-      when(hipProtectionService.amendProtection(any(), any(), any())(any()))
+      when(hipProtectionService.amendProtection(any(), any(), any())(using any()))
         .thenReturn(Future.successful(Right(amendProtectionResponse)))
 
       val request = FakeRequest(
@@ -103,11 +103,11 @@ class AmendProtectionsControllerSpec
         eqTo(testNino),
         eqTo(lifetimeAllowanceIdentifier),
         eqTo(amendProtectionRequest)
-      )(any())
+      )(using any())
     }
 
     "return Ok when provided with correct request" in {
-      when(hipProtectionService.amendProtection(any(), any(), any())(any()))
+      when(hipProtectionService.amendProtection(any(), any(), any())(using any()))
         .thenReturn(Future.successful(Right(amendProtectionResponse)))
 
       val request = FakeRequest(
@@ -141,7 +141,7 @@ class AmendProtectionsControllerSpec
       Seq(BAD_REQUEST, FORBIDDEN, NOT_FOUND, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE).foreach { errorStatus =>
         s"HipProtectionService returns Left containing UpstreamErrorResponse with status: $errorStatus" in {
           val testException = UpstreamErrorResponse("Test Exception", errorStatus)
-          when(hipProtectionService.amendProtection(any(), any(), any())(any()))
+          when(hipProtectionService.amendProtection(any(), any(), any())(using any()))
             .thenReturn(Future.successful(Left(testException)))
 
           val request = FakeRequest(

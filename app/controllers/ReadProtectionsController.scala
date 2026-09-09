@@ -19,8 +19,8 @@ package controllers
 import auth.{AuthClientConnector, AuthorisedActions}
 import connectors.CitizenDetailsConnector
 import play.api.Logging
-import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.{Action, AnyContent, ControllerComponents, Request}
 import services.HipProtectionService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -32,12 +32,13 @@ class ReadProtectionsController @Inject() (
     val citizenDetailsConnector: CitizenDetailsConnector,
     hipProtectionService: HipProtectionService,
     cc: ControllerComponents
-)(implicit ec: ExecutionContext)
+)(using ExecutionContext)
     extends BackendController(cc)
     with AuthorisedActions
     with Logging {
 
-  def readExistingProtections(nino: String): Action[AnyContent] = Action.async { implicit request =>
+  def readExistingProtections(nino: String): Action[AnyContent] = Action.async { r =>
+    given request: Request[AnyContent] = r
     userAuthorised(nino) {
       hipProtectionService
         .readExistingProtections(nino)

@@ -54,12 +54,12 @@ trait CitizenDetailsConnector {
   def getCitizenRecordCheckUrl(nino: String): String =
     serviceUrl + s"/citizen-details/$nino/designatory-details"
 
-  implicit val legacyRawReads: HttpReads[HttpResponse] =
+  given HttpReads[HttpResponse] =
     HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
 
   def checkCitizenRecord(
       nino: String
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[CitizenRecordCheckResult] =
+  )(using HeaderCarrier, ExecutionContext): Future[CitizenRecordCheckResult] =
     if (!checkRequired) {
       Future.successful(CitizenRecordOK)
     } else {

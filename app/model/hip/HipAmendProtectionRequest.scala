@@ -23,5 +23,5 @@ case class HipAmendProtectionRequest(
 )
 
 object HipAmendProtectionRequest {
-  implicit val format: Format[HipAmendProtectionRequest] = Json.format[HipAmendProtectionRequest]
+  given Format[HipAmendProtectionRequest] = Json.format[HipAmendProtectionRequest]
 }
