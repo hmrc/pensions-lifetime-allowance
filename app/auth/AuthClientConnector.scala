@@ -27,7 +27,7 @@ class DefaultAuthClientConnector @Inject() (
     servicesConfig: ServicesConfig
 ) extends AuthClientConnector {
 
-  override lazy val serviceUrl: String = servicesConfig.baseUrl("auth")
+  override val serviceUrl: String = servicesConfig.baseUrl("auth")
 }
 
 trait AuthClientConnector extends PlayAuthConnector

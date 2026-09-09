@@ -29,8 +29,8 @@ class DefaultCitizenDetailsConnector @Inject() (
     servicesConfig: ServicesConfig
 ) extends CitizenDetailsConnector {
 
-  override lazy val serviceUrl: String     = servicesConfig.baseUrl("citizen-details")
-  override lazy val checkRequired: Boolean = servicesConfig.getConfBool("citizen-details.checkRequired", defBool = true)
+  override val serviceUrl: String     = servicesConfig.baseUrl("citizen-details")
+  override val checkRequired: Boolean = servicesConfig.getConfBool("citizen-details.checkRequired", defBool = true)
 }
 
 sealed trait CitizenRecordCheckResult

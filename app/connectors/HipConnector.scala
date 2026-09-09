@@ -24,7 +24,8 @@ import play.api.Logging
 import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import play.api.libs.ws.writeableOf_JsValue
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, StringContextOps, UpstreamErrorResponse}
