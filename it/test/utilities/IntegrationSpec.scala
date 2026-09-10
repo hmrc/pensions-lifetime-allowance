@@ -57,7 +57,7 @@ trait IntegrationSpec
 
   lazy val app: Application = new GuiceApplicationBuilder()
     .configure(fakeConfig())
-    .overrides(overrideModules: _*)
+    .overrides(overrideModules*)
     .build()
 
   override def beforeEach(): Unit = {

@@ -29,6 +29,6 @@ object AmendProtectionRequestStatus extends Enumerable.Implicits {
     Seq(Open, Dormant)
 
   given Enumerable[AmendProtectionRequestStatus] =
-    Enumerable(allValues.map(v => v.toString -> v): _*)
+    Enumerable(allValues.map(v => v.toString -> v)*)
 
 }

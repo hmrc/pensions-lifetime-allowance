@@ -91,7 +91,7 @@ class HipConnector @Inject() (
       amendProtectionResponseE <- httpClient
         .post(url"$urlString")
         .withBody(Json.toJson(request))
-        .setHeader(basicHeaders: _*)
+        .setHeader(basicHeaders*)
         .execute[Either[UpstreamErrorResponse, HipAmendProtectionResponse]]
         .map(_.map(padCertificateTime))
 
@@ -136,7 +136,7 @@ class HipConnector @Inject() (
   )(using HeaderCarrier): Future[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]] =
     httpClient
       .get(url"${readExistingProtectionsUrl(nino)}")
-      .setHeader(basicHeaders: _*)
+      .setHeader(basicHeaders*)
       .execute[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]]
       .map(_.map(transformedExistingProtections))
 

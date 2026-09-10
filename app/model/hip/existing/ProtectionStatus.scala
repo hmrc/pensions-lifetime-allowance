@@ -39,6 +39,6 @@ object ProtectionStatus extends Enumerable.Implicits {
   )
 
   given Enumerable[ProtectionStatus] =
-    Enumerable(values.map(v => v.toString -> v): _*)
+    Enumerable(values.map(v => v.toString -> v)*)
 
 }

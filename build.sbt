@@ -22,11 +22,11 @@ lazy val scoverageSettings = {
 }
 
 lazy val root = Project(appName, file("."))
-  .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins: _*)
-  .settings(playSettings ++ scoverageSettings: _*)
-  .settings(playSettings: _*)
-  .settings(scalaSettings: _*)
-  .settings(defaultSettings(): _*)
+  .enablePlugins((Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins)*)
+  .settings((playSettings ++ scoverageSettings)*)
+  .settings(playSettings*)
+  .settings(scalaSettings*)
+  .settings(defaultSettings()*)
   .settings(
     scalacOptions ++= Seq(
       "-Wconf:cat=unused-imports&src=routes/.*:s",

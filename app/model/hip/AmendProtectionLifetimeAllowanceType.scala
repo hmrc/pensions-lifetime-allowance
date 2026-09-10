@@ -35,6 +35,6 @@ object AmendProtectionLifetimeAllowanceType extends Enumerable.Implicits {
   )
 
   given Enumerable[AmendProtectionLifetimeAllowanceType] =
-    Enumerable(allValues.map(v => v.toString -> v): _*)
+    Enumerable(allValues.map(v => v.toString -> v)*)
 
 }

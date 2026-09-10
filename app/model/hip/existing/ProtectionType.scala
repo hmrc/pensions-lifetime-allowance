@@ -61,6 +61,6 @@ object ProtectionType extends Enumerable.Implicits {
   )
 
   given Enumerable[ProtectionType] =
-    Enumerable(values.map(v => v.toString -> v): _*)
+    Enumerable(values.map(v => v.toString -> v)*)
 
 }
