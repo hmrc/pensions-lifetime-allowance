@@ -27,7 +27,7 @@ import java.nio.charset.Charset
 import java.util.Random
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.{Duration, FiniteDuration}
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 object TestUtils extends TestUtils
 

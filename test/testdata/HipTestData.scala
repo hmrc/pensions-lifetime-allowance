@@ -17,7 +17,7 @@
 package testdata
 
 import model.api.{AmendProtectionRequest, AmendProtectionResponse}
-import model.hip._
+import model.hip.*
 import model.hip.existing.ProtectionStatus.{Open, Withdrawn}
 import model.hip.existing.ProtectionType.{FixedProtection2016LTA, PensionCreditRights}
 import model.hip.existing.{ProtectionRecord, ProtectionRecordsList, ReadExistingProtectionsResponse}

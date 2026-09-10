@@ -36,7 +36,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, urlPathM
 import org.scalatest.BeforeAndAfter
 import org.scalatest.matchers.should.Matchers.shouldBe
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.inject.guice.GuiceableModule
 import uk.gov.hmrc.http.client.HttpClientV2
 import util.{TestUtils, WithFakeApplication}

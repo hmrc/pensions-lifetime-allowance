@@ -86,7 +86,7 @@ trait IntegrationSpec
       s"/pensions-lifetime-allowance/scheme-administrator/certificate-lookup?pensionSchemeAdministratorCheckReference=$psaRef&lifetimeAllowanceReference=$ltaRef"
 
     def lookupQueryParams: util.Map[String, StringValuePattern] = {
-      import scala.jdk.CollectionConverters._
+      import scala.jdk.CollectionConverters.*
 
       Map(
         "pensionSchemeAdministratorCheckReference" -> equalTo(psaRef),

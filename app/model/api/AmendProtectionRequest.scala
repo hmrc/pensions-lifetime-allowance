@@ -22,7 +22,7 @@ import model.hip.{
   HipAmendProtectionRequest,
   LifetimeAllowanceProtectionRecord
 }
-import play.api.libs.json._
+import play.api.libs.json.*
 
 case class AmendProtectionRequest(
     lifetimeAllowanceSequenceNumber: Int,

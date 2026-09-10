@@ -16,8 +16,8 @@
 
 package connectors
 
-import play.api.http.Status._
-import uk.gov.hmrc.http._
+import play.api.http.Status.*
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
