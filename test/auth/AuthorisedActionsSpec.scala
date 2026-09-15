@@ -26,6 +26,7 @@ import play.api.mvc.{Result, Results}
 import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.{InsufficientEnrolments, InvalidBearerToken}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class AuthorisedActionsSpec extends AnyWordSpec with Matchers with ScalaFutures {

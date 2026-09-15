@@ -25,13 +25,13 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AuthorisedActions extends AuthProvider with AuthorisedFunctions with Logging {
+trait AuthorisedActions(using ExecutionContext) extends AuthProvider with AuthorisedFunctions with Logging {
 
   val citizenDetailsConnector: CitizenDetailsConnector
 
   def userAuthorised(
       nino: String
-  )(body: => Future[Result])(using request: RequestHeader)(using ExecutionContext): Future[Result] = {
+  )(body: => Future[Result])(using request: RequestHeader): Future[Result] = {
     given HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
     authorised(Nino(hasNino = true, nino = Some(nino)).and(ConfidenceLevel.L200)) {
