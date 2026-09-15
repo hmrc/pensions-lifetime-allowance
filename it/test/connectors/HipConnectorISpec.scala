@@ -51,7 +51,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
 
   private val hipConnector: HipConnector = app.injector.instanceOf[HipConnector]
 
-  private given hipConfig: HipConfig = app.injector.instanceOf[HipConfig]
+  private val hipConfig: HipConfig = app.injector.instanceOf[HipConfig]
 
   private val correlationId: UUID = UUID.randomUUID()
 
