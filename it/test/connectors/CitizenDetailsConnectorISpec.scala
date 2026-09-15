@@ -34,7 +34,6 @@ package connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, urlPathMatching}
 import org.scalatest.BeforeAndAfter
-import org.scalatest.matchers.should.Matchers.shouldBe
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status.*
 import play.api.inject.guice.GuiceableModule
@@ -73,7 +72,7 @@ class CitizenDetailsConnectorISpec
 
   "The CitizenDetails Connector getCitizenRecordCheckUrl method" when {
     "return a  URL that contains the nino passed to it" in {
-      testCitizenDetailsConnector.getCitizenRecordCheckUrl(DefaultTestNino).contains(DefaultTestNino) shouldBe true
+      testCitizenDetailsConnector.getCitizenRecordCheckUrl(DefaultTestNino).contains(DefaultTestNino) mustBe true
     }
   }
 
@@ -82,7 +81,7 @@ class CitizenDetailsConnectorISpec
       val f = NoCheckRequiredCitizenDetailsConnector.checkCitizenRecord(DefaultTestNino)
 
       val res = await(f)
-      res shouldBe CitizenRecordOK
+      res mustBe CitizenRecordOK
     }
   }
 
@@ -100,7 +99,7 @@ class CitizenDetailsConnectorISpec
       val f = testCitizenDetailsConnector.checkCitizenRecord(DefaultTestNino)
 
       val res = await(f)
-      res shouldBe CitizenRecordOK
+      res mustBe CitizenRecordOK
     }
 
     "return an error if NotFoundException received" in {
@@ -116,7 +115,7 @@ class CitizenDetailsConnectorISpec
       val f = testCitizenDetailsConnector.checkCitizenRecord(DefaultTestNino)
 
       val res = await(f)
-      res shouldBe CitizenRecordNotFound
+      res mustBe CitizenRecordNotFound
     }
 
     "return an error if Upstream4xxResponse received" in {
@@ -132,7 +131,7 @@ class CitizenDetailsConnectorISpec
       val f = testCitizenDetailsConnector.checkCitizenRecord(DefaultTestNino)
 
       val res = await(f)
-      res.isInstanceOf[CitizenRecordOther4xxResponse] shouldBe true
+      res.isInstanceOf[CitizenRecordOther4xxResponse] mustBe true
     }
 
     "return an error if Upstream5xxResponse received" in {
@@ -148,7 +147,7 @@ class CitizenDetailsConnectorISpec
       val f = testCitizenDetailsConnector.checkCitizenRecord(DefaultTestNino)
 
       val res = await(f)
-      res.isInstanceOf[CitizenRecord5xxResponse] shouldBe true
+      res.isInstanceOf[CitizenRecord5xxResponse] mustBe true
     }
 
     "return an error if CitizenRecordLocked received" in {
@@ -163,7 +162,7 @@ class CitizenDetailsConnectorISpec
       val f = testCitizenDetailsConnector.checkCitizenRecord(DefaultTestNino)
 
       val res = await(f)
-      res shouldBe CitizenRecordLocked
+      res mustBe CitizenRecordLocked
     }
   }
 
