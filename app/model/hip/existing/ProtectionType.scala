@@ -16,51 +16,26 @@
 
 package model.hip.existing
 
-import util.{Enumerable, EnumerableInstance}
+import util.{JsonEnum, JsonEnumFormat}
 
-sealed abstract class ProtectionType(value: String) extends EnumerableInstance(value)
-
-object ProtectionType extends Enumerable.Implicits {
-
-  case object FixedProtection2016          extends ProtectionType("FIXED PROTECTION 2016")
-  case object IndividualProtection2014     extends ProtectionType("INDIVIDUAL PROTECTION 2014")
-  case object IndividualProtection2016     extends ProtectionType("INDIVIDUAL PROTECTION 2016")
-  case object PrimaryProtection            extends ProtectionType("PRIMARY PROTECTION")
-  case object EnhancedProtection           extends ProtectionType("ENHANCED PROTECTION")
-  case object FixedProtection              extends ProtectionType("FIXED PROTECTION")
-  case object FixedProtection2014          extends ProtectionType("FIXED PROTECTION 2014")
-  case object PensionCreditRights          extends ProtectionType("PENSION CREDIT RIGHTS")
-  case object InternationalEnhancementS221 extends ProtectionType("INTERNATIONAL ENHANCEMENT (S221)")
-  case object InternationalEnhancementS224 extends ProtectionType("INTERNATIONAL ENHANCEMENT (S224)")
-  case object FixedProtection2016LTA       extends ProtectionType("FIXED PROTECTION 2016 LTA")
-  case object IndividualProtection2014LTA  extends ProtectionType("INDIVIDUAL PROTECTION 2014 LTA")
-  case object IndividualProtection2016LTA  extends ProtectionType("INDIVIDUAL PROTECTION 2016 LTA")
-  case object PrimaryProtectionLTA         extends ProtectionType("PRIMARY PROTECTION LTA")
-  case object EnhancedProtectionLTA        extends ProtectionType("ENHANCED PROTECTION LTA")
-  case object FixedProtectionLTA           extends ProtectionType("FIXED PROTECTION LTA")
-  case object FixedProtection2014LTA       extends ProtectionType("FIXED PROTECTION 2014 LTA")
-
-  val values: Seq[ProtectionType] = Seq(
-    FixedProtection2016,
-    IndividualProtection2014,
-    IndividualProtection2016,
-    PrimaryProtection,
-    EnhancedProtection,
-    FixedProtection,
-    FixedProtection2014,
-    PensionCreditRights,
-    InternationalEnhancementS221,
-    InternationalEnhancementS224,
-    FixedProtection2016LTA,
-    IndividualProtection2014LTA,
-    IndividualProtection2016LTA,
-    PrimaryProtectionLTA,
-    EnhancedProtectionLTA,
-    FixedProtectionLTA,
-    FixedProtection2014LTA
-  )
-
-  given Enumerable[ProtectionType] =
-    Enumerable(values.map(v => v.toString -> v)*)
-
+enum ProtectionType(override val jsonString: String) extends JsonEnum {
+  case FixedProtection2016          extends ProtectionType("FIXED PROTECTION 2016")
+  case IndividualProtection2014     extends ProtectionType("INDIVIDUAL PROTECTION 2014")
+  case IndividualProtection2016     extends ProtectionType("INDIVIDUAL PROTECTION 2016")
+  case PrimaryProtection            extends ProtectionType("PRIMARY PROTECTION")
+  case EnhancedProtection           extends ProtectionType("ENHANCED PROTECTION")
+  case FixedProtection              extends ProtectionType("FIXED PROTECTION")
+  case FixedProtection2014          extends ProtectionType("FIXED PROTECTION 2014")
+  case PensionCreditRights          extends ProtectionType("PENSION CREDIT RIGHTS")
+  case InternationalEnhancementS221 extends ProtectionType("INTERNATIONAL ENHANCEMENT (S221)")
+  case InternationalEnhancementS224 extends ProtectionType("INTERNATIONAL ENHANCEMENT (S224)")
+  case FixedProtection2016LTA       extends ProtectionType("FIXED PROTECTION 2016 LTA")
+  case IndividualProtection2014LTA  extends ProtectionType("INDIVIDUAL PROTECTION 2014 LTA")
+  case IndividualProtection2016LTA  extends ProtectionType("INDIVIDUAL PROTECTION 2016 LTA")
+  case PrimaryProtectionLTA         extends ProtectionType("PRIMARY PROTECTION LTA")
+  case EnhancedProtectionLTA        extends ProtectionType("ENHANCED PROTECTION LTA")
+  case FixedProtectionLTA           extends ProtectionType("FIXED PROTECTION LTA")
+  case FixedProtection2014LTA       extends ProtectionType("FIXED PROTECTION 2014 LTA")
 }
+
+object ProtectionType extends JsonEnumFormat[ProtectionType]

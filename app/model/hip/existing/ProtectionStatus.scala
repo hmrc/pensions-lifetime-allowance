@@ -16,29 +16,15 @@
 
 package model.hip.existing
 
-import util.{Enumerable, EnumerableInstance}
+import util.{JsonEnum, JsonEnumFormat}
 
-sealed abstract class ProtectionStatus(value: String) extends EnumerableInstance(value)
-
-object ProtectionStatus extends Enumerable.Implicits {
-
-  case object Open         extends ProtectionStatus("OPEN")
-  case object Dormant      extends ProtectionStatus("DORMANT")
-  case object Withdrawn    extends ProtectionStatus("WITHDRAWN")
-  case object Expired      extends ProtectionStatus("EXPIRED")
-  case object Unsuccessful extends ProtectionStatus("UNSUCCESSFUL")
-  case object Rejected     extends ProtectionStatus("REJECTED")
-
-  val values: Seq[ProtectionStatus] = Seq(
-    Open,
-    Dormant,
-    Withdrawn,
-    Expired,
-    Unsuccessful,
-    Rejected
-  )
-
-  given Enumerable[ProtectionStatus] =
-    Enumerable(values.map(v => v.toString -> v)*)
-
+enum ProtectionStatus(override val jsonString: String) extends JsonEnum {
+  case Open         extends ProtectionStatus("OPEN")
+  case Dormant      extends ProtectionStatus("DORMANT")
+  case Withdrawn    extends ProtectionStatus("WITHDRAWN")
+  case Expired      extends ProtectionStatus("EXPIRED")
+  case Unsuccessful extends ProtectionStatus("UNSUCCESSFUL")
+  case Rejected     extends ProtectionStatus("REJECTED")
 }
+
+object ProtectionStatus extends JsonEnumFormat[ProtectionStatus]

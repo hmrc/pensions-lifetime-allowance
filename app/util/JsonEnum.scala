@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,8 @@
  * limitations under the License.
  */
 
-package model.hip
+package util
 
-import util.{JsonEnum, JsonEnumFormat}
-
-enum AmendProtectionRequestStatus(override val jsonString: String) extends JsonEnum {
-  case Open    extends AmendProtectionRequestStatus("OPEN")
-  case Dormant extends AmendProtectionRequestStatus("DORMANT")
+trait JsonEnum {
+  val jsonString: String
 }
-
-
-object AmendProtectionRequestStatus extends JsonEnumFormat[AmendProtectionRequestStatus]
