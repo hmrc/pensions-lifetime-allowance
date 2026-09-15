@@ -57,7 +57,6 @@ trait AuthorisedActions extends AuthProvider with AuthorisedFunctions with Loggi
             InternalServerError,
             e
           )
-        case _ => logErrorAndRespond("err", InternalServerError)
       }
     }.recover(authErrorHandling)
   }
