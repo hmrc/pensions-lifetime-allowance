@@ -29,8 +29,10 @@ lazy val root = Project(appName, file("."))
   .settings(defaultSettings()*)
   .settings(
     scalacOptions ++= Seq(
-      "-Wconf:cat=unused-imports&src=routes/.*:s",
-      "-Wconf:cat=unused&src=routes/.*:s"
+      "-Wconf:msg=unused-imports&src=routes/.*:s",
+      "-Wconf:msg=unused&src=routes/.*:s",
+      "-Wconf:msg=Flag.*set repeatedly:s",
+      "-Wconf:msg=Setting -Wunused set to all redundantly:s"
     )
   )
   .settings(
