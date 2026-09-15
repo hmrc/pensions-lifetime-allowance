@@ -23,5 +23,4 @@ enum AmendProtectionRequestStatus(override val jsonString: String) extends JsonE
   case Dormant extends AmendProtectionRequestStatus("DORMANT")
 }
 
-
 object AmendProtectionRequestStatus extends JsonEnumFormat[AmendProtectionRequestStatus]
