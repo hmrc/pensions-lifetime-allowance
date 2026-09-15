@@ -38,8 +38,8 @@ class AmendProtectionsController @Inject() (
     with AuthorisedActions {
 
   def amendProtection(nino: String, protectionId: Long): Action[JsValue] =
-    Action.async(cc.parsers.json) { r =>
-      given request: Request[JsValue] = r
+    Action.async(cc.parsers.json) { request =>
+      given Request[JsValue] = request
       userAuthorised(nino) {
         request.body
           .validate[AmendProtectionRequest]

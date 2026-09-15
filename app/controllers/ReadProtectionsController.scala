@@ -37,8 +37,8 @@ class ReadProtectionsController @Inject() (
     with AuthorisedActions
     with Logging {
 
-  def readExistingProtections(nino: String): Action[AnyContent] = Action.async { r =>
-    given request: Request[AnyContent] = r
+  def readExistingProtections(nino: String): Action[AnyContent] = Action.async { request =>
+    given Request[AnyContent] = request
     userAuthorised(nino) {
       hipProtectionService
         .readExistingProtections(nino)
