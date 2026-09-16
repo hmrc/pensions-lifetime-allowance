@@ -16,20 +16,14 @@
 
 package model.hip
 
-import util.{Enumerable, EnumerableInstance}
+import util.{JsonEnum, JsonEnumFormat}
 
-sealed abstract class AmendProtectionResponseStatus(value: String) extends EnumerableInstance(value)
+enum AmendProtectionResponseStatus(override val jsonString: String) extends JsonEnum {
+  case Open      extends AmendProtectionResponseStatus("OPEN")
+  case Dormant   extends AmendProtectionResponseStatus("DORMANT")
+  case Withdrawn extends AmendProtectionResponseStatus("WITHDRAWN")
 
-object AmendProtectionResponseStatus extends Enumerable.Implicits {
-
-  case object Open      extends AmendProtectionResponseStatus("OPEN")
-  case object Dormant   extends AmendProtectionResponseStatus("DORMANT")
-  case object Withdrawn extends AmendProtectionResponseStatus("WITHDRAWN")
-
-  private val allValues: Seq[AmendProtectionResponseStatus] =
-    Seq(Open, Dormant, Withdrawn)
-
-  implicit val toEnumerable: Enumerable[AmendProtectionResponseStatus] =
-    Enumerable(allValues.map(v => v.toString -> v): _*)
-
+  override def toString: String = jsonString
 }
+
+object AmendProtectionResponseStatus extends JsonEnumFormat[AmendProtectionResponseStatus]

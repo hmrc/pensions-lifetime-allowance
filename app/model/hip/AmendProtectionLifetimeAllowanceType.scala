@@ -16,25 +16,15 @@
 
 package model.hip
 
-import _root_.util.{Enumerable, EnumerableInstance}
+import _root_.util.{JsonEnum, JsonEnumFormat}
 
-sealed abstract class AmendProtectionLifetimeAllowanceType(value: String) extends EnumerableInstance(value)
+enum AmendProtectionLifetimeAllowanceType(override val jsonString: String) extends JsonEnum {
+  case IndividualProtection2014    extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2014")
+  case IndividualProtection2016    extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2016")
+  case IndividualProtection2014LTA extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2014 LTA")
+  case IndividualProtection2016LTA extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2016 LTA")
 
-object AmendProtectionLifetimeAllowanceType extends Enumerable.Implicits {
-
-  case object IndividualProtection2014    extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2014")
-  case object IndividualProtection2016    extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2016")
-  case object IndividualProtection2014LTA extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2014 LTA")
-  case object IndividualProtection2016LTA extends AmendProtectionLifetimeAllowanceType("INDIVIDUAL PROTECTION 2016 LTA")
-
-  private val allValues: Seq[AmendProtectionLifetimeAllowanceType] = Seq(
-    IndividualProtection2014,
-    IndividualProtection2016,
-    IndividualProtection2014LTA,
-    IndividualProtection2016LTA
-  )
-
-  implicit val toEnumerable: Enumerable[AmendProtectionLifetimeAllowanceType] =
-    Enumerable(allValues.map(v => v.toString -> v): _*)
-
+  override def toString: String = jsonString
 }
+
+object AmendProtectionLifetimeAllowanceType extends JsonEnumFormat[AmendProtectionLifetimeAllowanceType]

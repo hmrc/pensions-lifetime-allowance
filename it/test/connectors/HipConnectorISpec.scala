@@ -16,7 +16,7 @@
 
 package connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import config.HipConfig
 import model.hip.existing.ReadExistingProtectionsResponse
 import model.hip.{AmendProtectionLifetimeAllowanceType, AmendProtectionResponseStatus}
@@ -25,11 +25,11 @@ import org.mockito.{ArgumentMatchers, Mockito}
 import org.scalatest.EitherValues
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.MimeTypes
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.inject.bind
 import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.Json
-import testdata.HipTestData._
+import testdata.HipTestData.*
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, JsValidationException}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
@@ -51,7 +51,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
 
   private val hipConnector: HipConnector = app.injector.instanceOf[HipConnector]
 
-  private implicit val hipConfig: HipConfig = app.injector.instanceOf[HipConfig]
+  private val hipConfig: HipConfig = app.injector.instanceOf[HipConfig]
 
   private val correlationId: UUID = UUID.randomUUID()
 
@@ -65,7 +65,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
     when(idGenerator.generateUuid).thenReturn(correlationId)
   }
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
+  private given hc: HeaderCarrier = HeaderCarrier()
 
   val rand          = new Random()
   val ninoGenerator = new Generator(rand)
@@ -94,7 +94,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
                     |    "type": "${AmendProtectionLifetimeAllowanceType.IndividualProtection2014LTA.toString}",
                     |    "certificateDate": "2025-07-15",
                     |    "certificateTime": "174312",
-                    |    "status": "${AmendProtectionResponseStatus.Open.toString}",
+                    |    "status": "OPEN",
                     |    "protectionReference": "$protectionReference",
                     |    "relevantAmount": 105000,
                     |    "preADayPensionInPaymentAmount": 1500,

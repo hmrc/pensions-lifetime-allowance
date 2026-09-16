@@ -24,14 +24,14 @@ import services.HipProtectionService
 
 class ServiceBindings extends Module {
 
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] =
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[?]] =
     bindServices() ++ bindConnectors()
 
-  private def bindServices(): Seq[Binding[_]] = Seq(
+  private def bindServices(): Seq[Binding[?]] = Seq(
     play.api.inject.bind(classOf[HipProtectionService]).toSelf.eagerly()
   )
 
-  private def bindConnectors(): Seq[Binding[_]] = Seq(
+  private def bindConnectors(): Seq[Binding[?]] = Seq(
     play.api.inject.bind(classOf[AuthClientConnector]).to(classOf[DefaultAuthClientConnector]).eagerly(),
     play.api.inject.bind(classOf[CitizenDetailsConnector]).to(classOf[DefaultCitizenDetailsConnector]).eagerly()
   )

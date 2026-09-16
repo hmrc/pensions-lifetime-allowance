@@ -22,7 +22,7 @@ import model.hip.{
   HipAmendProtectionRequest,
   LifetimeAllowanceProtectionRecord
 }
-import play.api.libs.json._
+import play.api.libs.json.*
 
 case class AmendProtectionRequest(
     lifetimeAllowanceSequenceNumber: Int,
@@ -68,5 +68,5 @@ case class AmendProtectionRequest(
 }
 
 object AmendProtectionRequest {
-  implicit val format: Format[AmendProtectionRequest] = Json.format[AmendProtectionRequest]
+  given Format[AmendProtectionRequest] = Json.format[AmendProtectionRequest]
 }

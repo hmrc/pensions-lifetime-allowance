@@ -24,7 +24,8 @@ import play.api.Logging
 import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import play.api.libs.ws.writeableOf_JsValue
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.HttpReadsInstances.readEitherOf
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, StringContextOps, UpstreamErrorResponse}
@@ -41,7 +42,7 @@ class HipConnector @Inject() (
     idGenerator: IdGenerator,
     httpClient: HttpClientV2,
     auditConnector: AuditConnector
-)(implicit ec: ExecutionContext)
+)(using ExecutionContext)
     extends Logging {
 
   private def baseUrl: String = hipConfig.baseUrl
@@ -55,7 +56,7 @@ class HipConnector @Inject() (
 
   private def readExistingProtectionsUrl(nino: String): String = hipConfig.baseUrl + s"/lifetime-allowance/person/$nino"
 
-  private def basicHeaders(implicit hc: HeaderCarrier): Seq[(String, String)] = {
+  private def basicHeaders(using hc: HeaderCarrier): Seq[(String, String)] = {
     val token =
       Base64.getEncoder
         .encodeToString(
@@ -78,7 +79,7 @@ class HipConnector @Inject() (
       lifetimeAllowanceIdentifier: Long,
       lifetimeAllowanceSequenceNumber: Int,
       request: HipAmendProtectionRequest
-  )(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, HipAmendProtectionResponse]] = {
+  )(using HeaderCarrier): Future[Either[UpstreamErrorResponse, HipAmendProtectionResponse]] = {
 
     val urlString = amendProtectionUrl(
       nationalInsuranceNumber,
@@ -90,7 +91,7 @@ class HipConnector @Inject() (
       amendProtectionResponseE <- httpClient
         .post(url"$urlString")
         .withBody(Json.toJson(request))
-        .setHeader(basicHeaders: _*)
+        .setHeader(basicHeaders*)
         .execute[Either[UpstreamErrorResponse, HipAmendProtectionResponse]]
         .map(_.map(padCertificateTime))
 
@@ -115,7 +116,7 @@ class HipConnector @Inject() (
       requestBody: HipAmendProtectionRequest,
       responseStatusCode: Int,
       responseBody: HipAmendProtectionResponse
-  )(implicit hc: HeaderCarrier): Future[AuditResult] = {
+  )(using HeaderCarrier): Future[AuditResult] = {
 
     val auditEvent = new HipAmendLtaEvent(
       nino = nino,
@@ -132,10 +133,10 @@ class HipConnector @Inject() (
 
   def readExistingProtections(
       nino: String
-  )(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]] =
+  )(using HeaderCarrier): Future[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]] =
     httpClient
       .get(url"${readExistingProtectionsUrl(nino)}")
-      .setHeader(basicHeaders: _*)
+      .setHeader(basicHeaders*)
       .execute[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]]
       .map(_.map(transformedExistingProtections))
 

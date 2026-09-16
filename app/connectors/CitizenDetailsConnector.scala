@@ -16,8 +16,8 @@
 
 package connectors
 
-import play.api.http.Status._
-import uk.gov.hmrc.http._
+import play.api.http.Status.*
+import uk.gov.hmrc.http.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
@@ -29,8 +29,8 @@ class DefaultCitizenDetailsConnector @Inject() (
     servicesConfig: ServicesConfig
 ) extends CitizenDetailsConnector {
 
-  override lazy val serviceUrl: String     = servicesConfig.baseUrl("citizen-details")
-  override lazy val checkRequired: Boolean = servicesConfig.getConfBool("citizen-details.checkRequired", defBool = true)
+  override val serviceUrl: String     = servicesConfig.baseUrl("citizen-details")
+  override val checkRequired: Boolean = servicesConfig.getConfBool("citizen-details.checkRequired", defBool = true)
 }
 
 sealed trait CitizenRecordCheckResult
@@ -54,12 +54,12 @@ trait CitizenDetailsConnector {
   def getCitizenRecordCheckUrl(nino: String): String =
     serviceUrl + s"/citizen-details/$nino/designatory-details"
 
-  implicit val legacyRawReads: HttpReads[HttpResponse] =
+  given HttpReads[HttpResponse] =
     HttpReadsInstances.throwOnFailure(HttpReadsInstances.readEitherOf(HttpReadsInstances.readRaw))
 
   def checkCitizenRecord(
       nino: String
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[CitizenRecordCheckResult] =
+  )(using HeaderCarrier, ExecutionContext): Future[CitizenRecordCheckResult] =
     if (!checkRequired) {
       Future.successful(CitizenRecordOK)
     } else {

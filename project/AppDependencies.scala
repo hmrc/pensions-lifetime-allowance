@@ -4,7 +4,7 @@ object AppDependencies {
 
   import play.sbt.PlayImport.*
 
-  val boostrapVersion = "10.7.0"
+  val boostrapVersion = "10.8.0"
 
   val compile: Seq[ModuleID] = Seq(
     ws,

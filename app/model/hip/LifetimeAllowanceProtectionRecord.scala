@@ -16,7 +16,7 @@
 
 package model.hip
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
 case class LifetimeAllowanceProtectionRecord(
     `type`: AmendProtectionLifetimeAllowanceType,
@@ -38,5 +38,5 @@ case class LifetimeAllowanceProtectionRecord(
 )
 
 object LifetimeAllowanceProtectionRecord {
-  implicit val format: Format[LifetimeAllowanceProtectionRecord] = Json.format[LifetimeAllowanceProtectionRecord]
+  given Format[LifetimeAllowanceProtectionRecord] = Json.format[LifetimeAllowanceProtectionRecord]
 }

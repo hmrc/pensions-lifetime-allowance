@@ -25,7 +25,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, SERVICE_UNAVAILABLE}
-import testdata.HipTestData._
+import testdata.HipTestData.*
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import util.TestUtils
@@ -40,7 +40,7 @@ class HipProtectionServiceSpec extends AnyWordSpec with Matchers with ScalaFutur
 
   private val hipProtectionService = new HipProtectionService(hipConnector)
 
-  private implicit val hc: HeaderCarrier = HeaderCarrier()
+  private given hc: HeaderCarrier = HeaderCarrier()
 
   private val testNino: String = TestUtils.randomNino
 
@@ -53,7 +53,7 @@ class HipProtectionServiceSpec extends AnyWordSpec with Matchers with ScalaFutur
   "HipProtectionService on amendProtection" should {
 
     "call HipConnector providing converted AmendProtectionResponse" in {
-      when(hipConnector.amendProtection(any(), any(), any(), any())(any()))
+      when(hipConnector.amendProtection(any(), any(), any(), any())(using any()))
         .thenReturn(Future.successful(Right(hipAmendProtectionResponse)))
 
       hipProtectionService.amendProtection(testNino, lifetimeAllowanceIdentifier, amendProtectionRequest).futureValue
@@ -63,11 +63,11 @@ class HipProtectionServiceSpec extends AnyWordSpec with Matchers with ScalaFutur
         eqTo(lifetimeAllowanceIdentifier),
         eqTo(lifetimeAllowanceSequenceNumber),
         eqTo(hipAmendProtectionRequest)
-      )(eqTo(hc))
+      )(using eqTo(hc))
     }
 
     "return converted AmendProtectionResponse from HipConnector" in {
-      when(hipConnector.amendProtection(any(), any(), any(), any())(any()))
+      when(hipConnector.amendProtection(any(), any(), any(), any())(using any()))
         .thenReturn(Future.successful(Right(hipAmendProtectionResponse)))
 
       hipProtectionService
@@ -86,14 +86,14 @@ class HipProtectionServiceSpec extends AnyWordSpec with Matchers with ScalaFutur
     "return ReadExistingProtectionsResponse from HipConnector" when {
 
       "it receives 200 response" in {
-        when(hipConnector.readExistingProtections(eqTo(nino))(any()))
+        when(hipConnector.readExistingProtections(eqTo(nino))(using any()))
           .thenReturn(Future.successful(Right(hipReadExistingProtectionsResponse)))
 
         val result = hipProtectionService.readExistingProtections(nino).futureValue
 
         result shouldBe Right(hipReadExistingProtectionsResponse)
 
-        verify(hipConnector).readExistingProtections(eqTo(nino))(any())
+        verify(hipConnector).readExistingProtections(eqTo(nino))(using any())
       }
     }
 
@@ -118,14 +118,14 @@ class HipProtectionServiceSpec extends AnyWordSpec with Matchers with ScalaFutur
 
           val response = Left(UpstreamErrorResponse(responseBody, statusCode))
 
-          when(hipConnector.readExistingProtections(eqTo(nino))(any()))
+          when(hipConnector.readExistingProtections(eqTo(nino))(using any()))
             .thenReturn(Future.successful(response))
 
           val result = hipProtectionService.readExistingProtections(nino).futureValue
 
           result shouldBe response
 
-          verify(hipConnector).readExistingProtections(eqTo(nino))(any())
+          verify(hipConnector).readExistingProtections(eqTo(nino))(using any())
         }
       }
   }

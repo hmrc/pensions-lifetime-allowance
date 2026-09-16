@@ -28,7 +28,7 @@ class HipAmendLtaEvent(
     hipResponseBodyJs: JsObject,
     statusCode: Int,
     path: String
-)(implicit hc: HeaderCarrier)
+)(using hc: HeaderCarrier)
     extends DataEvent(
       auditSource = "pensions-lifetime-allowance",
       auditType = "AmendAllowance",

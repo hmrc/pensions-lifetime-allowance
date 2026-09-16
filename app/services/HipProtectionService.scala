@@ -25,13 +25,13 @@ import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class HipProtectionService @Inject() (hipConnector: HipConnector)(implicit ec: ExecutionContext) extends Logging {
+class HipProtectionService @Inject() (hipConnector: HipConnector)(using ExecutionContext) extends Logging {
 
   def amendProtection(
       nino: String,
       protectionId: Long,
       request: AmendProtectionRequest
-  )(implicit hc: HeaderCarrier): Future[Either[UpstreamErrorResponse, AmendProtectionResponse]] =
+  )(using HeaderCarrier): Future[Either[UpstreamErrorResponse, AmendProtectionResponse]] =
     for {
       hipResponseE <- hipConnector
         .amendProtection(
@@ -46,7 +46,7 @@ class HipProtectionService @Inject() (hipConnector: HipConnector)(implicit ec: E
     } yield responseE
 
   def readExistingProtections(nino: String)(
-      implicit hc: HeaderCarrier
+      using HeaderCarrier
   ): Future[Either[UpstreamErrorResponse, ReadExistingProtectionsResponse]] =
     hipConnector.readExistingProtections(nino)
 

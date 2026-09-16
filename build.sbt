@@ -6,9 +6,9 @@ import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 val appName = "pensions-lifetime-allowance"
 
 lazy val plugins: Seq[Plugins]         = Seq.empty
-lazy val playSettings: Seq[Setting[_]] = Seq.empty
+lazy val playSettings: Seq[Setting[?]] = Seq.empty
 ThisBuild / majorVersion := 2
-ThisBuild / scalaVersion := "2.13.18"
+ThisBuild / scalaVersion := "3.3.7"
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
@@ -22,15 +22,17 @@ lazy val scoverageSettings = {
 }
 
 lazy val root = Project(appName, file("."))
-  .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins: _*)
-  .settings(playSettings ++ scoverageSettings: _*)
-  .settings(playSettings: _*)
-  .settings(scalaSettings: _*)
-  .settings(defaultSettings(): _*)
+  .enablePlugins((Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins)*)
+  .settings((playSettings ++ scoverageSettings)*)
+  .settings(playSettings*)
+  .settings(scalaSettings*)
+  .settings(defaultSettings()*)
   .settings(
     scalacOptions ++= Seq(
-      "-Wconf:cat=unused-imports&src=routes/.*:s",
-      "-Wconf:cat=unused&src=routes/.*:s"
+      "-Wconf:msg=unused-imports&src=routes/.*:s",
+      "-Wconf:msg=unused&src=routes/.*:s",
+      "-Wconf:msg=Flag.*set repeatedly:s",
+      "-Wconf:msg=Setting -Wunused set to all redundantly:s"
     )
   )
   .settings(

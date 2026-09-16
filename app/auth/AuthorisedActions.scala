@@ -16,23 +16,23 @@
 
 package auth
 
-import connectors._
+import connectors.*
 import play.api.Logging
-import play.api.mvc.Results._
-import play.api.mvc._
-import uk.gov.hmrc.auth.core.{AuthorisationException, _}
+import play.api.mvc.Results.*
+import play.api.mvc.*
+import uk.gov.hmrc.auth.core.*
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AuthorisedActions extends AuthProvider with AuthorisedFunctions with Logging {
+trait AuthorisedActions(using ExecutionContext) extends AuthProvider with AuthorisedFunctions with Logging {
 
   val citizenDetailsConnector: CitizenDetailsConnector
 
   def userAuthorised(
       nino: String
-  )(body: => Future[Result])(implicit request: RequestHeader, ec: ExecutionContext): Future[Result] = {
-    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
+  )(body: => Future[Result])(using request: RequestHeader): Future[Result] = {
+    given HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
     authorised(Nino(hasNino = true, nino = Some(nino)).and(ConfidenceLevel.L200)) {
       citizenDetailsConnector.checkCitizenRecord(nino).flatMap {
@@ -57,7 +57,6 @@ trait AuthorisedActions extends AuthProvider with AuthorisedFunctions with Loggi
             InternalServerError,
             e
           )
-        case _ => logErrorAndRespond("err", InternalServerError)
       }
     }.recover(authErrorHandling)
   }

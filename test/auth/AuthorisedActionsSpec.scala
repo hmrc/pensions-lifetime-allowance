@@ -23,9 +23,10 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Results.Status
 import play.api.mvc.{Result, Results}
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.auth.core.{InsufficientEnrolments, InvalidBearerToken}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class AuthorisedActionsSpec extends AnyWordSpec with Matchers with ScalaFutures {
