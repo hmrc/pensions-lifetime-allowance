@@ -19,7 +19,7 @@ package controllers
 import auth.{AuthClientConnector, AuthorisedActions}
 import connectors.CitizenDetailsConnector
 import play.api.Logging
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Request}
 import services.HipProtectionService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
