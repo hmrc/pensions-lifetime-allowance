@@ -30,7 +30,7 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.Json
 import testdata.HipTestData.*
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.NinoGenerator
 import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames, JsValidationException}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import util.{IdGenerator, TestUtils}
@@ -68,7 +68,7 @@ class HipConnectorISpec extends IntegrationSpec with EitherValues {
   private given hc: HeaderCarrier = HeaderCarrier()
 
   val rand          = new Random()
-  val ninoGenerator = new Generator(rand)
+  val ninoGenerator = NinoGenerator(rand)
 
   val nino: String = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
 

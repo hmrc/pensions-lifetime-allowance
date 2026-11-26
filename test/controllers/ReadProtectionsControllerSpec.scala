@@ -33,7 +33,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status}
 import services.HipProtectionService
 import testdata.HipTestData.hipReadExistingProtectionsResponse
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.NinoGenerator
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import java.util.Random
@@ -73,7 +73,7 @@ class ReadProtectionsControllerSpec
   }
 
   private val rand          = new Random()
-  private val ninoGenerator = new Generator(rand)
+  private val ninoGenerator = NinoGenerator(rand)
 
   private val testNino = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
 

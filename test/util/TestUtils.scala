@@ -20,7 +20,7 @@ import org.apache.pekko.stream.Materializer
 import org.apache.pekko.util.ByteString
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.NinoGenerator
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.nio.charset.Charset
@@ -62,7 +62,7 @@ trait TestUtils {
   def await[A](future: Future[A])(using timeout: Duration): A = Await.result(future, timeout)
 
   val rand               = new Random()
-  val ninoGenerator      = new Generator(rand)
+  val ninoGenerator      = NinoGenerator(rand)
   def randomNino: String = ninoGenerator.nextNino.nino.replaceFirst("MA", "AA")
 
   val testNino: String           = randomNino
