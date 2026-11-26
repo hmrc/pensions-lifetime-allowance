@@ -8,7 +8,7 @@ val appName = "pensions-lifetime-allowance"
 lazy val plugins: Seq[Plugins]         = Seq.empty
 lazy val playSettings: Seq[Setting[?]] = Seq.empty
 ThisBuild / majorVersion := 2
-ThisBuild / scalaVersion := "3.3.7"
+ThisBuild / scalaVersion := "3.3.9"
 
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
